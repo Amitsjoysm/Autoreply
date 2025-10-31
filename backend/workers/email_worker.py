@@ -86,11 +86,30 @@ async def poll_email_account(account_id: str):
             }}
         )
 
+async def add_action(email_id: str, action: str, details: dict, status: str = "success"):
+    """Add action to email history"""
+    await db.emails.update_one(
+        {"id": email_id},
+        {
+            "$push": {
+                "action_history": {
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "action": action,
+                    "details": details,
+                    "status": status
+                }
+            },
+            "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
+        }
+    )
+
 async def process_email(email_id: str):
-    """Process email with AI agents"""
+    """Process email with AI agents - Enhanced with status tracking and retry logic"""
     try:
+        from services.email_service import EmailService
         ai_service = AIAgentService(db)
         calendar_service = CalendarService(db)
+        email_service = EmailService(db)
         
         # Get email
         email_doc = await db.emails.find_one({"id": email_id})
@@ -104,25 +123,49 @@ async def process_email(email_id: str):
         
         logger.info(f"Processing email {email.id}")
         
+        # Get thread context
+        thread_context = await email_service.get_thread_context(email)
+        
         # Step 1: Classify intent
+        await db.emails.update_one({"id": email_id}, {"$set": {"status": "classifying"}})
+        await add_action(email_id, "classifying", {"step": "intent_detection"})
+        
         intent_id, intent_confidence = await ai_service.classify_intent(email, email.user_id)
         
-        # Step 2: Detect meeting
-        is_meeting, meeting_confidence, meeting_details = await ai_service.detect_meeting(email)
+        # Get intent name
+        intent_name = None
+        if intent_id:
+            intent_doc = await db.intents.find_one({"id": intent_id})
+            if intent_doc:
+                intent_name = intent_doc.get('name', 'Unknown')
         
-        # Update email
+        await add_action(email_id, "classified", {
+            "intent_id": intent_id,
+            "intent_name": intent_name,
+            "confidence": intent_confidence
+        })
+        
+        # Step 2: Detect meeting
+        is_meeting, meeting_confidence, meeting_details = await ai_service.detect_meeting(email, thread_context)
+        
+        await add_action(email_id, "meeting_detection", {
+            "detected": is_meeting,
+            "confidence": meeting_confidence,
+            "details": meeting_details if is_meeting else None
+        })
+        
         update_data = {
-            "processed": True,
             "intent_detected": intent_id,
+            "intent_name": intent_name,
             "intent_confidence": intent_confidence,
             "meeting_detected": is_meeting,
             "meeting_confidence": meeting_confidence,
             "updated_at": datetime.now(timezone.utc).isoformat()
         }
         
-        # Step 3: If meeting detected, create calendar event
+        # Step 3: If meeting detected, create calendar event and send notification
+        event_created = None
         if is_meeting and meeting_confidence >= config.MEETING_CONFIDENCE_THRESHOLD and meeting_details:
-            # Get user's calendar provider
             provider_doc = await db.calendar_providers.find_one({
                 "user_id": email.user_id,
                 "is_active": True
@@ -132,7 +175,6 @@ async def process_email(email_id: str):
                 from models.calendar import CalendarProvider
                 provider = CalendarProvider(**provider_doc)
                 
-                # Check conflicts
                 conflicts = await calendar_service.check_conflicts(
                     provider.id,
                     meeting_details['start_time'],
@@ -140,54 +182,122 @@ async def process_email(email_id: str):
                 )
                 
                 if not conflicts:
-                    # Create event in Google Calendar
                     event_id = await calendar_service.create_event_google(provider, meeting_details)
                     
                     if event_id:
-                        # Save event to DB
                         meeting_details['event_id'] = event_id
                         meeting_details['detected_from_email'] = True
                         meeting_details['confidence'] = meeting_confidence
                         
-                        await calendar_service.save_event(
+                        event_created = await calendar_service.save_event(
                             email.user_id,
                             provider.id,
                             meeting_details,
                             email.id
                         )
                         
+                        await add_action(email_id, "calendar_event_created", {
+                            "event_id": event_id,
+                            "title": meeting_details.get('title'),
+                            "start_time": meeting_details.get('start_time')
+                        })
+                        
                         logger.info(f"Created calendar event for email {email.id}")
+                        
+                        # Send calendar event notification email
+                        await send_calendar_notification(email, event_created, email_service)
         
-        # Step 4: Generate draft
-        draft, tokens = await ai_service.generate_draft(email, email.user_id, intent_id)
+        # Step 4: Generate draft with retry logic (max 2 attempts)
+        await db.emails.update_one({"id": email_id}, {"$set": {"status": "drafting"}})
         
-        update_data['draft_generated'] = True
-        update_data['draft_content'] = draft
-        update_data['tokens_used'] = tokens
+        draft = None
+        total_tokens = 0
+        max_retries = 2
         
-        # Step 5: Validate draft
-        valid, issues = await ai_service.validate_draft(draft, email, email.user_id, intent_id)
+        for attempt in range(max_retries + 1):
+            await add_action(email_id, "drafting", {
+                "attempt": attempt + 1,
+                "max_attempts": max_retries + 1
+            })
+            
+            draft, tokens = await ai_service.generate_draft(
+                email, 
+                email.user_id, 
+                intent_id,
+                thread_context,
+                validation_issues=update_data.get('validation_issues') if attempt > 0 else None
+            )
+            total_tokens += tokens
+            
+            await add_action(email_id, "draft_generated", {
+                "attempt": attempt + 1,
+                "tokens": tokens,
+                "draft_length": len(draft) if draft else 0
+            })
+            
+            # Step 5: Validate draft
+            await db.emails.update_one({"id": email_id}, {"$set": {"status": "validating"}})
+            await add_action(email_id, "validating", {"attempt": attempt + 1})
+            
+            valid, issues = await ai_service.validate_draft(
+                draft, 
+                email, 
+                email.user_id, 
+                intent_id,
+                thread_context
+            )
+            
+            await add_action(email_id, "validated", {
+                "valid": valid,
+                "issues": issues,
+                "attempt": attempt + 1
+            })
+            
+            if valid:
+                update_data['draft_generated'] = True
+                update_data['draft_content'] = draft
+                update_data['draft_validated'] = True
+                update_data['validation_issues'] = []
+                update_data['draft_retry_count'] = attempt
+                update_data['status'] = 'draft_ready'
+                break
+            else:
+                update_data['validation_issues'] = issues
+                update_data['draft_retry_count'] = attempt
+                
+                if attempt < max_retries:
+                    logger.info(f"Draft validation failed for email {email.id}, retrying (attempt {attempt + 1}/{max_retries})")
+                    await add_action(email_id, "retry_draft", {
+                        "reason": "validation_failed",
+                        "issues": issues,
+                        "attempt": attempt + 1
+                    })
+                else:
+                    logger.warning(f"Draft validation failed after {max_retries} retries for email {email.id}, escalating")
+                    update_data['status'] = 'escalated'
+                    update_data['draft_generated'] = True
+                    update_data['draft_content'] = draft
+                    update_data['draft_validated'] = False
+                    await add_action(email_id, "escalated", {
+                        "reason": "validation_failed_max_retries",
+                        "issues": issues,
+                        "total_attempts": attempt + 1
+                    }, "failed")
         
-        update_data['draft_validated'] = valid
-        update_data['validation_issues'] = issues
+        update_data['tokens_used'] = total_tokens
         
-        if valid:
-            update_data['status'] = 'draft_ready'
-        else:
-            update_data['status'] = 'escalated'
-        
-        # Step 6: Auto-send if intent allows
-        if intent_id and valid:
+        # Step 6: Auto-send if intent allows and draft is valid
+        if intent_id and update_data.get('draft_validated'):
             intent_doc = await db.intents.find_one({"id": intent_id})
             if intent_doc and intent_doc.get('auto_send'):
-                # Auto-send reply
-                from services.email_service import EmailService
-                from models.email import EmailSend
+                await db.emails.update_one({"id": email_id}, {"$set": {"status": "sending"}})
+                await add_action(email_id, "sending", {"auto_send": True})
                 
-                email_service = EmailService(db)
                 account = await email_service.get_account(email.email_account_id)
                 
                 if account:
+                    from models.email import EmailSend
+                    
                     reply = EmailSend(
                         email_account_id=email.email_account_id,
                         to_email=[email.from_email],
@@ -197,7 +307,7 @@ async def process_email(email_id: str):
                     
                     sent = False
                     if account.account_type == 'oauth_gmail':
-                        sent = await email_service.send_email_oauth_gmail(account, reply)
+                        sent = await email_service.send_email_oauth_gmail(account, reply, email.thread_id)
                     else:
                         sent = await email_service.send_email_smtp(account, reply)
                     
@@ -205,29 +315,91 @@ async def process_email(email_id: str):
                         update_data['status'] = 'sent'
                         update_data['replied'] = True
                         update_data['reply_sent_at'] = datetime.now(timezone.utc).isoformat()
+                        await add_action(email_id, "sent", {
+                            "to": email.from_email,
+                            "auto_send": True
+                        })
                         logger.info(f"Auto-sent reply for email {email.id}")
+                    else:
+                        update_data['status'] = 'error'
+                        update_data['error_message'] = "Failed to send email"
+                        await add_action(email_id, "send_failed", {"error": "Failed to send"}, "failed")
+        
+        # Mark as processed
+        update_data['processed'] = True
         
         # Update email in DB
         await db.emails.update_one({"id": email_id}, {"$set": update_data})
         
         # Track tokens for user
-        if tokens > 0:
+        if total_tokens > 0:
             await db.users.update_one(
                 {"id": email.user_id},
-                {"$inc": {"tokens_used": tokens}}
+                {"$inc": {"tokens_used": total_tokens}}
             )
         
-        logger.info(f"Email {email.id} processed successfully")
+        logger.info(f"Email {email.id} processed successfully with status: {update_data['status']}")
     except Exception as e:
         logger.error(f"Error processing email {email_id}: {e}")
         await db.emails.update_one(
             {"id": email_id},
             {"$set": {
                 "processed": True,
-                "status": "escalated",
-                "error_message": str(e)
+                "status": "error",
+                "error_message": str(e),
+                "updated_at": datetime.now(timezone.utc).isoformat()
             }}
         )
+        await add_action(email_id, "error", {"message": str(e)}, "failed")
+
+async def send_calendar_notification(email: Email, event, email_service):
+    """Send email notification about created calendar event"""
+    try:
+        account = await email_service.get_account(email.email_account_id)
+        if not account:
+            return
+        
+        from models.email import EmailSend
+        
+        # Format event details
+        event_body = f"""A calendar event has been created based on your email:
+
+Event Details:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Title: {event.title}
+Start: {event.start_time}
+End: {event.end_time}
+Location: {event.location or 'Not specified'}
+Description: {event.description or 'No description'}
+Attendees: {', '.join(event.attendees) if event.attendees else 'None'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+This event has been added to your calendar. You will receive a reminder 1 hour before the meeting.
+
+Best regards,
+Your AI Email Assistant"""
+        
+        notification = EmailSend(
+            email_account_id=email.email_account_id,
+            to_email=[email.from_email],
+            subject=f"Calendar Event Created: {event.title}",
+            body=event_body
+        )
+        
+        sent = False
+        if account.account_type == 'oauth_gmail':
+            sent = await email_service.send_email_oauth_gmail(account, notification, email.thread_id)
+        else:
+            sent = await email_service.send_email_smtp(account, notification)
+        
+        if sent:
+            logger.info(f"Sent calendar notification for event {event.id}")
+            await add_action(email.id, "calendar_notification_sent", {
+                "event_id": event.id,
+                "event_title": event.title
+            })
+    except Exception as e:
+        logger.error(f"Error sending calendar notification: {e}")
 
 async def poll_all_accounts():
     """Poll all active email accounts"""
