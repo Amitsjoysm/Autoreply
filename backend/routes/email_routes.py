@@ -41,11 +41,20 @@ async def list_emails(
             direction=email['direction'],
             processed=email['processed'],
             intent_detected=email.get('intent_detected'),
+            intent_name=email.get('intent_name'),
+            intent_confidence=email.get('intent_confidence'),
             meeting_detected=email['meeting_detected'],
+            meeting_confidence=email.get('meeting_confidence'),
             draft_generated=email['draft_generated'],
             draft_content=email.get('draft_content'),
+            draft_validated=email.get('draft_validated', False),
+            validation_issues=email.get('validation_issues', []),
             status=email['status'],
             replied=email['replied'],
+            is_reply=email.get('is_reply', False),
+            thread_id=email.get('thread_id'),
+            action_history=email.get('action_history', []),
+            error_message=email.get('error_message'),
             created_at=email['created_at']
         )
         for email in emails
