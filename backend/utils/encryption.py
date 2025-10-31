@@ -3,7 +3,7 @@ import os
 import base64
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import logging
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class EncryptionService:
     def _derive_key(self, secret: bytes) -> bytes:
         """Derive encryption key from secret using PBKDF2"""
         salt = b'email_assistant_salt_v1'  # In production, use random salt per user
-        kdf = PBKDF2(
+        kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256(),
             length=32,
             salt=salt,
