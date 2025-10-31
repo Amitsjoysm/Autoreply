@@ -131,7 +131,9 @@ async def get_email_account(
         last_sync=account_doc.get('last_sync'),
         sync_status=account_doc['sync_status'],
         error_message=account_doc.get('error_message'),
-        created_at=account_doc['created_at']
+        created_at=account_doc['created_at'],
+        persona=account_doc.get('persona'),
+        signature=account_doc.get('signature')
     )
 
 @router.patch("/{account_id}", response_model=EmailAccountResponse)
