@@ -99,9 +99,9 @@ class EmailPollingTester:
             self.log(f"❌ Registration error: {str(e)}", "ERROR")
             return False
     
-    def test_google_oauth_url(self):
-        """Test getting Google OAuth URL"""
-        self.log("Testing Google OAuth URL endpoint...")
+    def test_email_accounts(self):
+        """Test checking email accounts"""
+        self.log("Testing email accounts endpoint...")
         
         if not self.jwt_token:
             self.log("❌ No JWT token available", "ERROR")
@@ -114,54 +114,99 @@ class EmailPollingTester:
             }
             
             response = self.session.get(
-                f"{API_BASE}/oauth/google/url?account_type=email",
+                f"{API_BASE}/email-accounts",
                 headers=headers
             )
             
-            self.log(f"OAuth URL response status: {response.status_code}")
+            self.log(f"Email accounts response status: {response.status_code}")
             
             if response.status_code == 200:
                 data = response.json()
-                oauth_url = data.get("url")
-                state = data.get("state")
+                self.log("✅ Email accounts endpoint successful")
+                self.log(f"Found {len(data)} email accounts")
                 
-                self.log("✅ OAuth URL endpoint successful")
-                self.log(f"OAuth URL: {oauth_url}")
-                self.log(f"State: {state}")
+                for i, account in enumerate(data):
+                    self.log(f"Account {i+1}:")
+                    self.log(f"  - ID: {account.get('id')}")
+                    self.log(f"  - Email: {account.get('email')}")
+                    self.log(f"  - Type: {account.get('account_type')}")
+                    self.log(f"  - Active: {account.get('is_active')}")
+                    self.log(f"  - Created: {account.get('created_at')}")
+                    self.log(f"  - Last Sync: {account.get('last_sync')}")
+                    
+                    # Store first account for later tests
+                    if i == 0:
+                        self.email_account = account
                 
-                # Verify URL contains required components
-                if oauth_url and "accounts.google.com" in oauth_url:
-                    self.log("✅ OAuth URL contains Google endpoint")
-                else:
-                    self.log("❌ OAuth URL doesn't contain Google endpoint", "ERROR")
-                    return False
-                    
-                if "redirect_uri" in oauth_url:
-                    self.log("✅ OAuth URL contains redirect_uri parameter")
-                else:
-                    self.log("❌ OAuth URL missing redirect_uri parameter", "ERROR")
-                    return False
-                    
-                if "scope" in oauth_url:
-                    self.log("✅ OAuth URL contains scope parameter")
-                else:
-                    self.log("❌ OAuth URL missing scope parameter", "ERROR")
-                    return False
-                    
-                if state:
-                    self.log("✅ State parameter returned")
-                    self.oauth_state = state
-                    return True
-                else:
-                    self.log("❌ No state parameter returned", "ERROR")
-                    return False
-                    
+                return True
             else:
-                self.log(f"❌ OAuth URL failed: {response.text}", "ERROR")
+                self.log(f"❌ Email accounts failed: {response.text}", "ERROR")
                 return False
                 
         except Exception as e:
-            self.log(f"❌ OAuth URL error: {str(e)}", "ERROR")
+            self.log(f"❌ Email accounts error: {str(e)}", "ERROR")
+            return False
+    
+    def test_processed_emails(self):
+        """Test checking processed emails"""
+        self.log("Testing processed emails endpoint...")
+        
+        if not self.jwt_token:
+            self.log("❌ No JWT token available", "ERROR")
+            return False
+            
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.jwt_token}",
+                "Content-Type": "application/json"
+            }
+            
+            response = self.session.get(
+                f"{API_BASE}/emails?limit=20",
+                headers=headers
+            )
+            
+            self.log(f"Emails response status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log("✅ Emails endpoint successful")
+                self.log(f"Found {len(data)} emails in database")
+                
+                # Check if we have the email account creation time
+                account_created_at = None
+                if hasattr(self, 'email_account') and self.email_account:
+                    account_created_at = self.email_account.get('created_at')
+                    self.log(f"Email account created at: {account_created_at}")
+                
+                recent_emails = 0
+                for i, email in enumerate(data[:5]):  # Show first 5 emails
+                    self.log(f"Email {i+1}:")
+                    self.log(f"  - ID: {email.get('id')}")
+                    self.log(f"  - From: {email.get('from_email')}")
+                    self.log(f"  - Subject: {email.get('subject', '')[:50]}...")
+                    self.log(f"  - Received: {email.get('received_at')}")
+                    self.log(f"  - Status: {email.get('status')}")
+                    self.log(f"  - Draft Generated: {email.get('draft_generated')}")
+                    self.log(f"  - Replied: {email.get('replied')}")
+                    
+                    # Check if email is after account creation
+                    if account_created_at and email.get('received_at'):
+                        if email.get('received_at') > account_created_at:
+                            recent_emails += 1
+                
+                if account_created_at:
+                    self.log(f"✅ Found {recent_emails} emails after account creation")
+                else:
+                    self.log("⚠️  Cannot verify email timing - no account creation time")
+                
+                return True
+            else:
+                self.log(f"❌ Emails failed: {response.text}", "ERROR")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Emails error: {str(e)}", "ERROR")
             return False
     
     def test_oauth_state_storage(self):
