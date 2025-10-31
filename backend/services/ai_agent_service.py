@@ -137,24 +137,42 @@ If no meeting detected, set is_meeting to false and confidence to 0.0."""
             logger.error(f"Error detecting meeting: {e}")
             return False, 0.0, None
     
-    async def generate_draft(self, email: Email, user_id: str, intent_id: Optional[str] = None) -> Tuple[str, int]:
-        """Generate email draft using Groq (Draft Agent)"""
+    async def generate_draft(self, email: Email, user_id: str, intent_id: Optional[str] = None, 
+                            thread_context: List[Dict] = None, validation_issues: List[str] = None) -> Tuple[str, int]:
+        """Generate email draft using Groq (Draft Agent) with thread context"""
         try:
             current_time = config.get_datetime_string()
             
             # Get context
             context = await self._get_draft_context(user_id, email.email_account_id, intent_id)
             
+            # Build thread context
+            thread_str = ""
+            if thread_context and len(thread_context) > 0:
+                thread_str = "\n\nPrevious messages in this conversation:\n" + "="*50 + "\n"
+                for i, msg in enumerate(thread_context, 1):
+                    thread_str += f"Message {i}:\nFrom: {msg['from']}\nTo: {', '.join(msg['to'])}\nDate: {msg['received_at']}\nSubject: {msg['subject']}\nBody:\n{msg['body']}\n\n"
+                    if msg.get('draft_sent'):
+                        thread_str += f"Our Response:\n{msg['draft_sent']}\n\n"
+                    thread_str += "="*50 + "\n"
+            
+            # Build validation feedback
+            feedback_str = ""
+            if validation_issues:
+                feedback_str = f"\n\nPrevious draft had these issues (MUST FIX):\n" + "\n".join([f"- {issue}" for issue in validation_issues])
+            
             prompt = f"""Current Date & Time: {current_time}
 
 You are an AI email assistant. Generate a professional email response.
 
 {context}
+{thread_str}
 
 Incoming Email:
 From: {email.from_email}
 Subject: {email.subject}
 Body: {email.body}
+{feedback_str}
 
 Generate a clear, professional response that:
 1. Addresses all points from the email
@@ -163,6 +181,9 @@ Generate a clear, professional response that:
 4. Includes the signature
 5. Is concise and actionable
 6. Contains NO placeholders like [Your Name] or [Date]
+7. IMPORTANT: Use thread context to avoid repeating information already discussed
+8. Do NOT repeat meeting details or calendar information already sent
+9. If validation issues provided, fix them specifically
 
 Respond with ONLY the email body text, no subject line."""
             
