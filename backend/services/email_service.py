@@ -88,10 +88,25 @@ class EmailService:
             
             service = build('gmail', 'v1', credentials=creds)
             
-            # Fetch unread messages
+            # Build query to only fetch emails received after account was connected
+            from dateutil import parser
+            created_at = parser.isoparse(account.created_at)
+            
+            # Use last_sync if available, otherwise use created_at
+            if account.last_sync:
+                after_date = parser.isoparse(account.last_sync)
+            else:
+                after_date = created_at
+            
+            # Format date for Gmail query (YYYY/MM/DD)
+            date_query = after_date.strftime('%Y/%m/%d')
+            
+            # Fetch unread messages received after the specified date
+            query = f'is:unread after:{date_query} -category:promotions -category:social -category:forums -is:sent'
+            
             results = service.users().messages().list(
                 userId='me',
-                q='is:unread -category:promotions -category:social -category:forums -is:sent',
+                q=query,
                 maxResults=50
             ).execute()
             
