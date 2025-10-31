@@ -47,12 +47,20 @@ class AIAgentService:
             logger.error(f"Error classifying intent: {e}")
             return None, 0.0
     
-    async def detect_meeting(self, email: Email) -> Tuple[bool, float, Optional[Dict]]:
-        """Detect if email contains meeting request using Groq"""
+    async def detect_meeting(self, email: Email, thread_context: List[Dict] = None) -> Tuple[bool, float, Optional[Dict]]:
+        """Detect if email contains meeting request using Groq with thread context"""
         try:
             current_time = config.get_datetime_string()
             
+            # Build thread context string
+            thread_str = ""
+            if thread_context:
+                thread_str = "\n\nPrevious messages in this thread:\n"
+                for msg in thread_context:
+                    thread_str += f"From: {msg['from']} | {msg['received_at']}\nSubject: {msg['subject']}\nBody: {msg['body'][:200]}...\n\n"
+            
             prompt = f"""Current Date & Time: {current_time}
+{thread_str}
 
 Analyze this email and determine if it contains a meeting request or invitation.
 
@@ -65,6 +73,8 @@ If a meeting is detected, extract:
 3. Location (physical or virtual)
 4. Meeting title/purpose
 5. Attendees
+
+IMPORTANT: Use the thread context to avoid extracting duplicate meeting information if this is a follow-up message about an existing meeting.
 
 Respond in JSON format:
 {{
