@@ -165,12 +165,23 @@ class EmailService:
     def _fetch_imap_sync(self, account: EmailAccount) -> List[Dict]:
         """Synchronous IMAP fetch"""
         try:
+            from dateutil import parser
+            
             mail = imaplib.IMAP4_SSL(account.imap_host, account.imap_port)
             mail.login(account.email, account.password)
             mail.select('inbox')
             
-            # Search for unread emails
-            status, messages = mail.search(None, 'UNSEEN')
+            # Determine the date to search from
+            if account.last_sync:
+                after_date = parser.isoparse(account.last_sync)
+            else:
+                after_date = parser.isoparse(account.created_at)
+            
+            # Format date for IMAP SINCE query (DD-MMM-YYYY)
+            date_str = after_date.strftime('%d-%b-%Y')
+            
+            # Search for unread emails received after the specified date
+            status, messages = mail.search(None, f'(UNSEEN SINCE {date_str})')
             email_ids = messages[0].split()
             
             emails = []
