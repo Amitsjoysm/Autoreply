@@ -213,16 +213,32 @@ agent_communication:
       1. Missing /oauth/google/authorize endpoint - frontend called non-existent endpoint
       2. No token expiry checking - tokens expired after 1 hour causing API failures
       3. No automatic token refresh - refresh_token was stored but never used
+      4. Frontend tried to redirect to /authorize without auth headers - browser redirects don't include auth headers
       
       FIXES IMPLEMENTED:
-      1. Added /oauth/google/authorize and /oauth/microsoft/authorize endpoints
-      2. Added ensure_token_valid() method to EmailService and CalendarService
-      3. Token refresh automatically happens before Gmail/Calendar API calls
-      4. Frontend now shows success/error messages from OAuth callback
-      5. Backend redirects to frontend with query params after OAuth
+      1. Updated frontend to use /oauth/google/url API endpoint (with auth headers) to get OAuth URL
+      2. Frontend now redirects to the OAuth URL returned by the API
+      3. Added ensure_token_valid() method to EmailService and CalendarService
+      4. Token refresh automatically happens before Gmail/Calendar API calls
+      5. Frontend now shows success/error messages from OAuth callback
+      6. Backend redirects to frontend with query params after OAuth
+      7. /oauth/google/url now accepts account_type parameter (email or calendar)
+      
+      CHANGES IN THIS UPDATE:
+      - EmailAccounts.js: Changed handleOAuthConnect to async, now calls API.getGoogleOAuthUrl()
+      - CalendarProviders.js: Changed handleConnectGoogle to async, now calls API with account_type=calendar
+      - oauth_routes.py: Updated /oauth/google/url to accept account_type parameter
+      - Removed unused /oauth/google/authorize and /oauth/microsoft/authorize endpoints
+      
+      SERVICES STATUS:
+      ✅ Backend: Running (pid 3011)
+      ✅ Frontend: Running (pid 3039)
+      ✅ MongoDB: Running (pid 2606)
+      ✅ Redis: Running and connected
+      ✅ Background workers: Active (polling emails, follow-ups, reminders)
       
       NEXT STEPS FOR USER:
-      1. Try connecting Gmail account via OAuth
+      1. Try connecting Gmail account via OAuth - should now work!
       2. Set up intents with auto_send=true for auto-replies
       3. Connect calendar provider for calendar event creation
       4. Send test emails to verify auto-reply and calendar creation
