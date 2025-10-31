@@ -256,7 +256,7 @@ async def microsoft_oauth_callback(
     if not state_doc:
         raise HTTPException(status_code=400, detail="Invalid state")
     
-    user_id = state_doc['user_id']
+    _ = state_doc['user_id']  # user_id for future use
     
     await db.oauth_states.delete_one({"state": state})
     
