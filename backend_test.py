@@ -357,7 +357,7 @@ class ProductionFlowTester:
         """Check Redis connection and status"""
         self.log("Checking Redis status...")
         
-        if not self.redis_client:
+        if self.redis_client is None:
             self.log("❌ No Redis connection", "ERROR")
             return False
         
