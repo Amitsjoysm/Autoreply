@@ -232,8 +232,8 @@ class EmailService:
             logger.error(f"IMAP sync error: {e}")
             return []
     
-    async def send_email_oauth_gmail(self, account: EmailAccount, email_data: EmailSend) -> bool:
-        """Send email using Gmail API"""
+    async def send_email_oauth_gmail(self, account: EmailAccount, email_data: EmailSend, thread_id: Optional[str] = None) -> bool:
+        """Send email using Gmail API with thread support"""
         try:
             # Ensure token is valid
             account = await self.ensure_token_valid(account)
@@ -259,9 +259,14 @@ class EmailService:
             
             raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
             
+            # Build message body with thread support
+            message_body = {'raw': raw_message}
+            if thread_id:
+                message_body['threadId'] = thread_id
+            
             service.users().messages().send(
                 userId='me',
-                body={'raw': raw_message}
+                body=message_body
             ).execute()
             
             return True
