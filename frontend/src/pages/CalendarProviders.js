@@ -42,9 +42,13 @@ const CalendarProviders = () => {
     }
   };
 
-  const handleConnectGoogle = () => {
-    const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
-    window.location.href = `${backendUrl}/api/oauth/google/authorize?account_type=calendar`;
+  const handleConnectGoogle = async () => {
+    try {
+      const response = await API.axios.get('/oauth/google/url?account_type=calendar');
+      window.location.href = response.data.url;
+    } catch (error) {
+      toast.error('Failed to initiate OAuth flow');
+    }
   };
 
   const handleDelete = async (providerId) => {
