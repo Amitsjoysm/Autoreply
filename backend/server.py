@@ -77,6 +77,19 @@ app.include_router(calendar_router, prefix="/api")
 app.include_router(follow_up_router, prefix="/api")
 app.include_router(system_router, prefix="/api")
 
+# Special OAuth callback route (without /api prefix for Google OAuth redirect)
+from fastapi import Query
+from fastapi.responses import RedirectResponse
+
+@app.get("/oauth/google/callback")
+async def oauth_google_callback_public(
+    code: str = Query(...),
+    state: str = Query(...),
+):
+    """Public OAuth callback endpoint for Google (redirects from Google don't go through /api)"""
+    from routes.oauth_routes import google_oauth_callback_get
+    return await google_oauth_callback_get(code=code, state=state, db=db)
+
 # Root endpoint
 @app.get("/api")
 async def root():
