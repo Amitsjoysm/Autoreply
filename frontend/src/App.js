@@ -4,6 +4,9 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Toaster } from './components/ui/sonner';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
+import EmailAccounts from './pages/EmailAccounts';
+import Intents from './pages/Intents';
+import KnowledgeBase from './pages/KnowledgeBase';
 import '@/App.css';
 import {
   Mail, BarChart3, User, Calendar, CalendarDays, Brain, Target, 
