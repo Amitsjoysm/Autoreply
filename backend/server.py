@@ -1,28 +1,45 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
 from motor.motor_asyncio import AsyncIOMotorClient
 import logging
 import asyncio
 
 from config import config
+from container import initialize_container
+from middleware.error_handler import global_exception_handler, validation_exception_handler
+from middleware.security import RateLimitMiddleware, SecurityHeadersMiddleware
+from exceptions import EmailAssistantException
 
-# Configure logging
+# Configure logging with better format
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    format='%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
-# MongoDB connection
-client = AsyncIOMotorClient(config.MONGO_URL)
+# MongoDB connection with connection pooling
+client = AsyncIOMotorClient(
+    config.MONGO_URL,
+    maxPoolSize=50,
+    minPoolSize=10,
+    maxIdleTimeMS=45000,
+    serverSelectionTimeoutMS=5000
+)
 db = client[config.DB_NAME]
 
 # Create FastAPI app
 app = FastAPI(
     title="AI Email Assistant API",
-    description="Production-ready AI-powered email automation platform",
-    version="1.0.0"
+    description="Production-ready AI-powered email automation platform with SOLID principles",
+    version="1.0.0",
+    docs_url="/api/docs",
+    redoc_url="/api/redoc"
 )
+
+# Add security middleware
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(RateLimitMiddleware)
 
 # CORS
 app.add_middleware(
@@ -32,6 +49,11 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add exception handlers
+app.add_exception_handler(EmailAssistantException, global_exception_handler)
+app.add_exception_handler(Exception, global_exception_handler)
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 # Import routes
 from routes.auth_routes import router as auth_router
