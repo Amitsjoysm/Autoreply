@@ -16,6 +16,7 @@ router = APIRouter(prefix="/oauth", tags=["oauth"])
 
 @router.get("/google/url")
 async def get_google_oauth_url(
+    account_type: str = Query('email', description='email or calendar'),
     user: User = Depends(get_current_user_from_token),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
@@ -23,11 +24,13 @@ async def get_google_oauth_url(
     oauth_service = OAuthService(db)
     state = str(uuid.uuid4())
     
-    # Store state in DB for verification
+    # Store state in DB for verification with account_type
     await db.oauth_states.insert_one({
         "state": state,
         "user_id": user.id,
-        "provider": "google"
+        "provider": "google",
+        "account_type": account_type,
+        "created_at": datetime.now(timezone.utc).isoformat()
     })
     
     url = oauth_service.get_google_auth_url(state)
