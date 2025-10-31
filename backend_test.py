@@ -27,11 +27,14 @@ TEST_USER = {
 # Target user ID from review request
 TARGET_USER_ID = "af3a5d43-8c97-4395-a57e-64fa8cb1c4b3"
 
-class EmailPollingTester:
+class ProductionFlowTester:
     def __init__(self):
         self.session = requests.Session()
         self.jwt_token = None
         self.user_id = None
+        self.mongo_client = None
+        self.redis_client = None
+        self.db = None
         
     def log(self, message, level="INFO"):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
