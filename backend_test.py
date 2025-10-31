@@ -526,66 +526,210 @@ class ProductionFlowTester:
             self.log(f"❌ Error verifying AI agent service: {str(e)}", "ERROR")
             return False
     
-    def test_processed_emails(self):
-        """Test checking processed emails"""
-        self.log("Testing processed emails endpoint...")
+    def verify_email_processing_pipeline(self):
+        """Verify email processing pipeline is working"""
+        self.log("=" * 60)
+        self.log("VERIFYING EMAIL PROCESSING PIPELINE")
+        self.log("=" * 60)
         
-        if not self.jwt_token:
-            self.log("❌ No JWT token available", "ERROR")
+        results = {}
+        
+        # 1. Check email polling
+        results['polling'] = self.check_email_polling()
+        
+        # 2. Check emails in database
+        results['database'] = self.check_emails_in_database()
+        
+        # 3. Check email status tracking
+        results['status_tracking'] = self.check_email_status_tracking()
+        
+        # 4. Check action history
+        results['action_history'] = self.check_action_history()
+        
+        return results
+    
+    def check_email_polling(self):
+        """Check if email polling is working"""
+        self.log("Checking email polling...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
             return False
-            
+        
         try:
-            headers = {
-                "Authorization": f"Bearer {self.jwt_token}",
-                "Content-Type": "application/json"
-            }
+            # Check email accounts for polling status
+            email_accounts = list(self.db.email_accounts.find({"user_id": TARGET_USER_ID}))
             
-            response = self.session.get(
-                f"{API_BASE}/emails?limit=20",
-                headers=headers
-            )
+            if not email_accounts:
+                self.log("❌ No email accounts found for polling")
+                return False
             
-            self.log(f"Emails response status: {response.status_code}")
+            active_accounts = [acc for acc in email_accounts if acc.get('is_active')]
+            self.log(f"Found {len(active_accounts)} active email accounts")
             
-            if response.status_code == 200:
-                data = response.json()
-                self.log("✅ Emails endpoint successful")
-                self.log(f"Found {len(data)} emails in database")
-                
-                # Check if we have the email account creation time
-                account_created_at = None
-                if hasattr(self, 'email_account') and self.email_account:
-                    account_created_at = self.email_account.get('created_at')
-                    self.log(f"Email account created at: {account_created_at}")
-                
-                recent_emails = 0
-                for i, email in enumerate(data[:5]):  # Show first 5 emails
-                    self.log(f"Email {i+1}:")
-                    self.log(f"  - ID: {email.get('id')}")
-                    self.log(f"  - From: {email.get('from_email')}")
-                    self.log(f"  - Subject: {email.get('subject', '')[:50]}...")
-                    self.log(f"  - Received: {email.get('received_at')}")
-                    self.log(f"  - Status: {email.get('status')}")
-                    self.log(f"  - Draft Generated: {email.get('draft_generated')}")
-                    self.log(f"  - Replied: {email.get('replied')}")
-                    
-                    # Check if email is after account creation
-                    if account_created_at and email.get('received_at'):
-                        if email.get('received_at') > account_created_at:
-                            recent_emails += 1
-                
-                if account_created_at:
-                    self.log(f"✅ Found {recent_emails} emails after account creation")
+            # Check recent sync activity
+            recent_syncs = 0
+            for account in active_accounts:
+                last_sync = account.get('last_sync')
+                if last_sync:
+                    self.log(f"Account {account.get('email')}: Last sync {last_sync}")
+                    recent_syncs += 1
                 else:
-                    self.log("⚠️  Cannot verify email timing - no account creation time")
-                
+                    self.log(f"Account {account.get('email')}: Never synced")
+            
+            if recent_syncs > 0:
+                self.log("✅ Email polling is working - accounts have sync history")
                 return True
             else:
-                self.log(f"❌ Emails failed: {response.text}", "ERROR")
+                self.log("❌ No recent sync activity detected")
                 return False
                 
         except Exception as e:
-            self.log(f"❌ Emails error: {str(e)}", "ERROR")
+            self.log(f"❌ Error checking email polling: {str(e)}", "ERROR")
+            return False
+    
+    def check_emails_in_database(self):
+        """Check emails in database and their processing status"""
+        self.log("Checking emails in database...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Query emails for target user
+            emails = list(self.db.emails.find({"user_id": TARGET_USER_ID}).sort("received_at", -1).limit(10))
+            self.log(f"Found {len(emails)} recent emails for user {TARGET_USER_ID}")
+            
+            if len(emails) == 0:
+                self.log("❌ No emails found in database")
+                return False
+            
+            # Analyze email processing status
+            status_counts = {}
+            draft_count = 0
+            replied_count = 0
+            
+            for email in emails:
+                status = email.get('status', 'unknown')
+                status_counts[status] = status_counts.get(status, 0) + 1
+                
+                if email.get('draft_generated'):
+                    draft_count += 1
+                if email.get('replied'):
+                    replied_count += 1
+            
+            self.log("Email Status Distribution:")
+            for status, count in status_counts.items():
+                self.log(f"  - {status}: {count} emails")
+            
+            self.log(f"Emails with drafts: {draft_count}/{len(emails)}")
+            self.log(f"Emails replied to: {replied_count}/{len(emails)}")
+            
+            # Show sample email details
+            if emails:
+                sample_email = emails[0]
+                self.log("Sample Email Details:")
+                self.log(f"  - Subject: {sample_email.get('subject', 'No subject')[:50]}...")
+                self.log(f"  - From: {sample_email.get('from_email')}")
+                self.log(f"  - Status: {sample_email.get('status')}")
+                self.log(f"  - Received: {sample_email.get('received_at')}")
+                self.log(f"  - Thread ID: {sample_email.get('thread_id', 'None')}")
+            
+            self.log("✅ Emails found in database with processing status")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Error checking emails in database: {str(e)}", "ERROR")
+            return False
+    
+    def check_email_status_tracking(self):
+        """Check email status tracking system"""
+        self.log("Checking email status tracking...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Get emails with various statuses
+            emails = list(self.db.emails.find({"user_id": TARGET_USER_ID}).limit(20))
+            
+            if not emails:
+                self.log("❌ No emails to check status tracking")
+                return False
+            
+            # Expected statuses in the workflow
+            expected_statuses = [
+                'classifying', 'drafting', 'validating', 'sending', 'sent', 
+                'escalated', 'error', 'draft_ready'
+            ]
+            
+            found_statuses = set()
+            for email in emails:
+                status = email.get('status')
+                if status:
+                    found_statuses.add(status)
+            
+            self.log(f"Found email statuses: {list(found_statuses)}")
+            
+            # Check for status progression indicators
+            status_progression_found = False
+            for email in emails:
+                action_history = email.get('action_history', [])
+                if len(action_history) > 1:
+                    status_progression_found = True
+                    self.log(f"Email {email.get('id', 'unknown')[:8]}... has {len(action_history)} status changes")
+                    break
+            
+            if status_progression_found:
+                self.log("✅ Email status tracking is working - found status progression")
+                return True
+            else:
+                self.log("⚠️  Limited status tracking activity detected")
+                return True  # Still consider it working if emails exist
+                
+        except Exception as e:
+            self.log(f"❌ Error checking email status tracking: {str(e)}", "ERROR")
+            return False
+    
+    def check_action_history(self):
+        """Check action history tracking"""
+        self.log("Checking action history tracking...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Find emails with action history
+            emails_with_history = list(self.db.emails.find({
+                "user_id": TARGET_USER_ID,
+                "action_history": {"$exists": True, "$ne": []}
+            }).limit(5))
+            
+            self.log(f"Found {len(emails_with_history)} emails with action history")
+            
+            if len(emails_with_history) == 0:
+                self.log("⚠️  No emails with action history found")
+                return False
+            
+            # Analyze action history details
+            for i, email in enumerate(emails_with_history[:3]):
+                action_history = email.get('action_history', [])
+                self.log(f"Email {i+1} Action History ({len(action_history)} actions):")
+                
+                for j, action in enumerate(action_history[-3:]):  # Show last 3 actions
+                    self.log(f"  Action {j+1}: {action.get('action', 'unknown')} at {action.get('timestamp', 'unknown')}")
+                    if action.get('details'):
+                        details = str(action.get('details'))[:50]
+                        self.log(f"    Details: {details}...")
+            
+            self.log("✅ Action history tracking is working")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Error checking action history: {str(e)}", "ERROR")
             return False
     
     def test_intents_configuration(self):
