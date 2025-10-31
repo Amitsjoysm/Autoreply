@@ -399,6 +399,133 @@ class ProductionFlowTester:
             self.log(f"❌ Error checking workers: {str(e)}", "ERROR")
             return False
     
+    def verify_intent_classification(self):
+        """Verify intent classification system"""
+        self.log("=" * 60)
+        self.log("VERIFYING INTENT CLASSIFICATION")
+        self.log("=" * 60)
+        
+        if not self.jwt_token:
+            self.log("❌ No JWT token available", "ERROR")
+            return False
+        
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.jwt_token}",
+                "Content-Type": "application/json"
+            }
+            
+            # Test intent retrieval API
+            response = self.session.get(
+                f"{API_BASE}/intents",
+                headers=headers
+            )
+            
+            if response.status_code != 200:
+                self.log(f"❌ Intents API failed: {response.text}", "ERROR")
+                return False
+            
+            intents = response.json()
+            self.log(f"✅ Retrieved {len(intents)} intents via API")
+            
+            # Verify auto_send flags and priorities
+            auto_send_intents = [i for i in intents if i.get('auto_send')]
+            manual_intents = [i for i in intents if not i.get('auto_send')]
+            
+            self.log(f"Auto-send intents: {len(auto_send_intents)}")
+            self.log(f"Manual review intents: {len(manual_intents)}")
+            
+            # Check intent priorities and keywords
+            for intent in intents:
+                self.log(f"Intent: {intent.get('name')}")
+                self.log(f"  - Priority: {intent.get('priority')}")
+                self.log(f"  - Auto-send: {intent.get('auto_send')}")
+                self.log(f"  - Keywords: {len(intent.get('keywords', []))} keywords")
+                self.log(f"  - Active: {intent.get('is_active')}")
+            
+            if len(auto_send_intents) == 6 and len(manual_intents) == 1:
+                self.log("✅ Intent classification setup verified")
+                return True
+            else:
+                self.log(f"❌ Expected 6 auto-send + 1 manual intent, got {len(auto_send_intents)} + {len(manual_intents)}")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Error verifying intent classification: {str(e)}", "ERROR")
+            return False
+    
+    def verify_ai_agent_service(self):
+        """Verify AI agent service endpoints and functionality"""
+        self.log("=" * 60)
+        self.log("VERIFYING AI AGENT SERVICE")
+        self.log("=" * 60)
+        
+        if not self.jwt_token:
+            self.log("❌ No JWT token available", "ERROR")
+            return False
+        
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.jwt_token}",
+                "Content-Type": "application/json"
+            }
+            
+            # Test system health endpoint
+            response = self.session.get(f"{API_BASE}/health", headers=headers)
+            if response.status_code != 200:
+                self.log(f"❌ Health endpoint failed: {response.text}", "ERROR")
+                return False
+            
+            health_data = response.json()
+            self.log(f"✅ System health: {health_data.get('status')}")
+            
+            # Check knowledge base API
+            response = self.session.get(f"{API_BASE}/knowledge-base", headers=headers)
+            if response.status_code != 200:
+                self.log(f"❌ Knowledge base API failed: {response.text}", "ERROR")
+                return False
+            
+            kb_entries = response.json()
+            self.log(f"✅ Knowledge base API working - {len(kb_entries)} entries")
+            
+            # Verify knowledge base content for AI agents
+            for i, entry in enumerate(kb_entries[:3]):  # Show first 3
+                self.log(f"KB Entry {i+1}: {entry.get('title')}")
+                content_length = len(entry.get('content', ''))
+                self.log(f"  - Content length: {content_length} characters")
+            
+            # Test that we can access intents (needed for draft generation)
+            response = self.session.get(f"{API_BASE}/intents", headers=headers)
+            if response.status_code != 200:
+                self.log(f"❌ Intents API failed for AI agents: {response.text}", "ERROR")
+                return False
+            
+            intents = response.json()
+            self.log(f"✅ AI agents can access {len(intents)} intents")
+            
+            # Verify system prompt components are available
+            system_components = {
+                "knowledge_base": len(kb_entries) > 0,
+                "intents": len(intents) > 0,
+                "auto_send_intents": len([i for i in intents if i.get('auto_send')]) > 0
+            }
+            
+            self.log("AI Agent System Components:")
+            for component, available in system_components.items():
+                status = "✅" if available else "❌"
+                self.log(f"  {status} {component}: {'Available' if available else 'Missing'}")
+            
+            if all(system_components.values()):
+                self.log("✅ AI agent service verified - all components available")
+                return True
+            else:
+                self.log("❌ AI agent service missing components")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Error verifying AI agent service: {str(e)}", "ERROR")
+            return False
+    
     def test_processed_emails(self):
         """Test checking processed emails"""
         self.log("Testing processed emails endpoint...")
