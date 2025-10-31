@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -10,6 +11,7 @@ import { Mail, Lock, User } from 'lucide-react';
 
 const AuthPage = () => {
   const { login, register } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   
   const [loginData, setLoginData] = useState({ email: '', password: '' });
@@ -21,8 +23,9 @@ const AuthPage = () => {
     try {
       await login(loginData.email, loginData.password);
       toast.success('Welcome back!');
+      navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Login failed');
+      toast.error(error.response?.data?.message || error.response?.data?.detail || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -34,8 +37,9 @@ const AuthPage = () => {
     try {
       await register(registerData.email, registerData.password, registerData.full_name);
       toast.success('Account created successfully!');
+      navigate('/dashboard');
     } catch (error) {
-      toast.error(error.response?.data?.detail || 'Registration failed');
+      toast.error(error.response?.data?.message || error.response?.data?.detail || 'Registration failed');
     } finally {
       setLoading(false);
     }
