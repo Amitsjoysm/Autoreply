@@ -101,7 +101,9 @@ async def list_email_accounts(
             last_sync=acc.get('last_sync'),
             sync_status=acc['sync_status'],
             error_message=acc.get('error_message'),
-            created_at=acc['created_at']
+            created_at=acc['created_at'],
+            persona=acc.get('persona'),
+            signature=acc.get('signature')
         )
         for acc in accounts
     ]
