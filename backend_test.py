@@ -12,7 +12,7 @@ import pymongo
 import redis
 
 # Configuration - Use the correct backend URL from review request
-BACKEND_URL = "https://8c808a32-7d7f-4bdf-be1a-fa305bf15637.preview.emergentagent.com"
+BACKEND_URL = "https://mail-intent-system.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test data - Use existing user with connected Gmail account

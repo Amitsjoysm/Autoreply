@@ -209,7 +209,7 @@ backend:
              - JWT authentication: ✅ Properly validates Bearer token
              - OAuth URL validation: ✅ Contains all required components:
                * Google OAuth endpoint: accounts.google.com
-               * Correct redirect_uri: https://8c808a32-7d7f-4bdf-be1a-fa305bf15637.preview.emergentagent.com/api/oauth/google/callback
+               * Correct redirect_uri: https://mail-intent-system.preview.emergentagent.com/api/oauth/google/callback
                * Required Gmail scopes: gmail.readonly, gmail.send, calendar
                * State parameter: ✅ Generated and returned
                * Access type: offline (for refresh tokens)
