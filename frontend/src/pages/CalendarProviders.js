@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import API from '../api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -8,11 +9,26 @@ import { Calendar, Plus, Trash2, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const CalendarProviders = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadProviders();
+    
+    // Check for OAuth success/error
+    const success = searchParams.get('success');
+    const error = searchParams.get('error');
+    const email = searchParams.get('email');
+    
+    if (success === 'true' && email) {
+      toast.success(`Successfully connected calendar for ${email}!`);
+      // Clear URL params
+      setSearchParams({});
+    } else if (error) {
+      toast.error(`OAuth failed: ${error}`);
+      setSearchParams({});
+    }
   }, []);
 
   const loadProviders = async () => {
