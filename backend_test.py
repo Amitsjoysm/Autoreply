@@ -22,7 +22,7 @@ TEST_USER = {
     "name": "Email Assistant Tester"
 }
 
-class OAuthTester:
+class EmailPollingTester:
     def __init__(self):
         self.session = requests.Session()
         self.jwt_token = None
@@ -32,42 +32,9 @@ class OAuthTester:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"[{timestamp}] {level}: {message}")
         
-    def test_user_registration(self):
-        """Test user registration"""
-        self.log("Testing user registration...")
-        
-        try:
-            response = self.session.post(
-                f"{API_BASE}/auth/register",
-                json=TEST_USER,
-                headers={"Content-Type": "application/json"}
-            )
-            
-            self.log(f"Registration response status: {response.status_code}")
-            
-            if response.status_code == 200:
-                data = response.json()
-                self.jwt_token = data.get("access_token")
-                self.user_id = data.get("user", {}).get("id")
-                self.log("✅ User registration successful")
-                self.log(f"JWT Token: {self.jwt_token[:50]}...")
-                self.log(f"User ID: {self.user_id}")
-                return True
-            elif response.status_code == 400:
-                # User might already exist, try login
-                self.log("User might already exist, will try login")
-                return self.test_user_login()
-            else:
-                self.log(f"❌ Registration failed: {response.text}", "ERROR")
-                return False
-                
-        except Exception as e:
-            self.log(f"❌ Registration error: {str(e)}", "ERROR")
-            return False
-    
     def test_user_login(self):
-        """Test user login"""
-        self.log("Testing user login...")
+        """Test user login to get JWT token"""
+        self.log("Testing user login to get JWT token...")
         
         try:
             login_data = {
@@ -91,12 +58,45 @@ class OAuthTester:
                 self.log(f"JWT Token: {self.jwt_token[:50]}...")
                 self.log(f"User ID: {self.user_id}")
                 return True
+            elif response.status_code == 400 or response.status_code == 401:
+                # Try registration first
+                self.log("User doesn't exist, trying registration...")
+                return self.test_user_registration()
             else:
                 self.log(f"❌ Login failed: {response.text}", "ERROR")
                 return False
                 
         except Exception as e:
             self.log(f"❌ Login error: {str(e)}", "ERROR")
+            return False
+    
+    def test_user_registration(self):
+        """Test user registration"""
+        self.log("Testing user registration...")
+        
+        try:
+            response = self.session.post(
+                f"{API_BASE}/auth/register",
+                json=TEST_USER,
+                headers={"Content-Type": "application/json"}
+            )
+            
+            self.log(f"Registration response status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.jwt_token = data.get("access_token")
+                self.user_id = data.get("user", {}).get("id")
+                self.log("✅ User registration successful")
+                self.log(f"JWT Token: {self.jwt_token[:50]}...")
+                self.log(f"User ID: {self.user_id}")
+                return True
+            else:
+                self.log(f"❌ Registration failed: {response.text}", "ERROR")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Registration error: {str(e)}", "ERROR")
             return False
     
     def test_google_oauth_url(self):
