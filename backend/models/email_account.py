@@ -71,3 +71,5 @@ class EmailAccountResponse(BaseModel):
     sync_status: str
     error_message: Optional[str]
     created_at: str
+    persona: Optional[str] = None
+    signature: Optional[str] = None
