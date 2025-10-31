@@ -75,6 +75,9 @@ class EmailService:
     async def fetch_emails_oauth_gmail(self, account: EmailAccount) -> List[Dict]:
         """Fetch emails using Gmail API (OAuth)"""
         try:
+            # Ensure token is valid
+            account = await self.ensure_token_valid(account)
+            
             creds = Credentials(
                 token=account.access_token,
                 refresh_token=account.refresh_token,
