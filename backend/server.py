@@ -1,81 +1,10 @@
-from fastapi import FastAPI, APIRouter
-from dotenv import load_dotenv
-from starlette.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-import os
 import logging
-from pathlib import Path
-from pydantic import BaseModel, Field, ConfigDict
-from typing import List
-import uuid
-from datetime import datetime, timezone
+import asyncio
 
-
-ROOT_DIR = Path(__file__).parent
-load_dotenv(ROOT_DIR / '.env')
-
-# MongoDB connection
-mongo_url = os.environ['MONGO_URL']
-client = AsyncIOMotorClient(mongo_url)
-db = client[os.environ['DB_NAME']]
-
-# Create the main app without a prefix
-app = FastAPI()
-
-# Create a router with the /api prefix
-api_router = APIRouter(prefix="/api")
-
-
-# Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
-    
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-
-class StatusCheckCreate(BaseModel):
-    client_name: str
-
-# Add your routes to the router instead of directly to app
-@api_router.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
-    
-    # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
-    
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
-
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
-    # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
-    
-    # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
-    
-    return status_checks
-
-# Include the router in the main app
-app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+from config import config
 
 # Configure logging
 logging.basicConfig(
@@ -84,6 +13,110 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# MongoDB connection
+client = AsyncIOMotorClient(config.MONGO_URL)
+db = client[config.DB_NAME]
+
+# Create FastAPI app
+app = FastAPI(
+    title="AI Email Assistant API",
+    description="Production-ready AI-powered email automation platform",
+    version="1.0.0"
+)
+
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=config.CORS_ORIGINS,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Import routes
+from routes.auth_routes import router as auth_router
+from routes.email_account_routes import router as email_account_router
+from routes.email_routes import router as email_router
+from routes.intent_routes import router as intent_router
+from routes.knowledge_base_routes import router as knowledge_base_router
+from routes.oauth_routes import router as oauth_router
+from routes.calendar_routes import router as calendar_router
+from routes.follow_up_routes import router as follow_up_router
+from routes.system_routes import router as system_router
+
+# Include routers under /api prefix
+app.include_router(auth_router, prefix="/api")
+app.include_router(email_account_router, prefix="/api")
+app.include_router(email_router, prefix="/api")
+app.include_router(intent_router, prefix="/api")
+app.include_router(knowledge_base_router, prefix="/api")
+app.include_router(oauth_router, prefix="/api")
+app.include_router(calendar_router, prefix="/api")
+app.include_router(follow_up_router, prefix="/api")
+app.include_router(system_router, prefix="/api")
+
+# Root endpoint
+@app.get("/api")
+async def root():
+    return {
+        "message": "AI Email Assistant API",
+        "version": "1.0.0",
+        "status": "running"
+    }
+
+# Health check
+@app.get("/api/health")
+async def health_check():
+    try:
+        await db.command('ping')
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        logger.error(f"Health check failed: {e}")
+        return {"status": "unhealthy", "database": "disconnected"}
+
+# Startup event - Start background worker
+@app.on_event("startup")
+async def startup_event():
+    logger.info("Starting AI Email Assistant API...")
+    
+    # Start background worker in separate task
+    from workers.email_worker import poll_all_accounts, check_follow_ups, check_reminders
+    
+    async def background_worker():
+        poll_counter = 0
+        follow_up_counter = 0
+        reminder_counter = 0
+        
+        while True:
+            try:
+                # Poll emails every 60 seconds
+                if poll_counter % config.EMAIL_POLL_INTERVAL == 0:
+                    asyncio.create_task(poll_all_accounts())
+                    poll_counter = 0
+                
+                # Check follow-ups every 5 minutes
+                if follow_up_counter % config.FOLLOW_UP_CHECK_INTERVAL == 0:
+                    asyncio.create_task(check_follow_ups())
+                    follow_up_counter = 0
+                
+                # Check reminders every hour
+                if reminder_counter % config.REMINDER_CHECK_INTERVAL == 0:
+                    asyncio.create_task(check_reminders())
+                    reminder_counter = 0
+                
+                await asyncio.sleep(1)
+                poll_counter += 1
+                follow_up_counter += 1
+                reminder_counter += 1
+            except Exception as e:
+                logger.error(f"Background worker error: {e}")
+                await asyncio.sleep(5)
+    
+    # Start background worker
+    asyncio.create_task(background_worker())
+    logger.info("Background worker started")
+
 @app.on_event("shutdown")
-async def shutdown_db_client():
+async def shutdown_event():
+    logger.info("Shutting down...")
     client.close()
