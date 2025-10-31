@@ -380,7 +380,7 @@ const EmailAccounts = () => {
 
                   <div className="flex items-center justify-between pt-2 border-t">
                     <div className="text-xs text-gray-500">
-                      Auto-send: {account.auto_send ? 'Enabled' : 'Disabled'}
+                      Auto-reply: {account.auto_reply_enabled ? 'Enabled' : 'Disabled'}
                     </div>
                   </div>
 
