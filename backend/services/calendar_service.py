@@ -8,12 +8,56 @@ import httpx
 
 from config import config
 from models.calendar import CalendarProvider, CalendarEvent, CalendarEventCreate
+from services.oauth_service import OAuthService
 
 logger = logging.getLogger(__name__)
 
 class CalendarService:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
+        self.oauth_service = OAuthService(db)
+    
+    async def ensure_token_valid(self, provider: CalendarProvider) -> CalendarProvider:
+        """Check and refresh OAuth token if expired"""
+        if not provider.token_expires_at or not provider.refresh_token:
+            return provider
+        
+        try:
+            # Parse token expiry
+            from dateutil import parser
+            expires_at = parser.isoparse(provider.token_expires_at)
+            now = datetime.now(timezone.utc)
+            
+            # Check if token expires within next 5 minutes
+            if expires_at <= now:
+                logger.info(f"Token expired for calendar provider {provider.email}, refreshing...")
+                
+                # Refresh token
+                new_tokens = await self.oauth_service.refresh_google_token(provider.refresh_token)
+                if new_tokens:
+                    # Update provider with new tokens
+                    await self.db.calendar_providers.update_one(
+                        {"id": provider.id},
+                        {"$set": {
+                            "access_token": new_tokens['access_token'],
+                            "token_expires_at": new_tokens['token_expires_at'],
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    
+                    # Update provider object
+                    provider.access_token = new_tokens['access_token']
+                    provider.token_expires_at = new_tokens['token_expires_at']
+                    
+                    logger.info(f"Token refreshed successfully for {provider.email}")
+                else:
+                    logger.error(f"Failed to refresh token for {provider.email}")
+                    raise Exception("Token refresh failed")
+        except Exception as e:
+            logger.error(f"Error checking/refreshing token: {e}")
+            raise
+        
+        return provider
     
     async def create_event_google(self, provider: CalendarProvider, event_data: Dict) -> Optional[str]:
         """Create calendar event in Google Calendar"""
