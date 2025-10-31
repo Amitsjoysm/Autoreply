@@ -7,6 +7,14 @@ import Dashboard from './pages/Dashboard';
 import EmailAccounts from './pages/EmailAccounts';
 import Intents from './pages/Intents';
 import KnowledgeBase from './pages/KnowledgeBase';
+import EmailProcessing from './pages/EmailProcessing';
+import Profile from './pages/Profile';
+import CalendarProviders from './pages/CalendarProviders';
+import CalendarEvents from './pages/CalendarEvents';
+import MeetingDetection from './pages/MeetingDetection';
+import FollowUps from './pages/FollowUps';
+import LiveMonitoring from './pages/LiveMonitoring';
+import TestEmail from './pages/TestEmail';
 import '@/App.css';
 import {
   Mail, BarChart3, User, Calendar, CalendarDays, Brain, Target, 
