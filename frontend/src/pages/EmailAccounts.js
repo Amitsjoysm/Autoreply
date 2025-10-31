@@ -289,19 +289,6 @@ const EmailAccounts = () => {
                       rows={3}
                     />
                   </div>
-
-                  <div className="col-span-2 flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="auto_send"
-                      checked={formData.auto_send}
-                      onChange={(e) => setFormData({...formData, auto_send: e.target.checked})}
-                      className="w-4 h-4"
-                    />
-                    <Label htmlFor="auto_send" className="cursor-pointer">
-                      Auto-send validated drafts
-                    </Label>
-                  </div>
                 </div>
 
                 <div className="flex gap-3">
