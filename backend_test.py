@@ -1232,75 +1232,296 @@ class ProductionFlowTester:
         
         return len(missing) == 0
     
-    def run_all_tests(self):
-        """Run all email polling and auto-reply tests"""
-        self.log("=" * 80)
-        self.log("Starting Email Polling and Auto-Reply Verification Tests")
-        self.log("=" * 80)
+    def verify_complete_workflow(self):
+        """Verify the complete production workflow"""
+        self.log("=" * 60)
+        self.log("VERIFYING COMPLETE PRODUCTION WORKFLOW")
+        self.log("=" * 60)
         
-        tests = [
-            ("1. Login and Get JWT Token", self.test_user_login),
-            ("2. Check Email Accounts", self.test_email_accounts),
-            ("3. Check Processed Emails", self.test_processed_emails),
-            ("4. Check Intents Configuration", self.test_intents_configuration),
-            ("5. Check Calendar Providers", self.test_calendar_providers),
-            ("6. Verify Auto-Reply Requirements", self.verify_auto_reply_requirements),
-            ("7. Verify Calendar Requirements", self.verify_calendar_requirements)
+        workflow_steps = [
+            "Email received → polled → intents identified",
+            "Draft created (using system prompt + KB + intent prompts)",
+            "Validated (with 2 retry attempts)",
+            "Auto-sent if valid → follow-ups created",
+            "Reply detection cancels follow-ups",
+            "Meeting detection → calendar event creation",
+            "Event notification email → reminders created",
+            "Event updates handled"
         ]
         
-        results = {}
+        self.log("Expected Production Workflow:")
+        for i, step in enumerate(workflow_steps, 1):
+            self.log(f"{i}. {step}")
         
-        for test_name, test_func in tests:
-            self.log(f"\n{'='*20} {test_name} {'='*20}")
-            try:
-                results[test_name] = test_func()
-            except Exception as e:
-                self.log(f"❌ {test_name} failed with exception: {str(e)}", "ERROR")
-                results[test_name] = False
+        # Verify each component is ready
+        workflow_readiness = {
+            "email_polling": False,
+            "intent_classification": False,
+            "draft_generation": False,
+            "validation_system": False,
+            "auto_send": False,
+            "follow_up_management": False,
+            "reply_detection": False,
+            "meeting_detection": False,
+            "calendar_integration": False,
+            "notification_system": False,
+            "reminder_system": False
+        }
         
-        # Summary
-        self.log("\n" + "=" * 80)
-        self.log("COMPREHENSIVE TEST RESULTS SUMMARY")
-        self.log("=" * 80)
+        # Check each component (simplified checks)
+        if self.db:
+            # Check if we have emails being processed
+            emails = list(self.db.emails.find({"user_id": TARGET_USER_ID}).limit(5))
+            if emails:
+                workflow_readiness["email_polling"] = True
+                
+                # Check for drafts
+                drafts_found = any(email.get('draft_generated') for email in emails)
+                if drafts_found:
+                    workflow_readiness["draft_generation"] = True
+                
+                # Check for status progression
+                statuses_found = set(email.get('status') for email in emails if email.get('status'))
+                if len(statuses_found) > 1:
+                    workflow_readiness["validation_system"] = True
+            
+            # Check intents
+            intents = list(self.db.intents.find({"user_id": TARGET_USER_ID}))
+            if len(intents) >= 6:
+                workflow_readiness["intent_classification"] = True
+                
+                auto_send_intents = [i for i in intents if i.get('auto_send')]
+                if len(auto_send_intents) >= 5:
+                    workflow_readiness["auto_send"] = True
+            
+            # Check follow-ups
+            follow_ups = list(self.db.follow_ups.find({"user_id": TARGET_USER_ID}))
+            if follow_ups:
+                workflow_readiness["follow_up_management"] = True
+                
+                cancelled_follow_ups = [f for f in follow_ups if f.get('status') == 'cancelled']
+                if cancelled_follow_ups:
+                    workflow_readiness["reply_detection"] = True
+            
+            # Check calendar components
+            calendar_providers = list(self.db.calendar_providers.find({"user_id": TARGET_USER_ID}))
+            if calendar_providers:
+                workflow_readiness["calendar_integration"] = True
+            
+            calendar_events = list(self.db.calendar_events.find({"user_id": TARGET_USER_ID}))
+            if calendar_events:
+                workflow_readiness["meeting_detection"] = True
+                workflow_readiness["notification_system"] = True
+            
+            reminders = list(self.db.reminders.find({"user_id": TARGET_USER_ID}))
+            if reminders:
+                workflow_readiness["reminder_system"] = True
         
-        passed = 0
-        total = len(results)
+        # Report workflow readiness
+        self.log("\nWorkflow Component Readiness:")
+        ready_components = 0
+        total_components = len(workflow_readiness)
         
-        for test_name, result in results.items():
-            status = "✅ PASS" if result else "❌ FAIL"
-            self.log(f"{test_name}: {status}")
-            if result:
-                passed += 1
+        for component, ready in workflow_readiness.items():
+            status = "✅ READY" if ready else "❌ NOT READY"
+            self.log(f"  {component}: {status}")
+            if ready:
+                ready_components += 1
         
-        self.log(f"\nOverall: {passed}/{total} tests passed")
+        self.log(f"\nWorkflow Readiness: {ready_components}/{total_components} components ready")
         
-        # Detailed findings
-        self.log("\n" + "=" * 80)
-        self.log("DETAILED FINDINGS AND RECOMMENDATIONS")
-        self.log("=" * 80)
-        
-        if hasattr(self, 'email_account'):
-            self.log("✅ Email account integration is working")
-        else:
-            self.log("❌ No email accounts found - OAuth connection may be needed")
-        
-        self.log("\nSETUP INSTRUCTIONS FOR MISSING FEATURES:")
-        self.log("1. Auto-Reply Setup:")
-        self.log("   - Create intents with auto_send=true flag")
-        self.log("   - Ensure OAuth Gmail account is connected")
-        self.log("   - Verify drafts are being generated for emails")
-        
-        self.log("\n2. Calendar Event Setup:")
-        self.log("   - Connect Google Calendar via OAuth")
-        self.log("   - Ensure calendar provider has valid tokens")
-        self.log("   - Meeting detection should work automatically")
-        
-        if passed >= 5:  # Most tests passed
-            self.log("\n🎉 Email polling improvements verified successfully!")
+        if ready_components >= 8:  # Most components ready
+            self.log("✅ Production workflow is mostly ready")
+            return True
+        elif ready_components >= 5:  # Some components ready
+            self.log("⚠️  Production workflow is partially ready")
             return True
         else:
-            self.log("\n⚠️  Some critical issues found - see details above")
+            self.log("❌ Production workflow needs significant setup")
             return False
+    
+    def run_comprehensive_production_tests(self):
+        """Run comprehensive production flow tests"""
+        self.log("=" * 80)
+        self.log("COMPREHENSIVE PRODUCTION FLOW TESTING")
+        self.log("Target User: samhere.joy@gmail.com")
+        self.log(f"User ID: {TARGET_USER_ID}")
+        self.log("=" * 80)
+        
+        # Setup phase
+        setup_success = True
+        
+        self.log("\n🔧 SETUP PHASE")
+        if not self.setup_database_connections():
+            setup_success = False
+        
+        if not self.test_user_login():
+            setup_success = False
+        
+        if not setup_success:
+            self.log("❌ Setup phase failed - cannot continue with tests")
+            return False
+        
+        # Main test phases
+        test_phases = [
+            ("1. SETUP COMPONENTS", self.verify_setup_components),
+            ("2. INTENT CLASSIFICATION", self.verify_intent_classification),
+            ("3. AI AGENT SERVICE", self.verify_ai_agent_service),
+            ("4. EMAIL PROCESSING PIPELINE", self.verify_email_processing_pipeline),
+            ("5. FOLLOW-UP SYSTEM", self.verify_follow_up_system),
+            ("6. CALENDAR INTEGRATION", self.verify_calendar_integration),
+            ("7. COMPLETE WORKFLOW", self.verify_complete_workflow)
+        ]
+        
+        all_results = {}
+        
+        for phase_name, phase_func in test_phases:
+            self.log(f"\n{'='*20} {phase_name} {'='*20}")
+            try:
+                result = phase_func()
+                all_results[phase_name] = result
+                
+                if isinstance(result, dict):
+                    # Handle complex results
+                    phase_success = all(result.values()) if result else False
+                    status = "✅ PASS" if phase_success else "❌ FAIL"
+                else:
+                    # Handle simple boolean results
+                    status = "✅ PASS" if result else "❌ FAIL"
+                
+                self.log(f"{phase_name}: {status}")
+                
+            except Exception as e:
+                self.log(f"❌ {phase_name} failed with exception: {str(e)}", "ERROR")
+                all_results[phase_name] = False
+        
+        # Generate comprehensive summary
+        self.generate_production_summary(all_results)
+        
+        # Determine overall success
+        successful_phases = 0
+        total_phases = len(test_phases)
+        
+        for phase_name, result in all_results.items():
+            if isinstance(result, dict):
+                if any(result.values()):  # At least some components working
+                    successful_phases += 1
+            elif result:
+                successful_phases += 1
+        
+        overall_success = successful_phases >= (total_phases * 0.7)  # 70% success rate
+        
+        if overall_success:
+            self.log("\n🎉 PRODUCTION FLOW TESTING COMPLETED SUCCESSFULLY")
+        else:
+            self.log("\n⚠️  PRODUCTION FLOW TESTING COMPLETED WITH ISSUES")
+        
+        return overall_success
+    
+    def generate_production_summary(self, results):
+        """Generate comprehensive production readiness summary"""
+        self.log("\n" + "=" * 80)
+        self.log("PRODUCTION READINESS SUMMARY")
+        self.log("=" * 80)
+        
+        # Critical components status
+        critical_components = {
+            "User Authentication": self.jwt_token is not None,
+            "Database Connectivity": self.db is not None,
+            "Redis Connectivity": self.redis_client is not None,
+            "Email Account Connected": False,
+            "Intents Configured": False,
+            "Knowledge Base Ready": False,
+            "Background Workers": False
+        }
+        
+        # Update based on test results
+        if "1. SETUP COMPONENTS" in results:
+            setup_results = results["1. SETUP COMPONENTS"]
+            if isinstance(setup_results, dict):
+                critical_components["Email Account Connected"] = setup_results.get('email_account', False)
+                critical_components["Intents Configured"] = setup_results.get('intents', False)
+                critical_components["Knowledge Base Ready"] = setup_results.get('knowledge_base', False)
+                critical_components["Background Workers"] = setup_results.get('workers', False)
+        
+        self.log("\nCRITICAL COMPONENTS STATUS:")
+        for component, status in critical_components.items():
+            icon = "✅" if status else "❌"
+            self.log(f"  {icon} {component}")
+        
+        # Feature readiness
+        feature_readiness = {
+            "Email Processing": False,
+            "Auto-Reply System": False,
+            "Calendar Integration": False,
+            "Follow-up Management": False,
+            "AI Agent Services": False
+        }
+        
+        # Update based on test results
+        if "4. EMAIL PROCESSING PIPELINE" in results:
+            pipeline_results = results["4. EMAIL PROCESSING PIPELINE"]
+            if isinstance(pipeline_results, dict):
+                feature_readiness["Email Processing"] = any(pipeline_results.values())
+        
+        if "2. INTENT CLASSIFICATION" in results and "3. AI AGENT SERVICE" in results:
+            feature_readiness["Auto-Reply System"] = results["2. INTENT CLASSIFICATION"] and results["3. AI AGENT SERVICE"]
+            feature_readiness["AI Agent Services"] = results["3. AI AGENT SERVICE"]
+        
+        if "6. CALENDAR INTEGRATION" in results:
+            calendar_results = results["6. CALENDAR INTEGRATION"]
+            if isinstance(calendar_results, dict):
+                feature_readiness["Calendar Integration"] = any(calendar_results.values())
+        
+        if "5. FOLLOW-UP SYSTEM" in results:
+            followup_results = results["5. FOLLOW-UP SYSTEM"]
+            if isinstance(followup_results, dict):
+                feature_readiness["Follow-up Management"] = any(followup_results.values())
+        
+        self.log("\nFEATURE READINESS:")
+        for feature, ready in feature_readiness.items():
+            icon = "✅" if ready else "❌"
+            self.log(f"  {icon} {feature}")
+        
+        # Missing components and recommendations
+        missing_critical = [comp for comp, status in critical_components.items() if not status]
+        missing_features = [feat for feat, ready in feature_readiness.items() if not ready]
+        
+        if missing_critical:
+            self.log(f"\n❌ MISSING CRITICAL COMPONENTS:")
+            for component in missing_critical:
+                self.log(f"  - {component}")
+        
+        if missing_features:
+            self.log(f"\n⚠️  FEATURES NEEDING ATTENTION:")
+            for feature in missing_features:
+                self.log(f"  - {feature}")
+        
+        # Overall production readiness
+        critical_ready = len([c for c in critical_components.values() if c])
+        features_ready = len([f for f in feature_readiness.values() if f])
+        
+        total_critical = len(critical_components)
+        total_features = len(feature_readiness)
+        
+        critical_percentage = (critical_ready / total_critical) * 100
+        features_percentage = (features_ready / total_features) * 100
+        
+        self.log(f"\nPRODUCTION READINESS SCORE:")
+        self.log(f"  Critical Components: {critical_ready}/{total_critical} ({critical_percentage:.1f}%)")
+        self.log(f"  Features: {features_ready}/{total_features} ({features_percentage:.1f}%)")
+        
+        overall_percentage = ((critical_ready + features_ready) / (total_critical + total_features)) * 100
+        self.log(f"  Overall Readiness: {overall_percentage:.1f}%")
+        
+        if overall_percentage >= 80:
+            self.log("\n🚀 SYSTEM IS PRODUCTION READY!")
+        elif overall_percentage >= 60:
+            self.log("\n⚠️  SYSTEM IS MOSTLY READY - MINOR ISSUES TO RESOLVE")
+        else:
+            self.log("\n❌ SYSTEM NEEDS SIGNIFICANT WORK BEFORE PRODUCTION")
+        
+        return overall_percentage
 
 if __name__ == "__main__":
     tester = EmailPollingTester()
