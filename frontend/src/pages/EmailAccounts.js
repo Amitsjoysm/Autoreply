@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import API from '../api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -12,6 +13,7 @@ import { toast } from 'sonner';
 import { Mail, Plus, Trash2, Edit, CheckCircle2, XCircle, Globe } from 'lucide-react';
 
 const EmailAccounts = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -32,6 +34,20 @@ const EmailAccounts = () => {
 
   useEffect(() => {
     loadAccounts();
+    
+    // Check for OAuth success/error
+    const success = searchParams.get('success');
+    const error = searchParams.get('error');
+    const email = searchParams.get('email');
+    
+    if (success === 'true' && email) {
+      toast.success(`Successfully connected ${email}!`);
+      // Clear URL params
+      setSearchParams({});
+    } else if (error) {
+      toast.error(`OAuth failed: ${error}`);
+      setSearchParams({});
+    }
   }, []);
 
   const loadAccounts = async () => {
