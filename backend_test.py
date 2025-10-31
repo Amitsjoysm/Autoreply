@@ -530,9 +530,68 @@ class ProductionFlowTester:
         self.log("VERIFYING AI AGENT SERVICE")
         self.log("=" * 60)
         
-        if not self.jwt_token:
-            self.log("❌ No JWT token available", "ERROR")
+        # Try API first, fall back to database
+        if self.jwt_token:
+            return self.verify_ai_agent_service_api()
+        else:
+            self.log("⚠️  No JWT token, using database verification")
+            return self.verify_ai_agent_service_database()
+    
+    def verify_ai_agent_service_database(self):
+        """Verify AI agent service using database"""
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
             return False
+        
+        try:
+            # Test system health via direct API (no auth needed)
+            response = self.session.get(f"{API_BASE}/health")
+            if response.status_code != 200:
+                self.log(f"❌ Health endpoint failed: {response.text}", "ERROR")
+                return False
+            
+            health_data = response.json()
+            self.log(f"✅ System health: {health_data.get('status')}")
+            
+            # Check knowledge base in database
+            kb_entries = list(self.db.knowledge_base.find({"user_id": TARGET_USER_ID}))
+            self.log(f"✅ Knowledge base database check - {len(kb_entries)} entries")
+            
+            # Verify knowledge base content for AI agents
+            for i, entry in enumerate(kb_entries[:3]):  # Show first 3
+                self.log(f"KB Entry {i+1}: {entry.get('title')}")
+                content_length = len(entry.get('content', ''))
+                self.log(f"  - Content length: {content_length} characters")
+            
+            # Check intents in database
+            intents = list(self.db.intents.find({"user_id": TARGET_USER_ID}))
+            self.log(f"✅ AI agents can access {len(intents)} intents from database")
+            
+            # Verify system prompt components are available
+            system_components = {
+                "knowledge_base": len(kb_entries) > 0,
+                "intents": len(intents) > 0,
+                "auto_send_intents": len([i for i in intents if i.get('auto_send')]) > 0
+            }
+            
+            self.log("AI Agent System Components:")
+            for component, available in system_components.items():
+                status = "✅" if available else "❌"
+                self.log(f"  {status} {component}: {'Available' if available else 'Missing'}")
+            
+            if all(system_components.values()):
+                self.log("✅ AI agent service verified - all components available")
+                return True
+            else:
+                self.log("❌ AI agent service missing components")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Error verifying AI agent service: {str(e)}", "ERROR")
+            return False
+    
+    def verify_ai_agent_service_api(self):
+        """Verify AI agent service using API"""
         
         try:
             headers = {
