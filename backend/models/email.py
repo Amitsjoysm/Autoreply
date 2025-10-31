@@ -80,11 +80,20 @@ class EmailResponse(BaseModel):
     direction: str
     processed: bool
     intent_detected: Optional[str]
+    intent_name: Optional[str]
+    intent_confidence: Optional[float]
     meeting_detected: bool
+    meeting_confidence: Optional[float]
     draft_generated: bool
     draft_content: Optional[str]
+    draft_validated: bool
+    validation_issues: Optional[List[str]]
     status: str
     replied: bool
+    is_reply: bool
+    thread_id: Optional[str]
+    action_history: List[Dict[str, Any]]
+    error_message: Optional[str]
     created_at: str
 
 class EmailSend(BaseModel):
