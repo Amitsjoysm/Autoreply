@@ -201,6 +201,9 @@ class EmailService:
     async def send_email_oauth_gmail(self, account: EmailAccount, email_data: EmailSend) -> bool:
         """Send email using Gmail API"""
         try:
+            # Ensure token is valid
+            account = await self.ensure_token_valid(account)
+            
             creds = Credentials(
                 token=account.access_token,
                 refresh_token=account.refresh_token,
