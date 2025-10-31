@@ -334,17 +334,20 @@ frontend:
 metadata:
   created_by: "main_agent"
   version: "1.0"
-  test_sequence: 1
+  test_sequence: 2
   run_ui: false
 
 test_plan:
   current_focus:
-    - "Email Polling Improvements"
-    - "Auto-Reply Configuration Setup"
-    - "Calendar Provider Connection"
+    - "Complete Production Flow Verification"
+    - "Email Processing Pipeline"
+    - "Auto-Reply with Intents"
+    - "Calendar Event Creation"
+    - "Follow-up Management"
+    - "Reply Detection and Cancellation"
   stuck_tasks: []
-  test_all: false
-  test_priority: "high_first"
+  test_all: true
+  test_priority: "comprehensive"
 
 agent_communication:
   - agent: "main"
