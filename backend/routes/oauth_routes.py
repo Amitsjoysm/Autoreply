@@ -1,12 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import RedirectResponse
 from motor.motor_asyncio import AsyncIOMotorDatabase
 import uuid
+import jwt
+from datetime import datetime, timezone
 
 from routes.auth_routes import get_current_user_from_token, get_db
 from services.oauth_service import OAuthService
 from models.email_account import EmailAccount
 from models.calendar import CalendarProvider
 from models.user import User
+from config import config
 
 router = APIRouter(prefix="/oauth", tags=["oauth"])
 
@@ -28,6 +32,42 @@ async def get_google_oauth_url(
     
     url = oauth_service.get_google_auth_url(state)
     return {"url": url, "state": state}
+
+@router.get("/google/authorize")
+async def google_oauth_authorize(
+    request: Request,
+    account_type: str = Query('email', description='email or calendar'),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Initiate Google OAuth flow - redirects to Google"""
+    # Extract user from Authorization header
+    auth_header = request.headers.get('Authorization')
+    if not auth_header or not auth_header.startswith('Bearer '):
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    token = auth_header.split(' ')[1]
+    try:
+        payload = jwt.decode(token, config.JWT_SECRET, algorithms=[config.JWT_ALGORITHM])
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    
+    oauth_service = OAuthService(db)
+    state = str(uuid.uuid4())
+    
+    # Store state with account_type in DB for verification
+    await db.oauth_states.insert_one({
+        "state": state,
+        "user_id": user_id,
+        "provider": "google",
+        "account_type": account_type,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    
+    url = oauth_service.get_google_auth_url(state)
+    return RedirectResponse(url=url)
 
 @router.get("/microsoft/url")
 async def get_microsoft_oauth_url(
