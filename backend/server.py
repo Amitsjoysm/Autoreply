@@ -159,5 +159,15 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def shutdown_event():
-    logger.info("Shutting down...")
+    logger.info("Shutting down AI Email Assistant API...")
+    
+    # Close HTTP client pool
+    from utils.http_client import http_client_pool
+    await http_client_pool.close()
+    logger.info("✓ HTTP client pool closed")
+    
+    # Close database connection
     client.close()
+    logger.info("✓ Database connection closed")
+    
+    logger.info("✓ Shutdown complete")
