@@ -205,7 +205,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PlaceholderPage title="Intents" description="Define email intents and auto-responses" />
+                  <Intents />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -215,7 +215,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PlaceholderPage title="Email Accounts" description="Connect Gmail, Outlook, or custom SMTP" />
+                  <EmailAccounts />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -225,7 +225,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PlaceholderPage title="Knowledge Base" description="Add knowledge for AI responses" />
+                  <KnowledgeBase />
                 </MainLayout>
               </ProtectedRoute>
             }
