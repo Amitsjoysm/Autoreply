@@ -222,8 +222,9 @@ Respond with ONLY the email body text, no subject line."""
             logger.error(f"Error generating draft: {e}")
             return f"Error: {str(e)}", 0
     
-    async def validate_draft(self, draft: str, email: Email, user_id: str, intent_id: Optional[str] = None) -> Tuple[bool, List[str]]:
-        """Validate draft using Groq (Validation Agent)"""
+    async def validate_draft(self, draft: str, email: Email, user_id: str, intent_id: Optional[str] = None,
+                            thread_context: List[Dict] = None) -> Tuple[bool, List[str]]:
+        """Validate draft using Groq (Validation Agent) with thread context"""
         try:
             current_time = config.get_datetime_string()
             
@@ -234,6 +235,14 @@ Respond with ONLY the email body text, no subject line."""
                 if intent_doc:
                     intent = Intent(**intent_doc)
                     intent_prompt = f"Intent: {intent.name}\nIntent Requirements: {intent.prompt}"
+            
+            # Build thread context for validation
+            thread_str = ""
+            if thread_context and len(thread_context) > 0:
+                thread_str = "\n\nPrevious messages in thread:\n"
+                for msg in thread_context:
+                    if msg.get('draft_sent'):
+                        thread_str += f"We already sent: {msg['draft_sent'][:300]}...\n"
             
             prompt = f"""Current Date & Time: {current_time}
 
@@ -247,6 +256,7 @@ Generated Draft:
 {draft}
 
 {intent_prompt}
+{thread_str}
 
 Validation Checklist:
 1. No placeholders like [Name], [Date], [Your Company]
@@ -255,6 +265,8 @@ Validation Checklist:
 4. Clear and concise
 5. Actionable (if needed)
 6. Matches intent requirements (if specified)
+7. CRITICAL: NOT repeating information already sent in previous messages
+8. NOT sending duplicate meeting details or calendar information
 
 Respond in JSON:
 {{
