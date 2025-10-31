@@ -339,10 +339,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "OAuth Authorization Flow"
-    - "Token Refresh on Expiry"
-    - "Auto-Reply with OAuth Gmail"
-    - "Calendar Event Creation"
+    - "Email Polling Improvements"
+    - "Auto-Reply Configuration Setup"
+    - "Calendar Provider Connection"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
