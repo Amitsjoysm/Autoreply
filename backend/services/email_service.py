@@ -133,8 +133,16 @@ class EmailService:
                 elif 'body' in message['payload']:
                     body = base64.urlsafe_b64decode(message['payload']['body']['data']).decode('utf-8')
                 
+                # Extract thread information
+                thread_id = message.get('threadId')
+                in_reply_to = headers.get('In-Reply-To')
+                references = headers.get('References', '').split() if headers.get('References') else []
+                
                 emails.append({
                     'message_id': message['id'],
+                    'thread_id': thread_id,
+                    'in_reply_to': in_reply_to,
+                    'references': references,
                     'from': headers.get('From', ''),
                     'to': headers.get('To', '').split(','),
                     'subject': headers.get('Subject', ''),
