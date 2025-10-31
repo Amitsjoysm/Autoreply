@@ -15,11 +15,11 @@ import redis
 BACKEND_URL = "https://8c808a32-7d7f-4bdf-be1a-fa305bf15637.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
-# Test data - Use realistic test data
+# Test data - Use existing user with connected Gmail account
 TEST_USER = {
-    "email": "emailassistant.test@gmail.com",
+    "email": "samhere.joy@gmail.com",
     "password": "SecurePass2024!",
-    "name": "Email Assistant Tester"
+    "name": "Sam Joy"
 }
 
 class EmailPollingTester:
