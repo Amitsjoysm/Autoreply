@@ -384,3 +384,34 @@ class EmailService:
                 logger.info(f"Cancelled {result.modified_count} follow-ups for thread {thread_id}")
         except Exception as e:
             logger.error(f"Error cancelling follow-ups: {e}")
+    
+    async def get_thread_context(self, email: Email) -> List[Dict]:
+        """Get all emails in the thread for context"""
+        try:
+            if not email.thread_id:
+                return []
+            
+            # Get all emails in thread, sorted by received_at
+            emails = await self.db.emails.find({
+                "thread_id": email.thread_id,
+                "user_id": email.user_id
+            }).sort("received_at", 1).to_list(100)
+            
+            # Return simplified context
+            thread_context = []
+            for e in emails:
+                thread_context.append({
+                    "from": e['from_email'],
+                    "to": e['to_email'],
+                    "subject": e['subject'],
+                    "body": e['body'],
+                    "received_at": e['received_at'],
+                    "direction": e['direction'],
+                    "draft_sent": e.get('draft_content') if e.get('direction') == 'outbound' else None
+                })
+            
+            return thread_context
+        except Exception as e:
+            logger.error(f"Error getting thread context: {e}")
+            return []
+
