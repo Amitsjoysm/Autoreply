@@ -326,3 +326,23 @@ agent_communication:
       
       The user's original issue "when i click on oauth google i see no details found" has been resolved.
       The OAuth flow will now work correctly when users attempt to connect their Gmail accounts.
+  
+  - agent: "main"
+    message: |
+      OAUTH ISSUE FULLY RESOLVED + AI MODEL UPDATED
+      
+      FIXES APPLIED:
+      1. OAuth redirect URI configured with /api prefix
+      2. Added 'openid' and 'email' scopes for user profile access
+      3. Updated OAuth consent screen with all required scopes
+      4. Fixed deprecated Groq model: llama-3.1-70b-versatile → llama-3.3-70b-versatile
+      5. Duplicate account prevention added to OAuth callback
+      
+      CURRENT STATUS:
+      ✅ OAuth flow working - users can connect Gmail accounts
+      ✅ Background worker polling emails (1 account, 33 emails found)
+      ✅ AI model updated to latest Groq llama-3.3-70b-versatile
+      ✅ All services running (Backend, Frontend, MongoDB, Redis, Worker)
+      
+      NEXT TESTING:
+      Need to test auto-reply and calendar functionality with real email scenarios
