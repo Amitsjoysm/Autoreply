@@ -187,11 +187,11 @@ backend:
   
   - task: "Auto-Reply Logic"
     implemented: true
-    working: "NA"
+    working: false
     file: "workers/email_worker.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
@@ -200,6 +200,28 @@ backend:
           It requires: 1) Intent with auto_send=true flag, 2) Valid draft, 3) Valid OAuth tokens.
           With token refresh now working, auto-replies should work if intents are configured properly.
           Needs testing with real email accounts and intents configured.
+      - working: false
+        agent: "testing"
+        comment: |
+          ❌ AUTO-REPLY NOT WORKING - MISSING CONFIGURATION
+          
+          TESTED COMPONENTS:
+          ✅ OAuth Gmail Account: Connected (samhere.joy@gmail.com, Type: oauth_gmail, Active: true)
+          ✅ Email Processing: Working (33 emails processed, drafts generated for 30.3%)
+          ✅ Draft Generation: Working (sample drafts found in database)
+          ❌ Intents Configuration: MISSING - Found 0 intents in database
+          ❌ Auto-Send Intents: MISSING - No intents with auto_send=true flag
+          
+          ROOT CAUSE: No intents configured with auto_send=true flag
+          Auto-reply logic exists but cannot trigger without proper intent configuration.
+          
+          REQUIREMENTS FOR AUTO-REPLY:
+          1. ✅ Valid OAuth Gmail account (WORKING)
+          2. ✅ Draft generation capability (WORKING) 
+          3. ❌ Intent with auto_send=true (MISSING)
+          4. ❌ Intent matching email content (MISSING)
+          
+          NEXT STEPS: Create intents with auto_send=true to enable auto-reply functionality.
   
   - task: "Calendar Event Creation"
     implemented: true
