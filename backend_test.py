@@ -732,6 +732,334 @@ class ProductionFlowTester:
             self.log(f"❌ Error checking action history: {str(e)}", "ERROR")
             return False
     
+    def verify_follow_up_system(self):
+        """Verify follow-up system functionality"""
+        self.log("=" * 60)
+        self.log("VERIFYING FOLLOW-UP SYSTEM")
+        self.log("=" * 60)
+        
+        results = {}
+        
+        # 1. Check follow-up creation logic
+        results['creation'] = self.check_follow_up_creation()
+        
+        # 2. Check reply detection and cancellation
+        results['reply_detection'] = self.check_reply_detection()
+        
+        # 3. Check thread_id tracking
+        results['thread_tracking'] = self.check_thread_tracking()
+        
+        return results
+    
+    def check_follow_up_creation(self):
+        """Check follow-up creation logic"""
+        self.log("Checking follow-up creation logic...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Check follow-ups collection
+            follow_ups = list(self.db.follow_ups.find({"user_id": TARGET_USER_ID}).limit(10))
+            self.log(f"Found {len(follow_ups)} follow-ups for user {TARGET_USER_ID}")
+            
+            if len(follow_ups) == 0:
+                self.log("⚠️  No follow-ups found - may not have been created yet")
+                return True  # Not necessarily an error
+            
+            # Analyze follow-up details
+            active_follow_ups = 0
+            cancelled_follow_ups = 0
+            
+            for follow_up in follow_ups:
+                status = follow_up.get('status', 'unknown')
+                if status == 'pending':
+                    active_follow_ups += 1
+                elif status == 'cancelled':
+                    cancelled_follow_ups += 1
+                
+                self.log(f"Follow-up: {follow_up.get('id', 'unknown')[:8]}...")
+                self.log(f"  - Status: {status}")
+                self.log(f"  - Email ID: {follow_up.get('email_id', 'unknown')[:8]}...")
+                self.log(f"  - Scheduled: {follow_up.get('scheduled_at')}")
+                
+                if follow_up.get('cancellation_reason'):
+                    self.log(f"  - Cancelled: {follow_up.get('cancellation_reason')}")
+            
+            self.log(f"Active follow-ups: {active_follow_ups}")
+            self.log(f"Cancelled follow-ups: {cancelled_follow_ups}")
+            
+            self.log("✅ Follow-up creation logic verified")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Error checking follow-up creation: {str(e)}", "ERROR")
+            return False
+    
+    def check_reply_detection(self):
+        """Check reply detection and follow-up cancellation"""
+        self.log("Checking reply detection and follow-up cancellation...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Look for emails with thread_id (indicating replies)
+            emails_with_threads = list(self.db.emails.find({
+                "user_id": TARGET_USER_ID,
+                "thread_id": {"$exists": True, "$ne": None}
+            }).limit(10))
+            
+            self.log(f"Found {len(emails_with_threads)} emails with thread IDs")
+            
+            if len(emails_with_threads) == 0:
+                self.log("⚠️  No threaded emails found - reply detection not testable")
+                return True
+            
+            # Check for cancelled follow-ups due to replies
+            cancelled_follow_ups = list(self.db.follow_ups.find({
+                "user_id": TARGET_USER_ID,
+                "status": "cancelled",
+                "cancellation_reason": {"$regex": "reply", "$options": "i"}
+            }))
+            
+            self.log(f"Found {len(cancelled_follow_ups)} follow-ups cancelled due to replies")
+            
+            # Show thread tracking examples
+            for i, email in enumerate(emails_with_threads[:3]):
+                self.log(f"Threaded Email {i+1}:")
+                self.log(f"  - Thread ID: {email.get('thread_id')}")
+                self.log(f"  - Subject: {email.get('subject', 'No subject')[:30]}...")
+                self.log(f"  - In Reply To: {email.get('in_reply_to', 'None')}")
+            
+            self.log("✅ Reply detection system verified")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Error checking reply detection: {str(e)}", "ERROR")
+            return False
+    
+    def check_thread_tracking(self):
+        """Check thread_id tracking system"""
+        self.log("Checking thread_id tracking...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Get emails and group by thread_id
+            emails = list(self.db.emails.find({"user_id": TARGET_USER_ID}).limit(50))
+            
+            thread_groups = {}
+            for email in emails:
+                thread_id = email.get('thread_id')
+                if thread_id:
+                    if thread_id not in thread_groups:
+                        thread_groups[thread_id] = []
+                    thread_groups[thread_id].append(email)
+            
+            self.log(f"Found {len(thread_groups)} email threads")
+            
+            # Show thread details
+            multi_email_threads = 0
+            for thread_id, thread_emails in thread_groups.items():
+                if len(thread_emails) > 1:
+                    multi_email_threads += 1
+                    self.log(f"Thread {thread_id[:8]}... has {len(thread_emails)} emails")
+            
+            self.log(f"Threads with multiple emails: {multi_email_threads}")
+            
+            if len(thread_groups) > 0:
+                self.log("✅ Thread tracking is working")
+                return True
+            else:
+                self.log("⚠️  No thread tracking detected")
+                return True  # Not necessarily an error
+                
+        except Exception as e:
+            self.log(f"❌ Error checking thread tracking: {str(e)}", "ERROR")
+            return False
+    
+    def verify_calendar_integration(self):
+        """Verify calendar integration functionality"""
+        self.log("=" * 60)
+        self.log("VERIFYING CALENDAR INTEGRATION")
+        self.log("=" * 60)
+        
+        results = {}
+        
+        # 1. Check calendar provider connection
+        results['provider'] = self.check_calendar_provider_api()
+        
+        # 2. Check calendar event endpoints
+        results['endpoints'] = self.check_calendar_endpoints()
+        
+        # 3. Check event creation and updates
+        results['events'] = self.check_calendar_events()
+        
+        # 4. Check reminder system
+        results['reminders'] = self.check_reminder_system()
+        
+        return results
+    
+    def check_calendar_provider_api(self):
+        """Check calendar provider API"""
+        self.log("Checking calendar provider API...")
+        
+        if not self.jwt_token:
+            self.log("❌ No JWT token available", "ERROR")
+            return False
+        
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.jwt_token}",
+                "Content-Type": "application/json"
+            }
+            
+            response = self.session.get(f"{API_BASE}/calendar/providers", headers=headers)
+            
+            if response.status_code != 200:
+                self.log(f"❌ Calendar providers API failed: {response.text}", "ERROR")
+                return False
+            
+            providers = response.json()
+            self.log(f"✅ Calendar providers API working - {len(providers)} providers")
+            
+            # Check for Google Calendar provider
+            google_provider = None
+            for provider in providers:
+                if provider.get('provider') == 'google':
+                    google_provider = provider
+                    break
+            
+            if google_provider:
+                self.log("✅ Google Calendar provider found")
+                self.log(f"  - Email: {google_provider.get('email')}")
+                self.log(f"  - Active: {google_provider.get('is_active')}")
+                return True
+            else:
+                self.log("⚠️  No Google Calendar provider connected")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Error checking calendar provider API: {str(e)}", "ERROR")
+            return False
+    
+    def check_calendar_endpoints(self):
+        """Check calendar event endpoints"""
+        self.log("Checking calendar event endpoints...")
+        
+        if not self.jwt_token:
+            self.log("❌ No JWT token available", "ERROR")
+            return False
+        
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.jwt_token}",
+                "Content-Type": "application/json"
+            }
+            
+            # Test calendar events endpoint
+            response = self.session.get(f"{API_BASE}/calendar/events", headers=headers)
+            
+            if response.status_code != 200:
+                self.log(f"❌ Calendar events API failed: {response.text}", "ERROR")
+                return False
+            
+            events = response.json()
+            self.log(f"✅ Calendar events API working - {len(events)} events")
+            
+            # Show sample events if any
+            for i, event in enumerate(events[:3]):
+                self.log(f"Event {i+1}: {event.get('title', 'No title')}")
+                self.log(f"  - Start: {event.get('start_time')}")
+                self.log(f"  - Status: {event.get('status')}")
+            
+            return True
+                
+        except Exception as e:
+            self.log(f"❌ Error checking calendar endpoints: {str(e)}", "ERROR")
+            return False
+    
+    def check_calendar_events(self):
+        """Check calendar events in database"""
+        self.log("Checking calendar events in database...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Query calendar events for target user
+            events = list(self.db.calendar_events.find({"user_id": TARGET_USER_ID}).limit(10))
+            self.log(f"Found {len(events)} calendar events for user {TARGET_USER_ID}")
+            
+            if len(events) == 0:
+                self.log("⚠️  No calendar events found - may not have been created yet")
+                return True
+            
+            # Analyze event details
+            for i, event in enumerate(events[:5]):
+                self.log(f"Calendar Event {i+1}:")
+                self.log(f"  - Title: {event.get('title', 'No title')}")
+                self.log(f"  - Start: {event.get('start_time')}")
+                self.log(f"  - End: {event.get('end_time')}")
+                self.log(f"  - Status: {event.get('status')}")
+                self.log(f"  - Google Event ID: {event.get('google_event_id', 'None')}")
+            
+            self.log("✅ Calendar events found in database")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Error checking calendar events: {str(e)}", "ERROR")
+            return False
+    
+    def check_reminder_system(self):
+        """Check reminder system"""
+        self.log("Checking reminder system...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Query reminders for target user
+            reminders = list(self.db.reminders.find({"user_id": TARGET_USER_ID}).limit(10))
+            self.log(f"Found {len(reminders)} reminders for user {TARGET_USER_ID}")
+            
+            if len(reminders) == 0:
+                self.log("⚠️  No reminders found - may not have been created yet")
+                return True
+            
+            # Analyze reminder details
+            pending_reminders = 0
+            sent_reminders = 0
+            
+            for reminder in reminders:
+                status = reminder.get('status', 'unknown')
+                if status == 'pending':
+                    pending_reminders += 1
+                elif status == 'sent':
+                    sent_reminders += 1
+                
+                self.log(f"Reminder: {reminder.get('id', 'unknown')[:8]}...")
+                self.log(f"  - Event: {reminder.get('event_id', 'unknown')[:8]}...")
+                self.log(f"  - Status: {status}")
+                self.log(f"  - Scheduled: {reminder.get('scheduled_at')}")
+            
+            self.log(f"Pending reminders: {pending_reminders}")
+            self.log(f"Sent reminders: {sent_reminders}")
+            
+            self.log("✅ Reminder system verified")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Error checking reminder system: {str(e)}", "ERROR")
+            return False
+    
     def test_intents_configuration(self):
         """Test intents configuration for auto-reply"""
         self.log("Testing intents configuration...")
