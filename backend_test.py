@@ -479,7 +479,6 @@ class ProductionFlowTester:
     
     def verify_intent_classification_api(self):
         """Verify intent classification using API"""
-        
         try:
             headers = {
                 "Authorization": f"Bearer {self.jwt_token}",
