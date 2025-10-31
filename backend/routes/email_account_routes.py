@@ -80,7 +80,9 @@ async def create_email_account(
         last_sync=account.last_sync,
         sync_status=account.sync_status,
         error_message=account.error_message,
-        created_at=account.created_at
+        created_at=account.created_at,
+        persona=account.persona,
+        signature=account.signature
     )
 
 @router.get("", response_model=List[EmailAccountResponse])
