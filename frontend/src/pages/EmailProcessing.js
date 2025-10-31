@@ -298,18 +298,70 @@ const EmailProcessing = () => {
 
       {/* View Email Dialog */}
       <Dialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Email Details</DialogTitle>
+            <DialogTitle>Email Details & Processing History</DialogTitle>
           </DialogHeader>
           
           {selectedEmail && (
             <div className="space-y-6">
+              {/* Processing Status Banner */}
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-gray-700">Current Status:</span>
+                    {getStatusBadge(selectedEmail.status)}
+                  </div>
+                  {selectedEmail.is_reply && (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      Reply Received - Follow-ups Cancelled
+                    </Badge>
+                  )}
+                </div>
+                {selectedEmail.error_message && (
+                  <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
+                    <p className="text-sm text-red-700"><strong>Error:</strong> {selectedEmail.error_message}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Intent Detection */}
+              {selectedEmail.intent_name && (
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                    <AlertTriangle className="w-4 h-4 text-yellow-600" />
+                    Intent Detected
+                  </h3>
+                  <div className="flex items-center gap-4">
+                    <Badge variant="outline" className="bg-yellow-50">{selectedEmail.intent_name}</Badge>
+                    <span className="text-sm text-gray-600">
+                      Confidence: <strong>{(selectedEmail.intent_confidence * 100).toFixed(1)}%</strong>
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Meeting Detection */}
+              {selectedEmail.meeting_detected && (
+                <div className="border border-purple-200 rounded-lg p-4 bg-purple-50">
+                  <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-purple-600" />
+                    Meeting Detected
+                  </h3>
+                  <span className="text-sm text-gray-600">
+                    Confidence: <strong>{(selectedEmail.meeting_confidence * 100).toFixed(1)}%</strong>
+                  </span>
+                </div>
+              )}
+
               {/* Original Email */}
               <div>
                 <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                   <Mail className="w-5 h-5" />
                   Original Email
+                  {selectedEmail.thread_id && (
+                    <Badge variant="outline" className="text-xs">Thread: {selectedEmail.thread_id.slice(0, 8)}</Badge>
+                  )}
                 </h3>
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 space-y-3">
                   <div className="grid grid-cols-2 gap-4 text-sm">
@@ -336,23 +388,74 @@ const EmailProcessing = () => {
               </div>
 
               {/* Draft Response */}
-              {selectedEmail.draft && (
+              {selectedEmail.draft_content && (
                 <div>
                   <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
                     <Send className="w-5 h-5 text-blue-600" />
                     AI Generated Draft
+                    {selectedEmail.draft_validated && (
+                      <Badge className="bg-green-600">Validated</Badge>
+                    )}
+                    {!selectedEmail.draft_validated && selectedEmail.validation_issues?.length > 0 && (
+                      <Badge variant="destructive">Validation Failed</Badge>
+                    )}
                   </h3>
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <p className="text-gray-900 whitespace-pre-wrap">{selectedEmail.draft}</p>
+                    <p className="text-gray-900 whitespace-pre-wrap">{selectedEmail.draft_content}</p>
+                  </div>
+                  {selectedEmail.validation_issues && selectedEmail.validation_issues.length > 0 && (
+                    <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
+                      <p className="text-sm font-medium text-red-700 mb-2">Validation Issues:</p>
+                      <ul className="list-disc list-inside text-sm text-red-600">
+                        {selectedEmail.validation_issues.map((issue, idx) => (
+                          <li key={idx}>{issue}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Action History Timeline */}
+              {selectedEmail.action_history && selectedEmail.action_history.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-3">Processing Timeline</h3>
+                  <div className="space-y-3">
+                    {selectedEmail.action_history.map((action, idx) => (
+                      <div key={idx} className="flex gap-3 items-start">
+                        <div className={`w-2 h-2 rounded-full mt-2 ${
+                          action.status === 'success' ? 'bg-green-500' : 
+                          action.status === 'failed' ? 'bg-red-500' : 'bg-blue-500'
+                        }`} />
+                        <div className="flex-1 border border-gray-200 rounded-lg p-3">
+                          <div className="flex items-center justify-between">
+                            <span className="font-medium text-sm capitalize">{action.action.replace(/_/g, ' ')}</span>
+                            <span className="text-xs text-gray-500">
+                              {format(new Date(action.timestamp), 'HH:mm:ss')}
+                            </span>
+                          </div>
+                          {Object.keys(action.details || {}).length > 0 && (
+                            <div className="mt-2 text-xs text-gray-600">
+                              {Object.entries(action.details).map(([key, value]) => (
+                                <div key={key} className="flex gap-2">
+                                  <span className="font-medium">{key}:</span>
+                                  <span>{typeof value === 'object' ? JSON.stringify(value) : value}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
 
               {/* Status & Actions */}
               <div className="flex items-center justify-between pt-4 border-t">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium text-gray-700">Status:</span>
-                  {getStatusBadge(selectedEmail.status)}
+                <div className="text-sm text-gray-600">
+                  Processed: {selectedEmail.processed ? 'Yes' : 'No'} | 
+                  Replied: {selectedEmail.replied ? 'Yes' : 'No'}
                 </div>
                 {selectedEmail.status === 'draft_ready' && (
                   <Button
