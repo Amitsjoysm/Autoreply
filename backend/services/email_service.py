@@ -311,19 +311,76 @@ class EmailService:
     
     async def save_email(self, user_id: str, account_id: str, email_data: Dict) -> Email:
         """Save email to database"""
+        # Check if this is a reply to our sent email
+        is_reply = False
+        if email_data.get('in_reply_to'):
+            # Check if in_reply_to matches any of our sent emails
+            sent_email = await self.db.emails.find_one({
+                "message_id": email_data['in_reply_to'],
+                "user_id": user_id,
+                "direction": "outbound"
+            })
+            is_reply = sent_email is not None
+        
         email_obj = Email(
             user_id=user_id,
             email_account_id=account_id,
             message_id=email_data['message_id'],
+            thread_id=email_data.get('thread_id'),
+            in_reply_to=email_data.get('in_reply_to'),
+            references=email_data.get('references', []),
             from_email=email_data['from'],
             to_email=email_data['to'] if isinstance(email_data['to'], list) else [email_data['to']],
             subject=email_data['subject'],
             body=email_data['body'],
             received_at=email_data.get('received_at', datetime.now(timezone.utc).isoformat()),
-            direction='inbound'
+            direction='inbound',
+            is_reply=is_reply,
+            action_history=[{
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "action": "received",
+                "details": {"source": "email_polling"},
+                "status": "success"
+            }]
         )
         
         doc = email_obj.model_dump()
         await self.db.emails.insert_one(doc)
         
+        # If this is a reply, cancel all pending follow-ups for the thread
+        if is_reply and email_data.get('thread_id'):
+            await self.cancel_followups_for_thread(user_id, email_data['thread_id'])
+        
         return email_obj
+    
+    async def cancel_followups_for_thread(self, user_id: str, thread_id: str):
+        """Cancel all pending follow-ups for a thread when reply is received"""
+        try:
+            # Find all emails in this thread
+            emails_in_thread = await self.db.emails.find({
+                "user_id": user_id,
+                "thread_id": thread_id
+            }).to_list(100)
+            
+            email_ids = [e['id'] for e in emails_in_thread]
+            
+            # Cancel all pending follow-ups for these emails
+            result = await self.db.follow_ups.update_many(
+                {
+                    "user_id": user_id,
+                    "email_id": {"$in": email_ids},
+                    "status": "pending"
+                },
+                {
+                    "$set": {
+                        "status": "cancelled",
+                        "cancelled_reason": "Reply received in thread",
+                        "cancelled_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+            
+            if result.modified_count > 0:
+                logger.info(f"Cancelled {result.modified_count} follow-ups for thread {thread_id}")
+        except Exception as e:
+            logger.error(f"Error cancelling follow-ups: {e}")
