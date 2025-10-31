@@ -111,7 +111,7 @@ const EmailAccounts = () => {
 
   const resetForm = () => {
     setFormData({
-      account_type: 'manual_smtp',
+      account_type: 'custom_smtp',
       email: '',
       password: '',
       smtp_host: '',
@@ -119,8 +119,7 @@ const EmailAccounts = () => {
       imap_host: '',
       imap_port: '993',
       persona: '',
-      signature: '',
-      auto_send: false
+      signature: ''
     });
   };
 
