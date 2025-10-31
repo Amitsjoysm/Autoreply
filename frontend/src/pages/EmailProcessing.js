@@ -92,12 +92,22 @@ const EmailProcessing = () => {
 
   const getStatusBadge = (status) => {
     switch (status) {
+      case 'classifying':
+        return <Badge variant="secondary"><RefreshCw className="w-3 h-3 mr-1 animate-spin" />Classifying</Badge>;
+      case 'drafting':
+        return <Badge variant="secondary"><RefreshCw className="w-3 h-3 mr-1 animate-spin" />Drafting</Badge>;
+      case 'validating':
+        return <Badge variant="secondary"><RefreshCw className="w-3 h-3 mr-1 animate-spin" />Validating</Badge>;
+      case 'sending':
+        return <Badge variant="secondary"><RefreshCw className="w-3 h-3 mr-1 animate-spin" />Sending</Badge>;
       case 'draft_ready':
         return <Badge className="bg-blue-500"><Clock className="w-3 h-3 mr-1" />Pending Review</Badge>;
       case 'sent':
         return <Badge className="bg-green-500"><CheckCircle2 className="w-3 h-3 mr-1" />Sent</Badge>;
       case 'escalated':
         return <Badge variant="destructive"><AlertTriangle className="w-3 h-3 mr-1" />Escalated</Badge>;
+      case 'error':
+        return <Badge variant="destructive"><XCircle className="w-3 h-3 mr-1" />Error</Badge>;
       case 'processing':
         return <Badge variant="secondary"><RefreshCw className="w-3 h-3 mr-1 animate-spin" />Processing</Badge>;
       default:
