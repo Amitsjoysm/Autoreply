@@ -1524,6 +1524,6 @@ class ProductionFlowTester:
         return overall_percentage
 
 if __name__ == "__main__":
-    tester = EmailPollingTester()
-    success = tester.run_all_tests()
+    tester = ProductionFlowTester()
+    success = tester.run_comprehensive_production_tests()
     sys.exit(0 if success else 1)
