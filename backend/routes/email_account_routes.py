@@ -168,7 +168,9 @@ async def update_email_account(
         last_sync=updated_doc.get('last_sync'),
         sync_status=updated_doc['sync_status'],
         error_message=updated_doc.get('error_message'),
-        created_at=updated_doc['created_at']
+        created_at=updated_doc['created_at'],
+        persona=updated_doc.get('persona'),
+        signature=updated_doc.get('signature')
     )
 
 @router.delete("/{account_id}")
