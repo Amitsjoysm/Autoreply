@@ -209,67 +209,109 @@ class EmailPollingTester:
             self.log(f"❌ Emails error: {str(e)}", "ERROR")
             return False
     
-    def test_oauth_state_storage(self):
-        """Test OAuth state storage in MongoDB"""
-        self.log("Testing OAuth state storage in MongoDB...")
+    def test_intents_configuration(self):
+        """Test intents configuration for auto-reply"""
+        self.log("Testing intents configuration...")
         
-        if not hasattr(self, 'oauth_state'):
-            self.log("❌ No OAuth state to verify", "ERROR")
+        if not self.jwt_token:
+            self.log("❌ No JWT token available", "ERROR")
             return False
             
         try:
-            # Connect to MongoDB
-            client = pymongo.MongoClient("mongodb://localhost:27017")
-            db = client["email_assistant_db"]
+            headers = {
+                "Authorization": f"Bearer {self.jwt_token}",
+                "Content-Type": "application/json"
+            }
             
-            # Find the state document
-            state_doc = db.oauth_states.find_one({"state": self.oauth_state})
+            response = self.session.get(
+                f"{API_BASE}/intents",
+                headers=headers
+            )
             
-            if state_doc:
-                self.log("✅ OAuth state found in MongoDB")
-                self.log(f"State document: {json.dumps(state_doc, default=str, indent=2)}")
+            self.log(f"Intents response status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log("✅ Intents endpoint successful")
+                self.log(f"Found {len(data)} intents")
                 
-                # Verify required fields
-                required_fields = ["state", "user_id", "provider", "account_type", "created_at"]
-                for field in required_fields:
-                    if field in state_doc:
-                        self.log(f"✅ Field '{field}' present: {state_doc[field]}")
-                    else:
-                        self.log(f"❌ Field '{field}' missing", "ERROR")
-                        return False
-                        
-                # Verify values
-                if state_doc.get("provider") == "google":
-                    self.log("✅ Provider is 'google'")
-                else:
-                    self.log(f"❌ Provider is '{state_doc.get('provider')}', expected 'google'", "ERROR")
-                    return False
+                auto_send_intents = 0
+                for i, intent in enumerate(data):
+                    self.log(f"Intent {i+1}:")
+                    self.log(f"  - ID: {intent.get('id')}")
+                    self.log(f"  - Name: {intent.get('name')}")
+                    self.log(f"  - Auto Send: {intent.get('auto_send')}")
+                    self.log(f"  - Priority: {intent.get('priority')}")
+                    self.log(f"  - Active: {intent.get('is_active')}")
                     
-                if state_doc.get("account_type") == "email":
-                    self.log("✅ Account type is 'email'")
+                    if intent.get('auto_send'):
+                        auto_send_intents += 1
+                
+                if auto_send_intents > 0:
+                    self.log(f"✅ Found {auto_send_intents} intents with auto_send=true")
                 else:
-                    self.log(f"❌ Account type is '{state_doc.get('account_type')}', expected 'email'", "ERROR")
-                    return False
-                    
-                if state_doc.get("user_id") == self.user_id:
-                    self.log("✅ User ID matches")
-                else:
-                    self.log(f"❌ User ID mismatch: {state_doc.get('user_id')} vs {self.user_id}", "ERROR")
-                    return False
-                    
+                    self.log("⚠️  No intents with auto_send=true found - auto-reply won't work")
+                
                 return True
             else:
-                self.log("❌ OAuth state not found in MongoDB", "ERROR")
+                self.log(f"❌ Intents failed: {response.text}", "ERROR")
                 return False
                 
         except Exception as e:
-            self.log(f"❌ MongoDB connection error: {str(e)}", "ERROR")
+            self.log(f"❌ Intents error: {str(e)}", "ERROR")
             return False
-        finally:
-            try:
-                client.close()
-            except:
-                pass
+    
+    def test_calendar_providers(self):
+        """Test calendar providers configuration"""
+        self.log("Testing calendar providers...")
+        
+        if not self.jwt_token:
+            self.log("❌ No JWT token available", "ERROR")
+            return False
+            
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.jwt_token}",
+                "Content-Type": "application/json"
+            }
+            
+            response = self.session.get(
+                f"{API_BASE}/calendar/providers",
+                headers=headers
+            )
+            
+            self.log(f"Calendar providers response status: {response.status_code}")
+            
+            if response.status_code == 200:
+                data = response.json()
+                self.log("✅ Calendar providers endpoint successful")
+                self.log(f"Found {len(data)} calendar providers")
+                
+                google_calendar_connected = False
+                for i, provider in enumerate(data):
+                    self.log(f"Provider {i+1}:")
+                    self.log(f"  - ID: {provider.get('id')}")
+                    self.log(f"  - Provider: {provider.get('provider')}")
+                    self.log(f"  - Email: {provider.get('email')}")
+                    self.log(f"  - Active: {provider.get('is_active')}")
+                    self.log(f"  - Last Sync: {provider.get('last_sync')}")
+                    
+                    if provider.get('provider') == 'google' and provider.get('is_active'):
+                        google_calendar_connected = True
+                
+                if google_calendar_connected:
+                    self.log("✅ Google Calendar is connected and active")
+                else:
+                    self.log("⚠️  No active Google Calendar provider - calendar events won't be created")
+                
+                return True
+            else:
+                self.log(f"❌ Calendar providers failed: {response.text}", "ERROR")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Calendar providers error: {str(e)}", "ERROR")
+            return False
     
     def test_services_status(self):
         """Test backend services status"""
