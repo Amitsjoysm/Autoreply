@@ -39,7 +39,33 @@ class ProductionFlowTester:
     def log(self, message, level="INFO"):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"[{timestamp}] {level}: {message}")
+    
+    def setup_database_connections(self):
+        """Setup direct database connections for verification"""
+        self.log("Setting up database connections...")
         
+        try:
+            # MongoDB connection
+            self.mongo_client = pymongo.MongoClient("mongodb://localhost:27017")
+            self.db = self.mongo_client["email_assistant_db"]
+            
+            # Test MongoDB connection
+            self.db.command('ping')
+            self.log("✅ MongoDB connection established")
+            
+            # Redis connection
+            self.redis_client = redis.Redis(host='localhost', port=6379, db=0)
+            
+            # Test Redis connection
+            self.redis_client.ping()
+            self.log("✅ Redis connection established")
+            
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Database connection error: {str(e)}", "ERROR")
+            return False
+    
     def test_user_login(self):
         """Test user login to get JWT token"""
         self.log("Testing user login to get JWT token...")
@@ -65,6 +91,13 @@ class ProductionFlowTester:
                 self.log("✅ User login successful")
                 self.log(f"JWT Token: {self.jwt_token[:50]}...")
                 self.log(f"User ID: {self.user_id}")
+                
+                # Verify this matches the target user ID
+                if self.user_id == TARGET_USER_ID:
+                    self.log("✅ User ID matches target user from review request")
+                else:
+                    self.log(f"⚠️  User ID mismatch - Expected: {TARGET_USER_ID}, Got: {self.user_id}")
+                
                 return True
             elif response.status_code == 400 or response.status_code == 401:
                 # Try registration first
