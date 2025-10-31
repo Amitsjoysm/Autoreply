@@ -4,6 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 import uuid
 import jwt
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 
 from routes.auth_routes import get_current_user_from_token, get_db
 from services.oauth_service import OAuthService
@@ -13,6 +14,11 @@ from models.user import User
 from config import config
 
 router = APIRouter(prefix="/oauth", tags=["oauth"])
+
+def get_frontend_base_url() -> str:
+    """Extract base URL from redirect URI for frontend redirects"""
+    parsed = urlparse(config.GOOGLE_REDIRECT_URI)
+    return f"{parsed.scheme}://{parsed.netloc}"
 
 @router.get("/google/url")
 async def get_google_oauth_url(
