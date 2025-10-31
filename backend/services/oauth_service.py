@@ -21,7 +21,7 @@ class OAuthService:
             'client_id': config.GOOGLE_CLIENT_ID,
             'redirect_uri': config.GOOGLE_REDIRECT_URI,
             'response_type': 'code',
-            'scope': 'https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/calendar',
+            'scope': 'openid email https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/calendar',
             'access_type': 'offline',
             'prompt': 'consent',
             'state': state
