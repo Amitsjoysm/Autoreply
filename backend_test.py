@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Backend OAuth Testing Script
-Tests Google OAuth flow for email account integration
+Email Polling and Auto-Reply Testing Script
+Tests email polling improvements, auto-reply functionality, and calendar setup
 """
 
 import requests
@@ -11,15 +11,15 @@ from datetime import datetime
 import pymongo
 import redis
 
-# Configuration
+# Configuration - Use the correct backend URL from review request
 BACKEND_URL = "https://8c808a32-7d7f-4bdf-be1a-fa305bf15637.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
-# Test data
+# Test data - Use realistic test data
 TEST_USER = {
-    "email": "test_oauth_user@example.com",
-    "password": "TestPass123!",
-    "name": "OAuth Test User"
+    "email": "emailassistant.test@gmail.com",
+    "password": "SecurePass2024!",
+    "name": "Email Assistant Tester"
 }
 
 class OAuthTester:
