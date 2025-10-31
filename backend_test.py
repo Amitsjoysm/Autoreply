@@ -70,7 +70,7 @@ class ProductionFlowTester:
         """Verify target user exists in database"""
         self.log("Verifying target user exists in database...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -200,7 +200,7 @@ class ProductionFlowTester:
         """Check if 7 intents exist with 6 having auto_send=true"""
         self.log("Checking intents setup...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -235,7 +235,7 @@ class ProductionFlowTester:
         """Check if 6 knowledge base entries exist"""
         self.log("Checking knowledge base setup...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -263,7 +263,7 @@ class ProductionFlowTester:
         """Check email account connection and syncing status"""
         self.log("Checking email account setup...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -317,7 +317,7 @@ class ProductionFlowTester:
         """Check calendar provider connection"""
         self.log("Checking calendar provider setup...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -442,7 +442,7 @@ class ProductionFlowTester:
     
     def verify_intent_classification_database(self):
         """Verify intent classification using database"""
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -539,7 +539,7 @@ class ProductionFlowTester:
     
     def verify_ai_agent_service_database(self):
         """Verify AI agent service using database"""
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -681,7 +681,7 @@ class ProductionFlowTester:
         """Check if email polling is working"""
         self.log("Checking email polling...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -721,7 +721,7 @@ class ProductionFlowTester:
         """Check emails in database and their processing status"""
         self.log("Checking emails in database...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -776,7 +776,7 @@ class ProductionFlowTester:
         """Check email status tracking system"""
         self.log("Checking email status tracking...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -826,7 +826,7 @@ class ProductionFlowTester:
         """Check action history tracking"""
         self.log("Checking action history tracking...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -884,7 +884,7 @@ class ProductionFlowTester:
         """Check follow-up creation logic"""
         self.log("Checking follow-up creation logic...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -930,7 +930,7 @@ class ProductionFlowTester:
         """Check reply detection and follow-up cancellation"""
         self.log("Checking reply detection and follow-up cancellation...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -974,7 +974,7 @@ class ProductionFlowTester:
         """Check thread_id tracking system"""
         self.log("Checking thread_id tracking...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -1117,7 +1117,7 @@ class ProductionFlowTester:
         """Check calendar events in database"""
         self.log("Checking calendar events in database...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
@@ -1150,7 +1150,7 @@ class ProductionFlowTester:
         """Check reminder system"""
         self.log("Checking reminder system...")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
