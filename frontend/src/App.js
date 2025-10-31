@@ -141,17 +141,6 @@ const ProtectedRoute = ({ children }) => {
   return isAuthenticated ? children : <Navigate to="/" replace />;
 };
 
-// Placeholder pages
-const PlaceholderPage = ({ title, description }) => (
-  <div>
-    <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-    <p className="text-gray-600 mt-2">{description}</p>
-    <div className="mt-8 p-6 bg-white rounded-lg shadow">
-      <p className="text-gray-500">This feature is available. Check the API documentation for integration.</p>
-    </div>
-  </div>
-);
-
 function App() {
   return (
     <AuthProvider>
