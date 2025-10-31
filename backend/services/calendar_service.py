@@ -102,6 +102,50 @@ class CalendarService:
             logger.error(f"Error creating Google Calendar event: {e}")
             return None
     
+    async def update_event_google(self, provider: CalendarProvider, event_id: str, event_data: Dict) -> bool:
+        """Update calendar event in Google Calendar"""
+        try:
+            # Ensure token is valid
+            provider = await self.ensure_token_valid(provider)
+            
+            creds = Credentials(
+                token=provider.access_token,
+                refresh_token=provider.refresh_token,
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=config.GOOGLE_CLIENT_ID,
+                client_secret=config.GOOGLE_CLIENT_SECRET
+            )
+            
+            service = build('calendar', 'v3', credentials=creds)
+            
+            event = {
+                'summary': event_data.get('title'),
+                'description': event_data.get('description', ''),
+                'location': event_data.get('location', ''),
+                'start': {
+                    'dateTime': event_data.get('start_time'),
+                    'timeZone': event_data.get('timezone', 'UTC'),
+                },
+                'end': {
+                    'dateTime': event_data.get('end_time'),
+                    'timeZone': event_data.get('timezone', 'UTC'),
+                },
+                'attendees': [{'email': email} for email in event_data.get('attendees', [])],
+                'reminders': {
+                    'useDefault': False,
+                    'overrides': [
+                        {'method': 'email', 'minutes': 60},
+                    ],
+                },
+            }
+            
+            service.events().update(calendarId='primary', eventId=event_id, body=event).execute()
+            return True
+        except Exception as e:
+            logger.error(f"Error updating Google Calendar event: {e}")
+            return False
+
+    
     async def check_conflicts(self, provider_id: str, start_time: str, end_time: str) -> List[CalendarEvent]:
         """Check for calendar conflicts"""
         try:
