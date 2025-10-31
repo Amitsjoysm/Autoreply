@@ -139,10 +139,12 @@ async def google_oauth_callback_get(
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     """Handle Google OAuth callback (GET redirect from Google)"""
+    frontend_url = get_frontend_base_url()
+    
     # Verify state
     state_doc = await db.oauth_states.find_one({"state": state})
     if not state_doc:
-        return RedirectResponse(url=f"{config.GOOGLE_REDIRECT_URI.replace('/oauth/google/callback', '')}?error=invalid_state")
+        return RedirectResponse(url=f"{frontend_url}?error=invalid_state")
     
     user_id = state_doc['user_id']
     account_type = state_doc.get('account_type', 'email')
@@ -155,12 +157,12 @@ async def google_oauth_callback_get(
     # Exchange code for tokens
     tokens = await oauth_service.exchange_google_code(code)
     if not tokens:
-        return RedirectResponse(url=f"{config.GOOGLE_REDIRECT_URI.replace('/oauth/google/callback', '')}?error=token_exchange_failed")
+        return RedirectResponse(url=f"{frontend_url}?error=token_exchange_failed")
     
     # Get user email
     email = await oauth_service.get_google_user_email(tokens['access_token'])
     if not email:
-        return RedirectResponse(url=f"{config.GOOGLE_REDIRECT_URI.replace('/oauth/google/callback', '')}?error=email_fetch_failed")
+        return RedirectResponse(url=f"{frontend_url}?error=email_fetch_failed")
     
     if account_type == 'email':
         # Create email account
@@ -176,7 +178,7 @@ async def google_oauth_callback_get(
         doc = account.model_dump()
         await db.email_accounts.insert_one(doc)
         
-        return RedirectResponse(url=f"{config.GOOGLE_REDIRECT_URI.replace('/oauth/google/callback', '')}/email-accounts?success=true&email={email}")
+        return RedirectResponse(url=f"{frontend_url}/email-accounts?success=true&email={email}")
     else:
         # Create calendar provider
         provider = CalendarProvider(
@@ -191,7 +193,7 @@ async def google_oauth_callback_get(
         doc = provider.model_dump()
         await db.calendar_providers.insert_one(doc)
         
-        return RedirectResponse(url=f"{config.GOOGLE_REDIRECT_URI.replace('/oauth/google/callback', '')}/calendar-providers?success=true&email={email}")
+        return RedirectResponse(url=f"{frontend_url}/calendar-providers?success=true&email={email}")
 
 @router.post("/google/callback")
 async def google_oauth_callback(
