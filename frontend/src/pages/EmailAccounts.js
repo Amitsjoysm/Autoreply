@@ -19,7 +19,7 @@ const EmailAccounts = () => {
   const [editingAccount, setEditingAccount] = useState(null);
   
   const [formData, setFormData] = useState({
-    account_type: 'manual_smtp',
+    account_type: 'custom_smtp',
     email: '',
     password: '',
     smtp_host: '',
@@ -27,8 +27,7 @@ const EmailAccounts = () => {
     imap_host: '',
     imap_port: '993',
     persona: '',
-    signature: '',
-    auto_send: false
+    signature: ''
   });
 
   useEffect(() => {
