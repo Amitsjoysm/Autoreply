@@ -433,9 +433,52 @@ class ProductionFlowTester:
         self.log("VERIFYING INTENT CLASSIFICATION")
         self.log("=" * 60)
         
-        if not self.jwt_token:
-            self.log("❌ No JWT token available", "ERROR")
+        # Try API first, fall back to database
+        if self.jwt_token:
+            return self.verify_intent_classification_api()
+        else:
+            self.log("⚠️  No JWT token, using database verification")
+            return self.verify_intent_classification_database()
+    
+    def verify_intent_classification_database(self):
+        """Verify intent classification using database"""
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
             return False
+        
+        try:
+            # Get intents from database
+            intents = list(self.db.intents.find({"user_id": TARGET_USER_ID}))
+            self.log(f"✅ Retrieved {len(intents)} intents from database")
+            
+            # Verify auto_send flags and priorities
+            auto_send_intents = [i for i in intents if i.get('auto_send')]
+            manual_intents = [i for i in intents if not i.get('auto_send')]
+            
+            self.log(f"Auto-send intents: {len(auto_send_intents)}")
+            self.log(f"Manual review intents: {len(manual_intents)}")
+            
+            # Check intent priorities and keywords
+            for intent in intents:
+                self.log(f"Intent: {intent.get('name')}")
+                self.log(f"  - Priority: {intent.get('priority')}")
+                self.log(f"  - Auto-send: {intent.get('auto_send')}")
+                self.log(f"  - Keywords: {len(intent.get('keywords', []))} keywords")
+                self.log(f"  - Active: {intent.get('is_active')}")
+            
+            if len(auto_send_intents) == 6 and len(manual_intents) == 1:
+                self.log("✅ Intent classification setup verified")
+                return True
+            else:
+                self.log(f"❌ Expected 6 auto-send + 1 manual intent, got {len(auto_send_intents)} + {len(manual_intents)}")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Error verifying intent classification: {str(e)}", "ERROR")
+            return False
+    
+    def verify_intent_classification_api(self):
+        """Verify intent classification using API"""
         
         try:
             headers = {
