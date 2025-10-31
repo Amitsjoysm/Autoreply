@@ -140,52 +140,263 @@ class ProductionFlowTester:
             self.log(f"❌ Registration error: {str(e)}", "ERROR")
             return False
     
-    def test_email_accounts(self):
-        """Test checking email accounts"""
-        self.log("Testing email accounts endpoint...")
+    def verify_setup_components(self):
+        """Verify all setup components are in place"""
+        self.log("=" * 60)
+        self.log("VERIFYING SETUP COMPONENTS")
+        self.log("=" * 60)
         
-        if not self.jwt_token:
-            self.log("❌ No JWT token available", "ERROR")
+        results = {}
+        
+        # 1. Check intents (should be 7 with 6 auto_send=true)
+        results['intents'] = self.check_intents_setup()
+        
+        # 2. Check knowledge base (should be 6 entries)
+        results['knowledge_base'] = self.check_knowledge_base_setup()
+        
+        # 3. Check email account connection
+        results['email_account'] = self.check_email_account_setup()
+        
+        # 4. Check calendar provider
+        results['calendar_provider'] = self.check_calendar_provider_setup()
+        
+        # 5. Check Redis
+        results['redis'] = self.check_redis_status()
+        
+        # 6. Check background workers
+        results['workers'] = self.check_background_workers()
+        
+        return results
+    
+    def check_intents_setup(self):
+        """Check if 7 intents exist with 6 having auto_send=true"""
+        self.log("Checking intents setup...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
             return False
-            
+        
         try:
-            headers = {
-                "Authorization": f"Bearer {self.jwt_token}",
-                "Content-Type": "application/json"
-            }
+            # Query intents for target user
+            intents = list(self.db.intents.find({"user_id": TARGET_USER_ID}))
+            self.log(f"Found {len(intents)} intents for user {TARGET_USER_ID}")
             
-            response = self.session.get(
-                f"{API_BASE}/email-accounts",
-                headers=headers
-            )
+            if len(intents) != 7:
+                self.log(f"❌ Expected 7 intents, found {len(intents)}")
+                return False
             
-            self.log(f"Email accounts response status: {response.status_code}")
+            auto_send_count = sum(1 for intent in intents if intent.get('auto_send', False))
+            self.log(f"Found {auto_send_count} intents with auto_send=true")
             
-            if response.status_code == 200:
-                data = response.json()
-                self.log("✅ Email accounts endpoint successful")
-                self.log(f"Found {len(data)} email accounts")
+            if auto_send_count != 6:
+                self.log(f"❌ Expected 6 intents with auto_send=true, found {auto_send_count}")
+                return False
+            
+            # Log intent details
+            for i, intent in enumerate(intents):
+                self.log(f"Intent {i+1}: {intent.get('name')} (auto_send: {intent.get('auto_send')}, priority: {intent.get('priority')})")
+            
+            self.log("✅ Intents setup verified - 7 intents with 6 auto_send enabled")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Error checking intents: {str(e)}", "ERROR")
+            return False
+    
+    def check_knowledge_base_setup(self):
+        """Check if 6 knowledge base entries exist"""
+        self.log("Checking knowledge base setup...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Query knowledge base for target user
+            kb_entries = list(self.db.knowledge_base.find({"user_id": TARGET_USER_ID}))
+            self.log(f"Found {len(kb_entries)} knowledge base entries for user {TARGET_USER_ID}")
+            
+            if len(kb_entries) != 6:
+                self.log(f"❌ Expected 6 knowledge base entries, found {len(kb_entries)}")
+                return False
+            
+            # Log KB entry details
+            for i, entry in enumerate(kb_entries):
+                self.log(f"KB Entry {i+1}: {entry.get('title', 'No title')}")
+            
+            self.log("✅ Knowledge base setup verified - 6 entries found")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Error checking knowledge base: {str(e)}", "ERROR")
+            return False
+    
+    def check_email_account_setup(self):
+        """Check email account connection and syncing status"""
+        self.log("Checking email account setup...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Query email accounts for target user
+            email_accounts = list(self.db.email_accounts.find({"user_id": TARGET_USER_ID}))
+            self.log(f"Found {len(email_accounts)} email accounts for user {TARGET_USER_ID}")
+            
+            if len(email_accounts) == 0:
+                self.log("❌ No email accounts found")
+                return False
+            
+            # Check for oauth_gmail account
+            oauth_gmail_account = None
+            for account in email_accounts:
+                if account.get('account_type') == 'oauth_gmail' and account.get('email') == 'samhere.joy@gmail.com':
+                    oauth_gmail_account = account
+                    break
+            
+            if not oauth_gmail_account:
+                self.log("❌ No oauth_gmail account found for samhere.joy@gmail.com")
+                return False
+            
+            # Check account status
+            is_active = oauth_gmail_account.get('is_active', False)
+            last_sync = oauth_gmail_account.get('last_sync')
+            
+            self.log(f"OAuth Gmail Account Details:")
+            self.log(f"  - Email: {oauth_gmail_account.get('email')}")
+            self.log(f"  - Type: {oauth_gmail_account.get('account_type')}")
+            self.log(f"  - Active: {is_active}")
+            self.log(f"  - Last Sync: {last_sync}")
+            self.log(f"  - Created: {oauth_gmail_account.get('created_at')}")
+            
+            if not is_active:
+                self.log("❌ Email account is not active")
+                return False
+            
+            if not last_sync:
+                self.log("⚠️  Email account has never synced")
+                return False
+            
+            self.log("✅ Email account setup verified - OAuth Gmail connected and syncing")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Error checking email account: {str(e)}", "ERROR")
+            return False
+    
+    def check_calendar_provider_setup(self):
+        """Check calendar provider connection"""
+        self.log("Checking calendar provider setup...")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Query calendar providers for target user
+            calendar_providers = list(self.db.calendar_providers.find({"user_id": TARGET_USER_ID}))
+            self.log(f"Found {len(calendar_providers)} calendar providers for user {TARGET_USER_ID}")
+            
+            if len(calendar_providers) == 0:
+                self.log("⚠️  No calendar providers found - calendar events won't be created")
+                return False
+            
+            # Check for active Google Calendar provider
+            google_calendar = None
+            for provider in calendar_providers:
+                if provider.get('provider') == 'google' and provider.get('is_active'):
+                    google_calendar = provider
+                    break
+            
+            if not google_calendar:
+                self.log("⚠️  No active Google Calendar provider found")
+                return False
+            
+            self.log(f"Google Calendar Provider Details:")
+            self.log(f"  - Email: {google_calendar.get('email')}")
+            self.log(f"  - Active: {google_calendar.get('is_active')}")
+            self.log(f"  - Last Sync: {google_calendar.get('last_sync')}")
+            
+            self.log("✅ Calendar provider setup verified - Google Calendar connected")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Error checking calendar provider: {str(e)}", "ERROR")
+            return False
+    
+    def check_redis_status(self):
+        """Check Redis connection and status"""
+        self.log("Checking Redis status...")
+        
+        if not self.redis_client:
+            self.log("❌ No Redis connection", "ERROR")
+            return False
+        
+        try:
+            # Test Redis ping
+            response = self.redis_client.ping()
+            if response:
+                self.log("✅ Redis is running and responding")
                 
-                for i, account in enumerate(data):
-                    self.log(f"Account {i+1}:")
-                    self.log(f"  - ID: {account.get('id')}")
-                    self.log(f"  - Email: {account.get('email')}")
-                    self.log(f"  - Type: {account.get('account_type')}")
-                    self.log(f"  - Active: {account.get('is_active')}")
-                    self.log(f"  - Created: {account.get('created_at')}")
-                    self.log(f"  - Last Sync: {account.get('last_sync')}")
-                    
-                    # Store first account for later tests
-                    if i == 0:
-                        self.email_account = account
+                # Check Redis info
+                info = self.redis_client.info()
+                self.log(f"Redis version: {info.get('redis_version')}")
+                self.log(f"Connected clients: {info.get('connected_clients')}")
                 
                 return True
             else:
-                self.log(f"❌ Email accounts failed: {response.text}", "ERROR")
+                self.log("❌ Redis ping failed")
                 return False
                 
         except Exception as e:
-            self.log(f"❌ Email accounts error: {str(e)}", "ERROR")
+            self.log(f"❌ Error checking Redis: {str(e)}", "ERROR")
+            return False
+    
+    def check_background_workers(self):
+        """Check if background workers are running"""
+        self.log("Checking background workers status...")
+        
+        try:
+            # Check backend logs for worker activity
+            import subprocess
+            result = subprocess.run(
+                ["tail", "-n", "50", "/var/log/supervisor/backend.out.log"],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode == 0:
+                log_content = result.stdout
+                
+                # Look for worker activity indicators
+                worker_indicators = [
+                    "Background worker started",
+                    "Polling emails for",
+                    "Found new emails",
+                    "Checking follow-ups",
+                    "Checking reminders"
+                ]
+                
+                found_indicators = []
+                for indicator in worker_indicators:
+                    if indicator in log_content:
+                        found_indicators.append(indicator)
+                
+                self.log(f"Found {len(found_indicators)} worker activity indicators in logs")
+                
+                if len(found_indicators) >= 2:
+                    self.log("✅ Background workers appear to be running")
+                    return True
+                else:
+                    self.log("⚠️  Limited worker activity detected in logs")
+                    return False
+            else:
+                self.log("⚠️  Could not read backend logs")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Error checking workers: {str(e)}", "ERROR")
             return False
     
     def test_processed_emails(self):
