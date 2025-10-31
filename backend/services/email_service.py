@@ -1,0 +1,245 @@
+import imaplib
+import smtplib
+import email
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from typing import List, Optional, Dict
+from motor.motor_asyncio import AsyncIOMotorDatabase
+from datetime import datetime, timezone
+import asyncio
+import logging
+from googleapiclient.discovery import build
+from google.oauth2.credentials import Credentials
+import base64
+
+from config import config
+from models.email import Email, EmailSend
+from models.email_account import EmailAccount
+
+logger = logging.getLogger(__name__)
+
+class EmailService:
+    def __init__(self, db: AsyncIOMotorDatabase):
+        self.db = db
+    
+    async def get_account(self, account_id: str) -> Optional[EmailAccount]:
+        doc = await self.db.email_accounts.find_one({"id": account_id})
+        if doc:
+            return EmailAccount(**doc)
+        return None
+    
+    async def fetch_emails_oauth_gmail(self, account: EmailAccount) -> List[Dict]:
+        """Fetch emails using Gmail API (OAuth)"""
+        try:
+            creds = Credentials(
+                token=account.access_token,
+                refresh_token=account.refresh_token,
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=config.GOOGLE_CLIENT_ID,
+                client_secret=config.GOOGLE_CLIENT_SECRET
+            )
+            
+            service = build('gmail', 'v1', credentials=creds)
+            
+            # Fetch unread messages
+            results = service.users().messages().list(
+                userId='me',
+                q='is:unread -category:promotions -category:social -category:forums -is:sent',
+                maxResults=50
+            ).execute()
+            
+            messages = results.get('messages', [])
+            emails = []
+            
+            for msg in messages:
+                message = service.users().messages().get(
+                    userId='me',
+                    id=msg['id'],
+                    format='full'
+                ).execute()
+                
+                # Parse email
+                headers = {h['name']: h['value'] for h in message['payload']['headers']}
+                
+                # Get body
+                body = ''
+                if 'parts' in message['payload']:
+                    for part in message['payload']['parts']:
+                        if part['mimeType'] == 'text/plain':
+                            body = base64.urlsafe_b64decode(part['body']['data']).decode('utf-8')
+                            break
+                elif 'body' in message['payload']:
+                    body = base64.urlsafe_b64decode(message['payload']['body']['data']).decode('utf-8')
+                
+                emails.append({
+                    'message_id': message['id'],
+                    'from': headers.get('From', ''),
+                    'to': headers.get('To', '').split(','),
+                    'subject': headers.get('Subject', ''),
+                    'body': body,
+                    'received_at': headers.get('Date', '')
+                })
+            
+            return emails
+        except Exception as e:
+            logger.error(f"Error fetching Gmail OAuth emails: {e}")
+            return []
+    
+    async def fetch_emails_imap(self, account: EmailAccount) -> List[Dict]:
+        """Fetch emails using IMAP"""
+        try:
+            # Run IMAP in thread pool since it's blocking
+            loop = asyncio.get_event_loop()
+            emails = await loop.run_in_executor(
+                None,
+                self._fetch_imap_sync,
+                account
+            )
+            return emails
+        except Exception as e:
+            logger.error(f"Error fetching IMAP emails: {e}")
+            return []
+    
+    def _fetch_imap_sync(self, account: EmailAccount) -> List[Dict]:
+        """Synchronous IMAP fetch"""
+        try:
+            mail = imaplib.IMAP4_SSL(account.imap_host, account.imap_port)
+            mail.login(account.email, account.password)
+            mail.select('inbox')
+            
+            # Search for unread emails
+            status, messages = mail.search(None, 'UNSEEN')
+            email_ids = messages[0].split()
+            
+            emails = []
+            for email_id in email_ids[-50:]:  # Last 50 unread
+                status, msg_data = mail.fetch(email_id, '(RFC822)')
+                
+                for response_part in msg_data:
+                    if isinstance(response_part, tuple):
+                        msg = email.message_from_bytes(response_part[1])
+                        
+                        subject = msg['subject']
+                        from_email = msg['from']
+                        to_email = msg['to']
+                        date = msg['date']
+                        
+                        # Get body
+                        body = ''
+                        if msg.is_multipart():
+                            for part in msg.walk():
+                                if part.get_content_type() == 'text/plain':
+                                    body = part.get_payload(decode=True).decode('utf-8', errors='ignore')
+                                    break
+                        else:
+                            body = msg.get_payload(decode=True).decode('utf-8', errors='ignore')
+                        
+                        emails.append({
+                            'message_id': str(email_id),
+                            'from': from_email,
+                            'to': [to_email] if to_email else [],
+                            'subject': subject or '',
+                            'body': body,
+                            'received_at': date or ''
+                        })
+            
+            mail.close()
+            mail.logout()
+            
+            return emails
+        except Exception as e:
+            logger.error(f"IMAP sync error: {e}")
+            return []
+    
+    async def send_email_oauth_gmail(self, account: EmailAccount, email_data: EmailSend) -> bool:
+        """Send email using Gmail API"""
+        try:
+            creds = Credentials(
+                token=account.access_token,
+                refresh_token=account.refresh_token,
+                token_uri="https://oauth2.googleapis.com/token",
+                client_id=config.GOOGLE_CLIENT_ID,
+                client_secret=config.GOOGLE_CLIENT_SECRET
+            )
+            
+            service = build('gmail', 'v1', credentials=creds)
+            
+            message = MIMEMultipart()
+            message['to'] = ', '.join(email_data.to_email)
+            message['subject'] = email_data.subject
+            
+            if email_data.cc:
+                message['cc'] = ', '.join(email_data.cc)
+            
+            message.attach(MIMEText(email_data.body, 'plain'))
+            
+            raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
+            
+            service.users().messages().send(
+                userId='me',
+                body={'raw': raw_message}
+            ).execute()
+            
+            return True
+        except Exception as e:
+            logger.error(f"Error sending Gmail OAuth email: {e}")
+            return False
+    
+    async def send_email_smtp(self, account: EmailAccount, email_data: EmailSend) -> bool:
+        """Send email using SMTP"""
+        try:
+            loop = asyncio.get_event_loop()
+            result = await loop.run_in_executor(
+                None,
+                self._send_smtp_sync,
+                account,
+                email_data
+            )
+            return result
+        except Exception as e:
+            logger.error(f"Error sending SMTP email: {e}")
+            return False
+    
+    def _send_smtp_sync(self, account: EmailAccount, email_data: EmailSend) -> bool:
+        """Synchronous SMTP send"""
+        try:
+            message = MIMEMultipart()
+            message['From'] = account.email
+            message['To'] = ', '.join(email_data.to_email)
+            message['Subject'] = email_data.subject
+            
+            if email_data.cc:
+                message['Cc'] = ', '.join(email_data.cc)
+            
+            message.attach(MIMEText(email_data.body, 'plain'))
+            
+            server = smtplib.SMTP_SSL(account.smtp_host, account.smtp_port)
+            server.login(account.email, account.password)
+            
+            recipients = email_data.to_email + (email_data.cc or []) + (email_data.bcc or [])
+            server.sendmail(account.email, recipients, message.as_string())
+            
+            server.quit()
+            return True
+        except Exception as e:
+            logger.error(f"SMTP sync error: {e}")
+            return False
+    
+    async def save_email(self, user_id: str, account_id: str, email_data: Dict) -> Email:
+        """Save email to database"""
+        email_obj = Email(
+            user_id=user_id,
+            email_account_id=account_id,
+            message_id=email_data['message_id'],
+            from_email=email_data['from'],
+            to_email=email_data['to'] if isinstance(email_data['to'], list) else [email_data['to']],
+            subject=email_data['subject'],
+            body=email_data['body'],
+            received_at=email_data.get('received_at', datetime.now(timezone.utc).isoformat()),
+            direction='inbound'
+        )
+        
+        doc = email_obj.model_dump()
+        await self.db.emails.insert_one(doc)
+        
+        return email_obj
