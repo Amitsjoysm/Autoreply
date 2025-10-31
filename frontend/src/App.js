@@ -173,7 +173,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PlaceholderPage title="Profile" description="Manage your account settings" />
+                  <Profile />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -183,7 +183,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PlaceholderPage title="Calendar Providers" description="Connect Google Calendar" />
+                  <CalendarProviders />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -193,7 +193,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PlaceholderPage title="Calendar Events" description="View and manage calendar events" />
+                  <CalendarEvents />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -203,7 +203,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PlaceholderPage title="Meeting Detection" description="Configure AI meeting detection" />
+                  <MeetingDetection />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -243,7 +243,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PlaceholderPage title="Email Processing" description="View processed emails and drafts" />
+                  <EmailProcessing />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -253,7 +253,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PlaceholderPage title="Follow-ups" description="Manage scheduled follow-ups" />
+                  <FollowUps />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -263,7 +263,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PlaceholderPage title="Live Monitoring" description="Real-time email monitoring" />
+                  <LiveMonitoring />
                 </MainLayout>
               </ProtectedRoute>
             }
@@ -273,7 +273,7 @@ function App() {
             element={
               <ProtectedRoute>
                 <MainLayout>
-                  <PlaceholderPage title="Test Email" description="Test email processing" />
+                  <TestEmail />
                 </MainLayout>
               </ProtectedRoute>
             }
