@@ -15,12 +15,56 @@ import base64
 from config import config
 from models.email import Email, EmailSend
 from models.email_account import EmailAccount
+from services.oauth_service import OAuthService
 
 logger = logging.getLogger(__name__)
 
 class EmailService:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
+        self.oauth_service = OAuthService(db)
+    
+    async def ensure_token_valid(self, account: EmailAccount) -> EmailAccount:
+        """Check and refresh OAuth token if expired"""
+        if not account.token_expires_at or not account.refresh_token:
+            return account
+        
+        try:
+            # Parse token expiry
+            from dateutil import parser
+            expires_at = parser.isoparse(account.token_expires_at)
+            now = datetime.now(timezone.utc)
+            
+            # Check if token expires within next 5 minutes
+            if expires_at <= now:
+                logger.info(f"Token expired for account {account.email}, refreshing...")
+                
+                # Refresh token
+                new_tokens = await self.oauth_service.refresh_google_token(account.refresh_token)
+                if new_tokens:
+                    # Update account with new tokens
+                    await self.db.email_accounts.update_one(
+                        {"id": account.id},
+                        {"$set": {
+                            "access_token": new_tokens['access_token'],
+                            "token_expires_at": new_tokens['token_expires_at'],
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    
+                    # Update account object
+                    account.access_token = new_tokens['access_token']
+                    account.token_expires_at = new_tokens['token_expires_at']
+                    
+                    logger.info(f"Token refreshed successfully for {account.email}")
+                else:
+                    logger.error(f"Failed to refresh token for {account.email}")
+                    raise Exception("Token refresh failed")
+        except Exception as e:
+            logger.error(f"Error checking/refreshing token: {e}")
+            raise
+        
+        return account
     
     async def get_account(self, account_id: str) -> Optional[EmailAccount]:
         doc = await self.db.email_accounts.find_one({"id": account_id})
