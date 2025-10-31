@@ -35,9 +35,9 @@ class Config:
     COHERE_API_KEY = os.environ.get('COHERE_API_KEY', '')
     
     # Groq Models (cost-effective)
-    GROQ_DRAFT_MODEL = 'llama-3.1-70b-versatile'  # Good balance of quality and cost
-    GROQ_VALIDATION_MODEL = 'llama-3.1-70b-versatile'
-    GROQ_CALENDAR_MODEL = 'llama-3.1-70b-versatile'
+    GROQ_DRAFT_MODEL = 'llama-3.3-70b-versatile'  # Good balance of quality and cost
+    GROQ_VALIDATION_MODEL = 'llama-3.3-70b-versatile'
+    GROQ_CALENDAR_MODEL = 'llama-3.3-70b-versatile'
     
     # Cohere Model
     COHERE_CLASSIFICATION_MODEL = 'embed-english-v3.0'
