@@ -96,47 +96,66 @@ async def health_check():
         logger.error(f"Health check failed: {e}")
         return {"status": "unhealthy", "database": "disconnected"}
 
-# Startup event - Start background worker
+# Startup event - Initialize services and start background worker
 @app.on_event("startup")
 async def startup_event():
+    logger.info("=" * 60)
     logger.info("Starting AI Email Assistant API...")
+    logger.info("=" * 60)
     
-    # Start background worker in separate task
-    from workers.email_worker import poll_all_accounts, check_follow_ups, check_reminders
-    
-    async def background_worker():
-        poll_counter = 0
-        follow_up_counter = 0
-        reminder_counter = 0
+    try:
+        # Test database connection
+        await db.command('ping')
+        logger.info("✓ Database connection established")
         
-        while True:
-            try:
-                # Poll emails every 60 seconds
-                if poll_counter % config.EMAIL_POLL_INTERVAL == 0:
-                    asyncio.create_task(poll_all_accounts())
-                    poll_counter = 0
-                
-                # Check follow-ups every 5 minutes
-                if follow_up_counter % config.FOLLOW_UP_CHECK_INTERVAL == 0:
-                    asyncio.create_task(check_follow_ups())
-                    follow_up_counter = 0
-                
-                # Check reminders every hour
-                if reminder_counter % config.REMINDER_CHECK_INTERVAL == 0:
-                    asyncio.create_task(check_reminders())
-                    reminder_counter = 0
-                
-                await asyncio.sleep(1)
-                poll_counter += 1
-                follow_up_counter += 1
-                reminder_counter += 1
-            except Exception as e:
-                logger.error(f"Background worker error: {e}")
-                await asyncio.sleep(5)
-    
-    # Start background worker
-    asyncio.create_task(background_worker())
-    logger.info("Background worker started")
+        # Initialize dependency injection container
+        initialize_container(db, config.JWT_SECRET)
+        logger.info("✓ Service container initialized")
+        
+        # Start background worker in separate task
+        from workers.email_worker import poll_all_accounts, check_follow_ups, check_reminders
+        
+        async def background_worker():
+            poll_counter = 0
+            follow_up_counter = 0
+            reminder_counter = 0
+            
+            logger.info("✓ Background worker started")
+            
+            while True:
+                try:
+                    # Poll emails every 60 seconds
+                    if poll_counter % config.EMAIL_POLL_INTERVAL == 0:
+                        asyncio.create_task(poll_all_accounts())
+                        poll_counter = 0
+                    
+                    # Check follow-ups every 5 minutes
+                    if follow_up_counter % config.FOLLOW_UP_CHECK_INTERVAL == 0:
+                        asyncio.create_task(check_follow_ups())
+                        follow_up_counter = 0
+                    
+                    # Check reminders every hour
+                    if reminder_counter % config.REMINDER_CHECK_INTERVAL == 0:
+                        asyncio.create_task(check_reminders())
+                        reminder_counter = 0
+                    
+                    await asyncio.sleep(1)
+                    poll_counter += 1
+                    follow_up_counter += 1
+                    reminder_counter += 1
+                except Exception as e:
+                    logger.error(f"Background worker error: {e}", exc_info=True)
+                    await asyncio.sleep(5)
+        
+        # Start background worker
+        asyncio.create_task(background_worker())
+        
+        logger.info("=" * 60)
+        logger.info("✓ AI Email Assistant API is ready!")
+        logger.info("=" * 60)
+    except Exception as e:
+        logger.error(f"✗ Startup failed: {e}", exc_info=True)
+        raise
 
 @app.on_event("shutdown")
 async def shutdown_event():
