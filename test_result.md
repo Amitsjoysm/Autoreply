@@ -101,3 +101,133 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: |
+  Fix OAuth Google email account integration, auto-reply functionality, and calendar event creation issues.
+  User reported: "when i click on oauth google i see no details found" and issues with auto replies and calendar events not getting created.
+
+backend:
+  - task: "OAuth Token Refresh Logic"
+    implemented: true
+    working: true
+    file: "services/email_service.py, services/calendar_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Added ensure_token_valid() method to both EmailService and CalendarService.
+          This checks if OAuth tokens are expired and automatically refreshes them before API calls.
+          Uses python-dateutil to parse ISO format dates and refresh tokens via OAuthService.
+          Updates database with new tokens after refresh.
+  
+  - task: "OAuth Authorization Endpoints"
+    implemented: true
+    working: true
+    file: "routes/oauth_routes.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Added missing /oauth/google/authorize and /oauth/microsoft/authorize endpoints.
+          Frontend was trying to access /authorize but backend only had /url endpoint.
+          New endpoints extract user from JWT token, create state, and redirect to OAuth provider.
+          Also added GET handler for /oauth/google/callback to handle redirect from Google.
+          Callback now redirects back to frontend with success/error query params.
+  
+  - task: "Auto-Reply Logic"
+    implemented: true
+    working: "NA"
+    file: "workers/email_worker.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Auto-reply logic was already implemented in email_worker.py lines 179-208.
+          It requires: 1) Intent with auto_send=true flag, 2) Valid draft, 3) Valid OAuth tokens.
+          With token refresh now working, auto-replies should work if intents are configured properly.
+          Needs testing with real email accounts and intents configured.
+  
+  - task: "Calendar Event Creation"
+    implemented: true
+    working: "NA"
+    file: "workers/email_worker.py, services/calendar_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: |
+          Calendar event creation logic in email_worker.py lines 123-159.
+          Requires: 1) Calendar provider connected, 2) Meeting detected with confidence > threshold, 3) Valid OAuth tokens.
+          With token refresh now working, calendar creation should work if calendar provider is connected.
+          Needs testing with real email accounts and calendar providers.
+
+frontend:
+  - task: "OAuth Success/Error Handling"
+    implemented: true
+    working: true
+    file: "pages/EmailAccounts.js, pages/CalendarProviders.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: true
+        agent: "main"
+        comment: |
+          Added useSearchParams to handle success/error query parameters from OAuth callback.
+          Shows toast notification when user returns from OAuth flow.
+          Clears URL parameters after showing notification.
+
+metadata:
+  created_by: "main_agent"
+  version: "1.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "OAuth Authorization Flow"
+    - "Token Refresh on Expiry"
+    - "Auto-Reply with OAuth Gmail"
+    - "Calendar Event Creation"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "main"
+    message: |
+      Fixed OAuth integration issues:
+      
+      ROOT CAUSES IDENTIFIED:
+      1. Missing /oauth/google/authorize endpoint - frontend called non-existent endpoint
+      2. No token expiry checking - tokens expired after 1 hour causing API failures
+      3. No automatic token refresh - refresh_token was stored but never used
+      
+      FIXES IMPLEMENTED:
+      1. Added /oauth/google/authorize and /oauth/microsoft/authorize endpoints
+      2. Added ensure_token_valid() method to EmailService and CalendarService
+      3. Token refresh automatically happens before Gmail/Calendar API calls
+      4. Frontend now shows success/error messages from OAuth callback
+      5. Backend redirects to frontend with query params after OAuth
+      
+      NEXT STEPS FOR USER:
+      1. Try connecting Gmail account via OAuth
+      2. Set up intents with auto_send=true for auto-replies
+      3. Connect calendar provider for calendar event creation
+      4. Send test emails to verify auto-reply and calendar creation
+      
+      NOTE: Auto-replies and calendar events require:
+      - OAuth tokens (now working with auto-refresh)
+      - Intents configured with auto_send flag
+      - Calendar provider connected for calendar features
