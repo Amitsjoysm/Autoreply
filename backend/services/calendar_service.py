@@ -62,6 +62,9 @@ class CalendarService:
     async def create_event_google(self, provider: CalendarProvider, event_data: Dict) -> Optional[str]:
         """Create calendar event in Google Calendar"""
         try:
+            # Ensure token is valid
+            provider = await self.ensure_token_valid(provider)
+            
             creds = Credentials(
                 token=provider.access_token,
                 refresh_token=provider.refresh_token,
