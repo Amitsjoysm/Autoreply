@@ -73,7 +73,7 @@ const EmailAccounts = () => {
       await API.updateEmailAccount(editingAccount.id, {
         persona: editingAccount.persona,
         signature: editingAccount.signature,
-        auto_send: editingAccount.auto_send,
+        auto_reply_enabled: editingAccount.auto_reply_enabled,
         is_active: editingAccount.is_active
       });
       toast.success('Account updated successfully');
