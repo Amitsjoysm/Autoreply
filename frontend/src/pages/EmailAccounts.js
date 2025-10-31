@@ -452,13 +452,13 @@ const EmailAccounts = () => {
               <div className="flex items-center gap-2">
                 <input
                   type="checkbox"
-                  id="edit_auto_send"
-                  checked={editingAccount.auto_send || false}
-                  onChange={(e) => setEditingAccount({...editingAccount, auto_send: e.target.checked})}
+                  id="edit_auto_reply"
+                  checked={editingAccount.auto_reply_enabled || false}
+                  onChange={(e) => setEditingAccount({...editingAccount, auto_reply_enabled: e.target.checked})}
                   className="w-4 h-4"
                 />
-                <Label htmlFor="edit_auto_send" className="cursor-pointer">
-                  Auto-send validated drafts
+                <Label htmlFor="edit_auto_reply" className="cursor-pointer">
+                  Enable auto-reply for validated drafts
                 </Label>
               </div>
 
