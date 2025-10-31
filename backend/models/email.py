@@ -1,7 +1,14 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, List, Literal
+from typing import Optional, List, Literal, Dict, Any
 from datetime import datetime, timezone
 import uuid
+
+class ActionHistory(BaseModel):
+    """Track each action taken on an email"""
+    timestamp: str
+    action: str  # classifying, drafting, validating, sending, sent, escalated, error
+    details: Dict[str, Any] = {}
+    status: str  # success, failed, in_progress
 
 class Email(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -13,6 +20,8 @@ class Email(BaseModel):
     # Email fields
     message_id: str  # Provider's message ID
     thread_id: Optional[str] = None
+    in_reply_to: Optional[str] = None  # Message ID this is replying to
+    references: Optional[List[str]] = None  # Thread references
     from_email: str
     to_email: List[str]
     cc: Optional[List[str]] = None
@@ -24,10 +33,12 @@ class Email(BaseModel):
     # Metadata
     received_at: str
     direction: Literal['inbound', 'outbound'] = 'inbound'
+    is_reply: bool = False  # Is this a reply to our sent email?
     
     # AI Processing
     processed: bool = False
     intent_detected: Optional[str] = None
+    intent_name: Optional[str] = None  # Human-readable intent name
     intent_confidence: Optional[float] = None
     meeting_detected: bool = False
     meeting_confidence: Optional[float] = None
@@ -37,11 +48,16 @@ class Email(BaseModel):
     draft_content: Optional[str] = None
     draft_validated: bool = False
     validation_issues: Optional[List[str]] = None
+    draft_retry_count: int = 0  # Track regeneration attempts
     
-    # Status
-    status: Literal['pending', 'processed', 'draft_ready', 'sent', 'escalated'] = 'pending'
+    # Status tracking
+    status: Literal['pending', 'classifying', 'drafting', 'validating', 'sending', 'sent', 'escalated', 'error'] = 'pending'
     replied: bool = False
     reply_sent_at: Optional[str] = None
+    error_message: Optional[str] = None
+    
+    # Action history
+    action_history: List[Dict[str, Any]] = []
     
     # Follow-up
     requires_follow_up: bool = False
