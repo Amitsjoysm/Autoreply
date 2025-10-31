@@ -165,33 +165,71 @@ async def google_oauth_callback_get(
         return RedirectResponse(url=f"{frontend_url}?error=email_fetch_failed")
     
     if account_type == 'email':
-        # Create email account
-        account = EmailAccount(
-            user_id=user_id,
-            email=email,
-            account_type='oauth_gmail',
-            access_token=tokens['access_token'],
-            refresh_token=tokens['refresh_token'],
-            token_expires_at=tokens['token_expires_at']
-        )
+        # Check if account already exists
+        existing = await db.email_accounts.find_one({
+            "user_id": user_id,
+            "email": email
+        })
         
-        doc = account.model_dump()
-        await db.email_accounts.insert_one(doc)
+        if existing:
+            # Update existing account with new tokens
+            await db.email_accounts.update_one(
+                {"user_id": user_id, "email": email},
+                {"$set": {
+                    "access_token": tokens['access_token'],
+                    "refresh_token": tokens['refresh_token'],
+                    "token_expires_at": tokens['token_expires_at'],
+                    "is_active": True,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        else:
+            # Create new email account
+            account = EmailAccount(
+                user_id=user_id,
+                email=email,
+                account_type='oauth_gmail',
+                access_token=tokens['access_token'],
+                refresh_token=tokens['refresh_token'],
+                token_expires_at=tokens['token_expires_at']
+            )
+            
+            doc = account.model_dump()
+            await db.email_accounts.insert_one(doc)
         
         return RedirectResponse(url=f"{frontend_url}/email-accounts?success=true&email={email}")
     else:
-        # Create calendar provider
-        provider = CalendarProvider(
-            user_id=user_id,
-            provider='google',
-            email=email,
-            access_token=tokens['access_token'],
-            refresh_token=tokens['refresh_token'],
-            token_expires_at=tokens['token_expires_at']
-        )
+        # Check if calendar provider already exists
+        existing = await db.calendar_providers.find_one({
+            "user_id": user_id,
+            "email": email
+        })
         
-        doc = provider.model_dump()
-        await db.calendar_providers.insert_one(doc)
+        if existing:
+            # Update existing provider with new tokens
+            await db.calendar_providers.update_one(
+                {"user_id": user_id, "email": email},
+                {"$set": {
+                    "access_token": tokens['access_token'],
+                    "refresh_token": tokens['refresh_token'],
+                    "token_expires_at": tokens['token_expires_at'],
+                    "is_active": True,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        else:
+            # Create new calendar provider
+            provider = CalendarProvider(
+                user_id=user_id,
+                provider='google',
+                email=email,
+                access_token=tokens['access_token'],
+                refresh_token=tokens['refresh_token'],
+                token_expires_at=tokens['token_expires_at']
+            )
+            
+            doc = provider.model_dump()
+            await db.calendar_providers.insert_one(doc)
         
         return RedirectResponse(url=f"{frontend_url}/calendar-providers?success=true&email={email}")
 
