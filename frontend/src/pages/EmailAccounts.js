@@ -61,12 +61,17 @@ const EmailAccounts = () => {
     }
   };
 
-  const handleOAuthConnect = (provider) => {
-    const backendUrl = process.env.REACT_APP_BACKEND_URL || '';
-    if (provider === 'gmail') {
-      window.location.href = `${backendUrl}/api/oauth/google/authorize`;
-    } else if (provider === 'outlook') {
-      window.location.href = `${backendUrl}/api/oauth/microsoft/authorize`;
+  const handleOAuthConnect = async (provider) => {
+    try {
+      if (provider === 'gmail') {
+        const data = await API.getGoogleOAuthUrl();
+        window.location.href = data.url;
+      } else if (provider === 'outlook') {
+        // TODO: Add Microsoft OAuth URL endpoint
+        toast.error('Microsoft OAuth not yet implemented');
+      }
+    } catch (error) {
+      toast.error('Failed to initiate OAuth flow');
     }
   };
 
