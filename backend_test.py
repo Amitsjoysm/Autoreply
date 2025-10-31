@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Email Polling and Auto-Reply Testing Script
-Tests email polling improvements, auto-reply functionality, and calendar setup
+COMPREHENSIVE PRODUCTION FLOW TESTING SCRIPT
+Tests complete production workflow for AI Email Assistant
+Based on review request for user: samhere.joy@gmail.com (af3a5d43-8c97-4395-a57e-64fa8cb1c4b3)
 """
 
 import requests
@@ -10,17 +11,21 @@ import sys
 from datetime import datetime
 import pymongo
 import redis
+import os
 
 # Configuration - Use the correct backend URL from review request
 BACKEND_URL = "https://mailsync-2.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
-# Test data - Use existing user with connected Gmail account
+# Test data - Use existing user from review request
 TEST_USER = {
     "email": "samhere.joy@gmail.com",
     "password": "SecurePass2024!",
     "name": "Sam Joy"
 }
+
+# Target user ID from review request
+TARGET_USER_ID = "af3a5d43-8c97-4395-a57e-64fa8cb1c4b3"
 
 class EmailPollingTester:
     def __init__(self):
