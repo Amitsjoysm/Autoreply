@@ -12,6 +12,8 @@ class Intent(BaseModel):
     description: Optional[str] = None
     prompt: str  # Custom prompt for this intent
     keywords: List[str] = []  # Keywords to help detect this intent
+    examples: List[str] = Field(default=[], max_length=15)  # Example emails for this intent (max 15)
+    is_meeting_related: bool = False  # Flag for meeting-related intents to activate calendar agent
     auto_send: bool = False  # Auto-send replies for this intent
     priority: int = 0  # Higher priority intents checked first
     
