@@ -238,6 +238,51 @@ const Intents = () => {
               </div>
 
               <div>
+                <Label htmlFor="examples">Example Emails (one per line, max 15)</Label>
+                <Textarea
+                  id="examples"
+                  value={formData.examples}
+                  onChange={(e) => setFormData({...formData, examples: e.target.value})}
+                  placeholder="Can we schedule a meeting for next week?&#10;I need help with my account&#10;Let's have a call tomorrow at 2pm"
+                  rows={4}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Provide example emails to improve intent matching (max 15 examples, {formData.examples.split('\n').filter(e => e.trim()).length}/15 used)
+                </p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="is_meeting_related"
+                    checked={formData.is_meeting_related}
+                    onChange={(e) => setFormData({...formData, is_meeting_related: e.target.checked})}
+                    className="w-4 h-4"
+                  />
+                  <Label htmlFor="is_meeting_related" className="cursor-pointer text-sm">
+                    Meeting-related intent
+                  </Label>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="auto_send"
+                    checked={formData.auto_send}
+                    onChange={(e) => setFormData({...formData, auto_send: e.target.checked})}
+                    className="w-4 h-4"
+                  />
+                  <Label htmlFor="auto_send" className="cursor-pointer text-sm">
+                    Auto-send replies
+                  </Label>
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 -mt-2">
+                Meeting-related intents activate calendar agent for scheduling
+              </p>
+
+              <div>
                 <Label htmlFor="prompt">Response Guidelines/Prompt *</Label>
                 <Textarea
                   id="prompt"
