@@ -344,6 +344,113 @@ Respond in JSON:
         
         return "\n\n".join(context_parts)
     
+    async def check_meeting_details_complete(self, meeting_details: Dict) -> Tuple[bool, List[str]]:
+        """Check if meeting details are complete and confirmed"""
+        missing_fields = []
+        
+        # Check required fields
+        if not meeting_details.get('start_time'):
+            missing_fields.append('start time')
+        if not meeting_details.get('end_time'):
+            missing_fields.append('end time')
+        if not meeting_details.get('title'):
+            missing_fields.append('meeting title/purpose')
+        
+        # Validate date format and timezone
+        try:
+            if meeting_details.get('start_time'):
+                datetime.fromisoformat(meeting_details['start_time'].replace('Z', '+00:00'))
+            if meeting_details.get('end_time'):
+                datetime.fromisoformat(meeting_details['end_time'].replace('Z', '+00:00'))
+        except (ValueError, AttributeError):
+            missing_fields.append('valid date/time format')
+        
+        # Check if timezone is specified or assume UTC
+        if not meeting_details.get('timezone'):
+            # If no timezone, we'll assume UTC but flag it
+            meeting_details['timezone'] = 'UTC'
+        
+        is_complete = len(missing_fields) == 0
+        return is_complete, missing_fields
+    
+    async def generate_meeting_confirmation_email(self, email: Email, meeting_details: Dict, 
+                                                   missing_fields: List[str] = None) -> str:
+        """Generate confirmation email for meeting details"""
+        try:
+            current_time = config.get_datetime_string()
+            
+            # Get account context
+            account_doc = await self.db.email_accounts.find_one({"id": email.email_account_id})
+            signature = account_doc.get('signature', '') if account_doc else ''
+            
+            missing_str = ""
+            if missing_fields:
+                missing_str = f"\n\nI noticed the following details are unclear or missing:\n" + "\n".join([f"- {field}" for field in missing_fields])
+            
+            prompt = f"""Current Date & Time: {current_time}
+
+Generate a professional confirmation email for a meeting request.
+
+Original Email:
+From: {email.from_email}
+Subject: {email.subject}
+Body: {email.body}
+
+Detected Meeting Details:
+- Title: {meeting_details.get('title', 'Not specified')}
+- Date & Time: {meeting_details.get('start_time', 'Not specified')} to {meeting_details.get('end_time', 'Not specified')}
+- Timezone: {meeting_details.get('timezone', 'UTC')}
+- Location: {meeting_details.get('location', 'Not specified')}
+- Description: {meeting_details.get('description', 'Not specified')}
+{missing_str}
+
+Write a brief, professional email that:
+1. Confirms the meeting details listed above
+2. Politely asks for clarification on any missing details
+3. Requests the recipient to confirm or correct the details
+4. Is warm and professional in tone
+5. Includes the signature at the end
+
+Signature to use:
+{signature}
+
+Respond with ONLY the email body text."""
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.post(
+                    'https://api.groq.com/openai/v1/chat/completions',
+                    headers={
+                        'Authorization': f'Bearer {self.groq_api_key}',
+                        'Content-Type': 'application/json'
+                    },
+                    json={
+                        'model': config.GROQ_DRAFT_MODEL,
+                        'messages': [
+                            {'role': 'system', 'content': 'You are a professional email assistant. Write clear, concise confirmation emails.'},
+                            {'role': 'user', 'content': prompt}
+                        ],
+                        'temperature': 0.7,
+                        'max_tokens': 500
+                    }
+                )
+            
+            if response.status_code == 200:
+                result = response.json()
+                confirmation_email = result['choices'][0]['message']['content'].strip()
+                
+                # Track tokens
+                usage = result.get('usage', {})
+                tokens = usage.get('total_tokens', 0)
+                self.tokens_used += tokens
+                
+                return confirmation_email
+            else:
+                logger.error(f"Groq API error: {response.status_code} - {response.text}")
+                return "Error generating confirmation email"
+        except Exception as e:
+            logger.error(f"Error generating confirmation email: {e}")
+            return f"Error: {str(e)}"
+    
     def get_tokens_used(self) -> int:
         """Get total tokens used"""
         return self.tokens_used
