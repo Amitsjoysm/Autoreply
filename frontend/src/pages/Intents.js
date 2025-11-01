@@ -153,6 +153,9 @@ const Intents = () => {
       name: '',
       description: '',
       keywords: '',
+      examples: '',
+      is_meeting_related: false,
+      auto_send: false,
       prompt: '',
       priority: 1,
       is_active: true
