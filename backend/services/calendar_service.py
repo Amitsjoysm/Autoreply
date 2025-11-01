@@ -250,7 +250,10 @@ class CalendarService:
             timezone=event_data.get('timezone', 'UTC'),
             attendees=event_data.get('attendees', []),
             detected_from_email=event_data.get('detected_from_email', False),
-            confidence=event_data.get('confidence')
+            confidence=event_data.get('confidence'),
+            meeting_confirmed=event_data.get('meeting_confirmed', False),
+            confirmation_sent=event_data.get('confirmation_sent', False),
+            reminder_minutes_before=event_data.get('reminder_minutes_before', 60)
         )
         
         doc = event.model_dump()
