@@ -313,7 +313,7 @@ class EnhancedProductionTester:
                 self.log(f"  - Emails with action history: {action_history_emails}")
                 
                 # Check last sync timestamps for polling verification
-                if self.db:
+                if self.db is not None:
                     accounts = list(self.db.email_accounts.find({"user_id": self.user_id}))
                     for account in accounts:
                         last_sync = account.get('last_sync')
