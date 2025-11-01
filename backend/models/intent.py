@@ -26,6 +26,8 @@ class IntentCreate(BaseModel):
     description: Optional[str] = None
     prompt: str
     keywords: List[str] = []
+    examples: List[str] = Field(default=[], max_length=15)
+    is_meeting_related: bool = False
     auto_send: bool = False
     priority: int = 0
 
@@ -34,6 +36,8 @@ class IntentUpdate(BaseModel):
     description: Optional[str] = None
     prompt: Optional[str] = None
     keywords: Optional[List[str]] = None
+    examples: Optional[List[str]] = Field(default=None, max_length=15)
+    is_meeting_related: Optional[bool] = None
     auto_send: Optional[bool] = None
     priority: Optional[int] = None
     is_active: Optional[bool] = None
@@ -44,6 +48,8 @@ class IntentResponse(BaseModel):
     description: Optional[str]
     prompt: str
     keywords: List[str]
+    examples: List[str]
+    is_meeting_related: bool
     auto_send: bool
     priority: int
     is_active: bool
