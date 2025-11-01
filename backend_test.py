@@ -1470,8 +1470,8 @@ class ProductionFlowTester:
         """Run comprehensive production flow tests"""
         self.log("=" * 80)
         self.log("COMPREHENSIVE PRODUCTION FLOW TESTING")
-        self.log("Target User: samhere.joy@gmail.com")
-        self.log(f"User ID: {TARGET_USER_ID}")
+        self.log(f"Target User: {TEST_USER['email']}")
+        self.log(f"User ID: {self.user_id if self.user_id else 'To be determined'}")
         self.log("=" * 80)
         
         # Setup phase
