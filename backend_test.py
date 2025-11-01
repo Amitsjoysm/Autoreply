@@ -203,8 +203,9 @@ class ProductionFlowTester:
         
         try:
             # Query intents for target user
-            intents = list(self.db.intents.find({"user_id": TARGET_USER_ID}))
-            self.log(f"Found {len(intents)} intents for user {TARGET_USER_ID}")
+            user_id = self.user_id if self.user_id else TEST_USER["email"]
+            intents = list(self.db.intents.find({"user_id": user_id}))
+            self.log(f"Found {len(intents)} intents for user {user_id}")
             
             if len(intents) != 7:
                 self.log(f"❌ Expected 7 intents, found {len(intents)}")
