@@ -167,6 +167,74 @@ class CalendarService:
             logger.error(f"Error checking conflicts: {e}")
             return []
     
+    async def suggest_alternative_times(self, provider_id: str, requested_start: str, requested_end: str, 
+                                       num_alternatives: int = 3) -> List[Dict]:
+        """Suggest alternative meeting times when there's a conflict"""
+        try:
+            from dateutil import parser
+            
+            # Parse requested time
+            start_dt = parser.isoparse(requested_start)
+            end_dt = parser.isoparse(requested_end)
+            duration = end_dt - start_dt
+            
+            # Get all events for the day to find free slots
+            day_start = start_dt.replace(hour=config.BUSINESS_HOURS_START, minute=0, second=0, microsecond=0)
+            day_end = start_dt.replace(hour=config.BUSINESS_HOURS_END, minute=0, second=0, microsecond=0)
+            
+            # Get all events for the day
+            events = await self.db.calendar_events.find({
+                "calendar_provider_id": provider_id,
+                "start_time": {"$gte": day_start.isoformat(), "$lt": day_end.isoformat()}
+            }).sort("start_time", 1).to_list(100)
+            
+            # Find free slots
+            alternatives = []
+            current_time = day_start
+            
+            for event_doc in events:
+                event_start = parser.isoparse(event_doc['start_time'])
+                event_end = parser.isoparse(event_doc['end_time'])
+                
+                # Check if there's a gap before this event
+                if current_time + duration <= event_start:
+                    alternatives.append({
+                        'start_time': current_time.isoformat(),
+                        'end_time': (current_time + duration).isoformat(),
+                        'available': True
+                    })
+                    
+                    if len(alternatives) >= num_alternatives:
+                        break
+                
+                # Move to end of current event
+                current_time = max(current_time, event_end)
+            
+            # Check if there's time at the end of the day
+            if len(alternatives) < num_alternatives and current_time + duration <= day_end:
+                alternatives.append({
+                    'start_time': current_time.isoformat(),
+                    'end_time': (current_time + duration).isoformat(),
+                    'available': True
+                })
+            
+            # If not enough alternatives on the same day, check next day
+            if len(alternatives) < num_alternatives:
+                next_day_start = day_start + timedelta(days=1)
+                next_day_end = day_end + timedelta(days=1)
+                
+                alternatives.append({
+                    'start_time': next_day_start.isoformat(),
+                    'end_time': (next_day_start + duration).isoformat(),
+                    'available': True,
+                    'note': 'Next day same time'
+                })
+            
+            return alternatives[:num_alternatives]
+        except Exception as e:
+            logger.error(f"Error suggesting alternative times: {e}")
+            return []
+    
     async def save_event(self, user_id: str, provider_id: str, event_data: Dict, email_id: Optional[str] = None) -> CalendarEvent:
         """Save calendar event to database"""
         event = CalendarEvent(
