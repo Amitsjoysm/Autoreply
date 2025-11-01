@@ -103,6 +103,9 @@ const Intents = () => {
       name: intent.name,
       description: intent.description || '',
       keywords: intent.keywords.join(', '),
+      examples: (intent.examples || []).join('\n'),
+      is_meeting_related: intent.is_meeting_related || false,
+      auto_send: intent.auto_send || false,
       prompt: intent.prompt,
       priority: intent.priority,
       is_active: intent.is_active
