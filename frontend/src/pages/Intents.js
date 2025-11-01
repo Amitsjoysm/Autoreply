@@ -8,7 +8,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '../components/ui/dialog';
 import { toast } from 'sonner';
-import { Target, Plus, Trash2, Edit, CheckCircle2, XCircle, ArrowUp, ArrowDown } from 'lucide-react';
+import { Target, Plus, Trash2, Edit, CheckCircle2, XCircle, ArrowUp, ArrowDown, Calendar, Send } from 'lucide-react';
 
 const Intents = () => {
   const [intents, setIntents] = useState([]);
