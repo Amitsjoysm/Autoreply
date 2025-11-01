@@ -386,6 +386,18 @@ const Intents = () => {
                       <Badge variant="outline">
                         Priority: {intent.priority}
                       </Badge>
+                      {intent.is_meeting_related && (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          Meeting
+                        </Badge>
+                      )}
+                      {intent.auto_send && (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          <Send className="w-3 h-3 mr-1" />
+                          Auto-send
+                        </Badge>
+                      )}
                     </div>
                     {intent.description && (
                       <CardDescription className="mt-2">{intent.description}</CardDescription>
