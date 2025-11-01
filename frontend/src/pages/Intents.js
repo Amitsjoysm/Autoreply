@@ -57,10 +57,24 @@ const Intents = () => {
       return;
     }
 
+    // Parse examples (max 15)
+    const examplesArray = formData.examples
+      .split('\n')
+      .map(e => e.trim())
+      .filter(e => e.length > 0)
+      .slice(0, 15);  // Limit to 15 examples
+
+    if (examplesArray.length > 15) {
+      toast.warning('Only the first 15 examples will be saved');
+    }
+
     const intentData = {
       name: formData.name,
       description: formData.description,
       keywords: keywordsArray,
+      examples: examplesArray,
+      is_meeting_related: formData.is_meeting_related,
+      auto_send: formData.auto_send,
       prompt: formData.prompt,
       priority: parseInt(formData.priority),
       is_active: formData.is_active
