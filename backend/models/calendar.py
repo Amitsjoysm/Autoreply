@@ -65,6 +65,7 @@ class CalendarEventCreate(BaseModel):
     end_time: str
     timezone: str = 'UTC'
     attendees: List[str] = []
+    reminder_minutes_before: int = 60  # Customizable reminder timing
 
 class CalendarEventResponse(BaseModel):
     id: str
@@ -76,4 +77,6 @@ class CalendarEventResponse(BaseModel):
     end_time: str
     attendees: List[str]
     detected_from_email: bool
+    meeting_confirmed: bool
+    reminder_minutes_before: int
     created_at: str
