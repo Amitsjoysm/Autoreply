@@ -72,11 +72,11 @@ class ProductionFlowTester:
             return False
         
         try:
-            # Check if target user exists
-            user = self.db.users.find_one({"id": TARGET_USER_ID})
+            # Check if target user exists by email
+            user = self.db.users.find_one({"email": TEST_USER["email"]})
             
             if not user:
-                self.log(f"❌ Target user {TARGET_USER_ID} not found in database", "ERROR")
+                self.log(f"❌ Target user {TEST_USER['email']} not found in database", "ERROR")
                 return False
             
             self.log("✅ Target user found in database")
@@ -86,7 +86,7 @@ class ProductionFlowTester:
             self.log(f"  - Created: {user.get('created_at')}")
             
             # Set user_id for other tests
-            self.user_id = TARGET_USER_ID
+            self.user_id = user.get('id')
             
             return True
                 
