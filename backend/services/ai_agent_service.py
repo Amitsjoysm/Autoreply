@@ -20,17 +20,18 @@ class AIAgentService:
         self.tokens_used = 0
     
     async def classify_intent(self, email: Email, user_id: str) -> Tuple[Optional[str], float]:
-        """Classify email intent using keywords and Cohere"""
+        """Classify email intent using keywords, examples, and semantic similarity"""
         try:
-            # Get user intents
-            intents = await self.db.intents.find({"user_id": user_id, "is_active": True}).sort("priority", -1).to_list(100)
+            # Get user intents (meeting-related intents get priority)
+            intents = await self.db.intents.find({"user_id": user_id, "is_active": True}).sort([("is_meeting_related", -1), ("priority", -1)]).to_list(100)
             
             if not intents:
                 return None, 0.0
             
-            # First try keyword matching
+            # Prepare email text
             email_text = f"{email.subject} {email.body}".lower()
             
+            # First try keyword matching (highest confidence)
             for intent_doc in intents:
                 intent = Intent(**intent_doc)
                 for keyword in intent.keywords:
@@ -38,8 +39,28 @@ class AIAgentService:
                         logger.info(f"Intent '{intent.name}' matched by keyword: {keyword}")
                         return intent.id, 0.9  # High confidence for keyword match
             
+            # Second, try example matching (semantic similarity)
+            for intent_doc in intents:
+                intent = Intent(**intent_doc)
+                if intent.examples:
+                    # Check if email is similar to any example
+                    for example in intent.examples:
+                        # Simple substring matching for MVP
+                        # In production, use embeddings for semantic similarity
+                        example_lower = example.lower()
+                        if len(example_lower) > 10:  # Only check substantial examples
+                            # Check if key phrases from example appear in email
+                            example_words = set(example_lower.split())
+                            email_words = set(email_text.split())
+                            overlap = len(example_words.intersection(email_words))
+                            similarity = overlap / len(example_words) if len(example_words) > 0 else 0
+                            
+                            if similarity > 0.4:  # 40% word overlap threshold
+                                logger.info(f"Intent '{intent.name}' matched by example similarity: {similarity:.2f}")
+                                return intent.id, 0.7 + (similarity * 0.2)  # 0.7-0.9 confidence
+            
             # Fallback to Cohere classification
-            # For MVP, we'll use simple keyword matching only to save costs
+            # For MVP, we'll use simple matching only to save costs
             # In production, you can add Cohere classification here
             
             return None, 0.0
