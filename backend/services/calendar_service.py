@@ -277,7 +277,7 @@ class CalendarService:
         return [CalendarEvent(**doc) for doc in events]
     
     async def send_reminder(self, event: CalendarEvent, email_service, user_id: str):
-        """Send reminder for calendar event"""
+        """Send reminder for calendar event using customizable reminder timing"""
         try:
             # Get user's email accounts
             accounts = await self.db.email_accounts.find({
@@ -299,13 +299,16 @@ class CalendarService:
             if not account:
                 return
             
+            # Format reminder time
+            reminder_text = f"{event.reminder_minutes_before} minutes" if event.reminder_minutes_before < 60 else f"{event.reminder_minutes_before // 60} hour(s)"
+            
             reminder_email = EmailSend(
                 email_account_id=account_id,
                 to_email=[account.email],  # Send to self
-                subject=f"Reminder: {event.title} in 1 hour",
+                subject=f"Reminder: {event.title} in {reminder_text}",
                 body=f"""Hi,
 
-This is a reminder that you have the following meeting in 1 hour:
+This is a reminder that you have the following meeting in {reminder_text}:
 
 Title: {event.title}
 Time: {event.start_time}
