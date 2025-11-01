@@ -17,15 +17,12 @@ import os
 BACKEND_URL = "https://email-sync-hub.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
-# Test data - Use existing user from review request
+# Test data - Use credentials from review request
 TEST_USER = {
-    "email": "samhere.joy@gmail.com",
-    "password": "SecurePass2024!",
-    "name": "Sam Joy"
+    "email": "amits.joys@gmail.com",
+    "password": "ij@123",
+    "name": "Amit Joy"
 }
-
-# Target user ID from review request
-TARGET_USER_ID = "af3a5d43-8c97-4395-a57e-64fa8cb1c4b3"
 
 class ProductionFlowTester:
     def __init__(self):
