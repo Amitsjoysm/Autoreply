@@ -435,6 +435,24 @@ const Intents = () => {
                   </div>
                 </div>
 
+                {intent.examples && intent.examples.length > 0 && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Example Emails ({intent.examples.length})</Label>
+                    <div className="mt-2 space-y-1">
+                      {intent.examples.slice(0, 3).map((example, idx) => (
+                        <div key={idx} className="p-2 bg-blue-50 rounded border border-blue-100">
+                          <p className="text-sm text-gray-700 truncate">"{example}"</p>
+                        </div>
+                      ))}
+                      {intent.examples.length > 3 && (
+                        <p className="text-xs text-gray-500 pl-2">
+                          +{intent.examples.length - 3} more examples
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <Label className="text-sm font-medium text-gray-700">Response Guidelines</Label>
                   <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
