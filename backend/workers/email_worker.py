@@ -145,14 +145,27 @@ async def process_email(email_id: str):
             "confidence": intent_confidence
         })
         
-        # Step 2: Detect meeting
-        is_meeting, meeting_confidence, meeting_details = await ai_service.detect_meeting(email, thread_context)
+        # Step 2: Detect meeting (only if intent is meeting-related)
+        is_meeting = False
+        meeting_confidence = 0.0
+        meeting_details = None
+        is_meeting_intent = False
         
-        await add_action(email_id, "meeting_detection", {
-            "detected": is_meeting,
-            "confidence": meeting_confidence,
-            "details": meeting_details if is_meeting else None
-        })
+        # Check if intent is meeting-related
+        if intent_id:
+            intent_doc = await db.intents.find_one({"id": intent_id})
+            if intent_doc:
+                is_meeting_intent = intent_doc.get('is_meeting_related', False)
+        
+        # Only activate meeting detection for meeting-related intents
+        if is_meeting_intent:
+            is_meeting, meeting_confidence, meeting_details = await ai_service.detect_meeting(email, thread_context)
+            
+            await add_action(email_id, "meeting_detection", {
+                "detected": is_meeting,
+                "confidence": meeting_confidence,
+                "details": meeting_details if is_meeting else None
+            })
         
         update_data = {
             "intent_detected": intent_id,
@@ -163,7 +176,7 @@ async def process_email(email_id: str):
             "updated_at": datetime.now(timezone.utc).isoformat()
         }
         
-        # Step 3: If meeting detected, create calendar event and send notification
+        # Step 3: Enhanced meeting confirmation workflow
         event_created = None
         if is_meeting and meeting_confidence >= config.MEETING_CONFIDENCE_THRESHOLD and meeting_details:
             provider_doc = await db.calendar_providers.find_one({
@@ -175,19 +188,40 @@ async def process_email(email_id: str):
                 from models.calendar import CalendarProvider
                 provider = CalendarProvider(**provider_doc)
                 
+                # Check if meeting details are complete
+                details_complete, missing_fields = await ai_service.check_meeting_details_complete(meeting_details)
+                
+                await add_action(email_id, "meeting_details_check", {
+                    "complete": details_complete,
+                    "missing_fields": missing_fields
+                })
+                
+                # Check for conflicts
                 conflicts = await calendar_service.check_conflicts(
                     provider.id,
                     meeting_details['start_time'],
                     meeting_details['end_time']
                 )
                 
-                if not conflicts:
+                # Confidence-based approach:
+                # High confidence (>0.8) + complete details + no conflicts = auto-create
+                # Otherwise = send confirmation email
+                should_auto_create = (
+                    meeting_confidence > 0.8 and 
+                    details_complete and 
+                    not conflicts
+                )
+                
+                if should_auto_create:
+                    # Auto-create event
                     event_id = await calendar_service.create_event_google(provider, meeting_details)
                     
                     if event_id:
                         meeting_details['event_id'] = event_id
                         meeting_details['detected_from_email'] = True
                         meeting_details['confidence'] = meeting_confidence
+                        meeting_details['meeting_confirmed'] = True
+                        meeting_details['confirmation_sent'] = False
                         
                         event_created = await calendar_service.save_event(
                             email.user_id,
@@ -199,13 +233,92 @@ async def process_email(email_id: str):
                         await add_action(email_id, "calendar_event_created", {
                             "event_id": event_id,
                             "title": meeting_details.get('title'),
-                            "start_time": meeting_details.get('start_time')
+                            "start_time": meeting_details.get('start_time'),
+                            "auto_created": True
                         })
                         
-                        logger.info(f"Created calendar event for email {email.id}")
+                        logger.info(f"Auto-created calendar event for email {email.id}")
                         
                         # Send calendar event notification email
                         await send_calendar_notification(email, event_created, email_service)
+                else:
+                    # Send confirmation email
+                    logger.info(f"Sending meeting confirmation for email {email.id}")
+                    
+                    # Generate alternatives if there are conflicts
+                    alternatives = []
+                    if conflicts:
+                        alternatives = await calendar_service.suggest_alternative_times(
+                            provider.id,
+                            meeting_details['start_time'],
+                            meeting_details['end_time']
+                        )
+                        
+                        await add_action(email_id, "conflict_detected", {
+                            "conflicts": len(conflicts),
+                            "alternatives_suggested": len(alternatives)
+                        })
+                    
+                    # Generate confirmation email
+                    confirmation_email = await ai_service.generate_meeting_confirmation_email(
+                        email, 
+                        meeting_details, 
+                        missing_fields
+                    )
+                    
+                    # Add alternative times to confirmation email if conflicts exist
+                    if alternatives:
+                        alternatives_text = "\n\nI noticed there's a scheduling conflict. Here are some alternative times that work:\n"
+                        for i, alt in enumerate(alternatives, 1):
+                            alternatives_text += f"{i}. {alt['start_time']} to {alt['end_time']}"
+                            if alt.get('note'):
+                                alternatives_text += f" ({alt['note']})"
+                            alternatives_text += "\n"
+                        alternatives_text += "\nPlease let me know which time works best for you."
+                        
+                        confirmation_email += "\n" + alternatives_text
+                    
+                    # Send confirmation email
+                    account = await email_service.get_account(email.email_account_id)
+                    if account:
+                        from models.email import EmailSend
+                        
+                        confirmation = EmailSend(
+                            email_account_id=email.email_account_id,
+                            to_email=[email.from_email],
+                            subject=f"Re: {email.subject}",
+                            body=confirmation_email
+                        )
+                        
+                        sent = False
+                        if account.account_type == 'oauth_gmail':
+                            sent = await email_service.send_email_oauth_gmail(account, confirmation, email.thread_id)
+                        else:
+                            sent = await email_service.send_email_smtp(account, confirmation)
+                        
+                        if sent:
+                            # Save pending event (not confirmed yet)
+                            meeting_details['event_id'] = f"pending_{email.id}"
+                            meeting_details['detected_from_email'] = True
+                            meeting_details['confidence'] = meeting_confidence
+                            meeting_details['meeting_confirmed'] = False
+                            meeting_details['confirmation_sent'] = True
+                            
+                            event_created = await calendar_service.save_event(
+                                email.user_id,
+                                provider.id,
+                                meeting_details,
+                                email.id
+                            )
+                            
+                            await add_action(email_id, "confirmation_email_sent", {
+                                "reason": "low_confidence" if meeting_confidence <= 0.8 else ("incomplete_details" if not details_complete else "conflict"),
+                                "missing_fields": missing_fields,
+                                "has_conflicts": len(conflicts) > 0,
+                                "alternatives_suggested": len(alternatives)
+                            })
+                            
+                            logger.info(f"Sent meeting confirmation email for {email.id}")
         
         # Step 4: Generate draft with retry logic (max 2 attempts)
         await db.emails.update_one({"id": email_id}, {"$set": {"status": "drafting"}})
