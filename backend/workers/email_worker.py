@@ -586,29 +586,52 @@ async def check_follow_ups():
         logger.error(f"Error checking follow-ups: {e}")
 
 async def check_reminders():
-    """Check and send calendar reminders"""
+    """Check and send calendar reminders with customizable timing"""
     try:
-        from datetime import timedelta
-        
         now = datetime.now(timezone.utc)
-        reminder_time = (now + timedelta(hours=1)).isoformat()
         
-        # Get events starting in ~1 hour that haven't had reminders sent
+        # Get events that need reminders (check various reminder times)
+        # We check events starting within the next 2 hours
+        check_until = (now + timedelta(hours=2)).isoformat()
+        
         events = await db.calendar_events.find({
-            "start_time": {"$gte": now.isoformat(), "$lte": reminder_time},
-            "reminder_sent": False
+            "start_time": {"$gte": now.isoformat(), "$lte": check_until},
+            "reminder_sent": False,
+            "meeting_confirmed": True  # Only send reminders for confirmed meetings
         }).to_list(100)
         
-        logger.info(f"Found {len(events)} events needing reminders")
+        logger.info(f"Checking {len(events)} events for reminders")
         
         calendar_service = CalendarService(db)
         email_service = EmailService(db)
         
         from models.calendar import CalendarEvent
+        from dateutil import parser
         
         for event_doc in events:
             event = CalendarEvent(**event_doc)
-            await calendar_service.send_reminder(event, email_service, event.user_id)
+            
+            # Calculate when reminder should be sent
+            event_start = parser.isoparse(event.start_time)
+            reminder_time = event_start - timedelta(minutes=event.reminder_minutes_before)
+            
+            # Check if it's time to send reminder (within 5 minutes window)
+            time_diff = (reminder_time - now).total_seconds() / 60  # in minutes
+            
+            if -5 <= time_diff <= 5:  # Send if within 5 minutes of reminder time
+                logger.info(f"Sending reminder for event {event.id} ({event.title})")
+                await calendar_service.send_reminder(event, email_service, event.user_id)
+                
+                # Mark reminder as sent
+                await db.calendar_events.update_one(
+                    {"id": event.id},
+                    {"$set": {
+                        "reminder_sent": True,
+                        "reminder_sent_at": now.isoformat()
+                    }}
+                )
+        
+        logger.info(f"Processed {len(events)} events for reminders")
     except Exception as e:
         logger.error(f"Error checking reminders: {e}")
 
