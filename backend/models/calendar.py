@@ -45,8 +45,11 @@ class CalendarEvent(BaseModel):
     # Meeting detection
     detected_from_email: bool = False
     confidence: Optional[float] = None
+    meeting_confirmed: bool = False  # Whether meeting details are confirmed
+    confirmation_sent: bool = False  # Whether confirmation email was sent
     
     # Reminder
+    reminder_minutes_before: int = 60  # Customizable reminder timing (default 60 minutes)
     reminder_sent: bool = False
     reminder_sent_at: Optional[str] = None
     
