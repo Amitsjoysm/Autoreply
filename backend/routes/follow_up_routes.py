@@ -44,27 +44,41 @@ async def create_follow_up(
         created_at=follow_up.created_at
     )
 
-@router.get("", response_model=List[FollowUpResponse])
+@router.get("", response_model=List[dict])
 async def list_follow_ups(
     user: User = Depends(get_current_user_from_token),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    """List follow-ups"""
+    """List follow-ups with email details"""
     follow_ups = await db.follow_ups.find({"user_id": user.id}).sort("scheduled_at", 1).to_list(100)
     
-    return [
-        FollowUpResponse(
-            id=f['id'],
-            email_id=f['email_id'],
-            scheduled_at=f['scheduled_at'],
-            sent_at=f.get('sent_at'),
-            subject=f['subject'],
-            status=f['status'],
-            response_detected=f['response_detected'],
-            created_at=f['created_at']
-        )
-        for f in follow_ups
-    ]
+    result = []
+    for f in follow_ups:
+        # Get the original email
+        email = await db.emails.find_one({"id": f['email_id']})
+        
+        result.append({
+            "id": f['id'],
+            "email_id": f['email_id'],
+            "scheduled_at": f['scheduled_at'],
+            "sent_at": f.get('sent_at'),
+            "subject": f['subject'],
+            "body": f.get('body', ''),
+            "status": f['status'],
+            "response_detected": f['response_detected'],
+            "created_at": f['created_at'],
+            "thread_id": f.get('thread_id'),
+            "cancelled_reason": f.get('cancelled_reason'),
+            # Email details
+            "original_email": {
+                "subject": email.get('subject', '') if email else '',
+                "from_email": email.get('from_email', '') if email else '',
+                "received_at": email.get('received_at', '') if email else '',
+                "body": email.get('body', '')[:200] + '...' if email and len(email.get('body', '')) > 200 else (email.get('body', '') if email else '')
+            } if email else None
+        })
+    
+    return result
 
 @router.delete("/{follow_up_id}")
 async def delete_follow_up(
