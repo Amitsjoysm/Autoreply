@@ -144,7 +144,17 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
                 
                 # Parse JSON response
                 try:
-                    data = json.loads(content)
+                    # Strip markdown code blocks if present
+                    json_content = content.strip()
+                    if json_content.startswith('```json'):
+                        json_content = json_content[7:]  # Remove ```json
+                    if json_content.startswith('```'):
+                        json_content = json_content[3:]  # Remove ```
+                    if json_content.endswith('```'):
+                        json_content = json_content[:-3]  # Remove trailing ```
+                    json_content = json_content.strip()
+                    
+                    data = json.loads(json_content)
                     is_meeting = data.get('is_meeting', False)
                     confidence = data.get('confidence', 0.0)
                     details = data.get('details')
