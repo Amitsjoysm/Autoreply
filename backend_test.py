@@ -154,8 +154,9 @@ class ProductionFlowTester:
             return False
         
         try:
-            # Check if target user exists
-            user = self.db.users.find_one({"id": TARGET_USER_ID})
+            # Check if target user exists - use the logged in user ID
+            target_user_id = self.user_id if self.user_id else "2d41b84c-6be3-4c44-9263-8e14fe2483b6"
+            user = self.db.users.find_one({"id": target_user_id})
             
             if not user:
                 self.log(f"❌ Target user {TARGET_USER_ID} not found in database", "ERROR")
