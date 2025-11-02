@@ -42,6 +42,10 @@ class CalendarEvent(BaseModel):
     
     attendees: List[str] = []
     
+    # Meeting links
+    meet_link: Optional[str] = None  # Google Meet or other video conference link
+    html_link: Optional[str] = None  # Link to view event in calendar
+    
     # Meeting detection
     detected_from_email: bool = False
     confidence: Optional[float] = None
