@@ -284,7 +284,7 @@ class ProductionFlowTester:
                     break
             
             if not oauth_gmail_account:
-                self.log("❌ No oauth_gmail account found for samhere.joy@gmail.com")
+                self.log("❌ No oauth_gmail account found for amits.joys@gmail.com")
                 return False
             
             # Check account status
