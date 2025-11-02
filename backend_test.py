@@ -1561,7 +1561,7 @@ class ProductionFlowTester:
         """Verify that the sent email was received and processed"""
         self.log(f"Verifying email processing for: {scenario['name']}")
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
