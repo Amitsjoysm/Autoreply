@@ -58,8 +58,8 @@ const FollowUps = () => {
     }
   };
 
-  const getStatusBadge = (followUp) => {
-    if (followUp.sent) {
+  const getStatusBadge = (status) => {
+    if (status === 'sent') {
       return (
         <Badge className="bg-green-500">
           <CheckCircle2 className="w-3 h-3 mr-1" />
@@ -67,7 +67,7 @@ const FollowUps = () => {
         </Badge>
       );
     }
-    if (followUp.cancelled) {
+    if (status === 'cancelled') {
       return (
         <Badge variant="destructive">
           <XCircle className="w-3 h-3 mr-1" />
@@ -85,9 +85,9 @@ const FollowUps = () => {
 
   const stats = {
     total: followUps.length,
-    scheduled: followUps.filter(f => !f.sent && !f.cancelled).length,
-    sent: followUps.filter(f => f.sent).length,
-    cancelled: followUps.filter(f => f.cancelled).length,
+    scheduled: followUps.filter(f => f.status === 'pending').length,
+    sent: followUps.filter(f => f.status === 'sent').length,
+    cancelled: followUps.filter(f => f.status === 'cancelled').length,
   };
 
   if (loading) {
