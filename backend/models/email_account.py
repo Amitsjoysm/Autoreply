@@ -28,6 +28,11 @@ class EmailAccount(BaseModel):
     signature: Optional[str] = None
     persona: Optional[str] = None
     
+    # Follow-up settings
+    follow_up_enabled: bool = True
+    follow_up_days: int = 2  # Days to wait before first follow-up
+    follow_up_count: int = 3  # Maximum number of follow-ups
+    
     # Status
     is_active: bool = True
     last_sync: Optional[str] = None
