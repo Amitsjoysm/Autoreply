@@ -381,6 +381,16 @@ async def process_email(email_id: str):
                         update_data['status'] = 'error'
                         update_data['error_message'] = "Failed to send email"
                         await add_action(email_id, "send_failed", {"error": "Failed to send"}, "failed")
+                        logger.error(f"Failed to send email {email.id}")
+            else:
+                logger.info(f"Auto-send not triggered for email {email.id}: intent has auto_send=False")
+        else:
+            reason = []
+            if not intent_id:
+                reason.append("no intent matched")
+            if not update_data.get('draft_validated'):
+                reason.append("draft not validated")
+            logger.info(f"Auto-send skipped for email {email.id}: {', '.join(reason)}")
         
         # Mark as processed
         update_data['processed'] = True
