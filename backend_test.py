@@ -1816,6 +1816,210 @@ class ProductionFlowTester:
             self.log("❌ Setup phase failed - cannot continue with tests")
             return False
         
+        # Execute test scenarios
+        scenario_results = {}
+        
+        for i, scenario in enumerate(TEST_SCENARIOS, 1):
+            self.log(f"\n{'='*60}")
+            self.log(f"SCENARIO {i}: {scenario['name']}")
+            self.log(f"{'='*60}")
+            
+            scenario_result = self.execute_scenario(scenario)
+            scenario_results[scenario['name']] = scenario_result
+            
+            # Wait between scenarios
+            if i < len(TEST_SCENARIOS):
+                self.log("Waiting 30 seconds before next scenario...")
+                time.sleep(30)
+        
+        # Generate final summary
+        self.generate_final_summary(scenario_results)
+        
+        # Determine overall success
+        successful_scenarios = sum(1 for result in scenario_results.values() if result.get('overall_success', False))
+        overall_success = successful_scenarios == len(TEST_SCENARIOS)
+        
+        if overall_success:
+            self.log("\n🎉 ALL SCENARIOS COMPLETED SUCCESSFULLY")
+        else:
+            self.log(f"\n⚠️  {successful_scenarios}/{len(TEST_SCENARIOS)} SCENARIOS SUCCESSFUL")
+        
+        return overall_success
+    
+    def execute_scenario(self, scenario):
+        """Execute a single test scenario"""
+        self.log(f"Executing scenario: {scenario['name']}")
+        
+        scenario_result = {
+            'scenario_name': scenario['name'],
+            'email_sent': False,
+            'email_received': False,
+            'intent_detected': False,
+            'meeting_detected': None,
+            'calendar_event_created': None,
+            'draft_generated': False,
+            'auto_sent': False,
+            'thread_preserved': False,
+            'follow_up_created': False,
+            'overall_success': False
+        }
+        
+        try:
+            # Step 1: Send test email
+            self.log("STEP 1: Sending test email...")
+            if self.send_test_email(scenario):
+                scenario_result['email_sent'] = True
+                self.log("✅ Email sent successfully")
+            else:
+                self.log("❌ Failed to send email")
+                return scenario_result
+            
+            # Step 2: Wait for processing
+            self.log("STEP 2: Waiting for email polling and processing...")
+            self.wait_for_email_processing(90)
+            
+            # Step 3: Verify email was received and processed
+            self.log("STEP 3: Verifying email was received and processed...")
+            email = self.verify_email_received_and_processed(scenario)
+            if email:
+                scenario_result['email_received'] = True
+                self.log("✅ Email received and processed")
+            else:
+                self.log("❌ Email not found in database")
+                return scenario_result
+            
+            # Step 4: Verify intent detection
+            self.log("STEP 4: Verifying intent detection...")
+            if self.verify_intent_detection(email, scenario['expected_intent']):
+                scenario_result['intent_detected'] = True
+                self.log("✅ Intent detection successful")
+            else:
+                self.log("❌ Intent detection failed")
+            
+            # Step 5: Verify meeting detection
+            self.log("STEP 5: Verifying meeting detection...")
+            if self.verify_meeting_detection(email, scenario['expected_meeting_detected']):
+                scenario_result['meeting_detected'] = True
+                self.log("✅ Meeting detection successful")
+            else:
+                scenario_result['meeting_detected'] = False
+                self.log("❌ Meeting detection failed")
+            
+            # Step 6: Verify calendar event creation (if expected)
+            if scenario['expected_calendar_event']:
+                self.log("STEP 6: Verifying calendar event creation...")
+                if self.verify_calendar_event_creation(email, scenario['expected_calendar_event']):
+                    scenario_result['calendar_event_created'] = True
+                    self.log("✅ Calendar event creation successful")
+                else:
+                    scenario_result['calendar_event_created'] = False
+                    self.log("❌ Calendar event creation failed")
+            else:
+                scenario_result['calendar_event_created'] = True  # Not expected, so consider success
+            
+            # Step 7: Verify draft generation
+            self.log("STEP 7: Verifying draft generation...")
+            if self.verify_draft_generation(email):
+                scenario_result['draft_generated'] = True
+                self.log("✅ Draft generation successful")
+            else:
+                self.log("❌ Draft generation failed")
+            
+            # Step 8: Verify auto-send
+            self.log("STEP 8: Verifying auto-send...")
+            if self.verify_auto_send(email, scenario['expected_auto_send']):
+                scenario_result['auto_sent'] = True
+                self.log("✅ Auto-send successful")
+            else:
+                self.log("❌ Auto-send failed")
+            
+            # Step 9: Verify thread preservation
+            self.log("STEP 9: Verifying thread preservation...")
+            if self.verify_thread_preservation(email):
+                scenario_result['thread_preserved'] = True
+                self.log("✅ Thread preservation successful")
+            else:
+                self.log("❌ Thread preservation failed")
+            
+            # Step 10: Verify follow-up creation
+            self.log("STEP 10: Verifying follow-up creation...")
+            if self.verify_follow_up_creation(email):
+                scenario_result['follow_up_created'] = True
+                self.log("✅ Follow-up creation successful")
+            else:
+                self.log("❌ Follow-up creation failed")
+            
+            # Determine overall success for this scenario
+            critical_checks = [
+                scenario_result['email_sent'],
+                scenario_result['email_received'],
+                scenario_result['intent_detected'],
+                scenario_result['draft_generated']
+            ]
+            
+            # Add meeting/calendar checks if expected
+            if scenario['expected_meeting_detected']:
+                critical_checks.append(scenario_result['meeting_detected'])
+            if scenario['expected_calendar_event']:
+                critical_checks.append(scenario_result['calendar_event_created'])
+            
+            scenario_result['overall_success'] = all(critical_checks)
+            
+            if scenario_result['overall_success']:
+                self.log(f"🎉 SCENARIO '{scenario['name']}' COMPLETED SUCCESSFULLY")
+            else:
+                self.log(f"❌ SCENARIO '{scenario['name']}' FAILED")
+            
+            return scenario_result
+            
+        except Exception as e:
+            self.log(f"❌ Scenario execution failed: {str(e)}", "ERROR")
+            return scenario_result
+    
+    def generate_final_summary(self, scenario_results):
+        """Generate final test summary"""
+        self.log("\n" + "=" * 80)
+        self.log("FINAL TEST SUMMARY")
+        self.log("=" * 80)
+        
+        for scenario_name, result in scenario_results.items():
+            self.log(f"\nSCENARIO: {scenario_name}")
+            self.log("-" * 50)
+            
+            checks = [
+                ("Email Sending", result['email_sent']),
+                ("Email Polling", result['email_received']),
+                ("Intent Detection", result['intent_detected']),
+                ("Meeting Detection", result['meeting_detected']),
+                ("Calendar Event", result['calendar_event_created']),
+                ("Draft Generation", result['draft_generated']),
+                ("Auto-Send", result['auto_sent']),
+                ("Thread Preservation", result['thread_preserved']),
+                ("Follow-up Creation", result['follow_up_created'])
+            ]
+            
+            for check_name, check_result in checks:
+                if check_result is None:
+                    status = "N/A"
+                elif check_result:
+                    status = "✅ PASS"
+                else:
+                    status = "❌ FAIL"
+                self.log(f"  {check_name}: {status}")
+            
+            overall_status = "✅ SUCCESS" if result['overall_success'] else "❌ FAILED"
+            self.log(f"  OVERALL: {overall_status}")
+        
+        # Summary statistics
+        total_scenarios = len(scenario_results)
+        successful_scenarios = sum(1 for r in scenario_results.values() if r['overall_success'])
+        
+        self.log(f"\nOVERALL RESULTS:")
+        self.log(f"Total Scenarios: {total_scenarios}")
+        self.log(f"Successful: {successful_scenarios}")
+        self.log(f"Failed: {total_scenarios - successful_scenarios}")
+        self.log(f"Success Rate: {(successful_scenarios/total_scenarios)*100:.1f}%")
+        
         # Main test phases
         test_phases = [
             ("1. SETUP COMPONENTS", self.verify_setup_components),
