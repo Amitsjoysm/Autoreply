@@ -351,6 +351,26 @@ async def process_email(email_id: str):
                             "auto_send": True
                         })
                         logger.info(f"Auto-sent reply for email {email.id}")
+                        
+                        # Create automatic follow-up for sent emails
+                        from models.follow_up import FollowUp
+                        follow_up_date = datetime.now(timezone.utc) + timedelta(days=2)
+                        
+                        follow_up = FollowUp(
+                            user_id=email.user_id,
+                            email_id=email.id,
+                            email_account_id=email.email_account_id,
+                            scheduled_at=follow_up_date.isoformat(),
+                            subject=f"Follow-up: {email.subject}",
+                            body=f"Just following up on my previous email regarding: {email.subject}\n\nLet me know if you have any questions.\n\n{account.signature if account.signature else 'Best regards'}"
+                        )
+                        
+                        await db.follow_ups.insert_one(follow_up.model_dump())
+                        await add_action(email_id, "follow_up_scheduled", {
+                            "scheduled_at": follow_up_date.isoformat(),
+                            "days_from_now": 2
+                        })
+                        logger.info(f"Scheduled follow-up for email {email.id} at {follow_up_date}")
                     else:
                         update_data['status'] = 'error'
                         update_data['error_message'] = "Failed to send email"
