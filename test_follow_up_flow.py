@@ -226,13 +226,13 @@ async def check_follow_up_cancellation(user_id, email_id):
                 print(f"\n✅ All follow-ups cancelled!")
                 for fu in follow_ups:
                     print(f"      {fu['id']}: {fu.get('status')} - {fu.get('cancelled_reason', 'No reason')}")
-                await client.close()
+                client.close()
                 return True
         
         await asyncio.sleep(5)
         print("   Waiting... (checking every 5 seconds)\n")
     
-    await client.close()
+    client.close()
     print(f"\n⚠️  Timeout: Follow-ups not cancelled within {max_wait} seconds")
     return False
 
