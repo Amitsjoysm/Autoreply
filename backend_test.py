@@ -20,7 +20,7 @@ API_BASE = f"{BACKEND_URL}/api"
 # Test data - Use existing user from review request
 TEST_USER = {
     "email": "amits.joys@gmail.com",
-    "password": "SecurePass2024!",
+    "password": "ij@123",
     "name": "Amit Joy"
 }
 
