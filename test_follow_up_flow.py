@@ -168,7 +168,7 @@ async def check_calendar_event(user_id, email_id):
     
     if not events:
         print("❌ No calendar events found")
-        await client.close()
+        client.close()
         return None
     
     print(f"✅ Found {len(events)} calendar event(s):\n")
@@ -181,7 +181,7 @@ async def check_calendar_event(user_id, email_id):
         print(f"      Meet Link: {event.get('meet_link', 'None')}")
         print()
     
-    await client.close()
+    client.close()
     return events
 
 async def send_reply_email(original_email_id, subject):
