@@ -2183,5 +2183,21 @@ class ProductionFlowTester:
 
 if __name__ == "__main__":
     tester = ProductionFlowTester()
-    success = tester.run_comprehensive_production_tests()
-    sys.exit(0 if success else 1)
+    
+    try:
+        # Run the complete production flow test with real email sending
+        success = tester.run_complete_production_flow_test()
+        
+        if success:
+            print("\n🎉 Complete production flow testing completed successfully!")
+            sys.exit(0)
+        else:
+            print("\n❌ Complete production flow testing completed with issues.")
+            sys.exit(1)
+            
+    except KeyboardInterrupt:
+        print("\n⚠️  Testing interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\n💥 Testing failed with exception: {str(e)}")
+        sys.exit(1)
