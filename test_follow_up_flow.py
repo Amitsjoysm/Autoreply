@@ -255,7 +255,7 @@ async def check_account_settings(account_id):
         print(f"   Auto-reply enabled: {account.get('auto_reply_enabled', False)}")
         print()
     
-    await client.close()
+    client.close()
 
 async def main():
     """Main test flow"""
