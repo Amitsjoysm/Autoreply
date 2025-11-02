@@ -1,14 +1,25 @@
 #!/usr/bin/env python3
 """
-COMPREHENSIVE PRODUCTION FLOW TESTING SCRIPT
-Tests complete production workflow for AI Email Assistant
-Based on review request for user: samhere.joy@gmail.com (af3a5d43-8c97-4395-a57e-64fa8cb1c4b3)
+COMPLETE PRODUCTION FLOW TEST WITH REAL EMAIL SENDING
+
+USER UNDER TEST: amits.joys@gmail.com
+
+TEST CREDENTIALS FOR SENDING:
+- Email: sashadhagle@gmail.com
+- App Password: dibphfyezwffocsa
+
+OBJECTIVE:
+Test the COMPLETE end-to-end production flow by sending real test emails and verifying the entire pipeline.
 """
 
 import requests
 import json
 import sys
-from datetime import datetime
+import smtplib
+import time
+from datetime import datetime, timedelta
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import pymongo
 import redis
 import os
@@ -17,15 +28,39 @@ import os
 BACKEND_URL = "https://worker-restart-1.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
-# Test data - Use existing user from review request
+# Test user credentials
 TEST_USER = {
     "email": "amits.joys@gmail.com",
     "password": "ij@123",
     "name": "Amit Joy"
 }
 
-# Target user ID from review request - will be updated after login
-TARGET_USER_ID = "2d41b84c-6be3-4c44-9263-8e14fe2483b6"
+# Email sending credentials
+SENDER_EMAIL = "sashadhagle@gmail.com"
+SENDER_PASSWORD = "dibphfyezwffocsa"
+RECIPIENT_EMAIL = "amits.joys@gmail.com"
+
+# Test scenarios
+TEST_SCENARIOS = [
+    {
+        "name": "Meeting Request with Calendar Event",
+        "subject": "Meeting Request - Discussion",
+        "body": "Hi, can we schedule a meeting tomorrow at 2 PM EST to discuss the project? Looking forward to connecting.",
+        "expected_intent": "Meeting Request",
+        "expected_meeting_detected": True,
+        "expected_calendar_event": True,
+        "expected_auto_send": True
+    },
+    {
+        "name": "General Inquiry (Non-meeting)",
+        "subject": "Question about Features",
+        "body": "Hi, I wanted to ask about your product features and pricing. Can you provide more information?",
+        "expected_intent": "General Inquiry",
+        "expected_meeting_detected": False,
+        "expected_calendar_event": False,
+        "expected_auto_send": True
+    }
+]
 
 class ProductionFlowTester:
     def __init__(self):
