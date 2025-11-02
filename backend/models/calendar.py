@@ -46,6 +46,10 @@ class CalendarEvent(BaseModel):
     detected_from_email: bool = False
     confidence: Optional[float] = None
     
+    # Conflict tracking
+    has_conflicts: bool = False
+    conflicts: List[dict] = []
+    
     # Reminder
     reminder_sent: bool = False
     reminder_sent_at: Optional[str] = None
