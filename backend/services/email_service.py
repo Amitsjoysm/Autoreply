@@ -345,27 +345,28 @@ class EmailService:
             })
             is_reply = sent_email is not None
         
-        # Also check if this is a response in an existing thread where we sent an email
+        # Also check if this is a response in an existing thread where we processed emails
         if not is_reply and email_data.get('thread_id'):
-            # Check if we have sent any emails in this thread
-            sent_in_thread = await self.db.emails.find_one({
+            # Check if we have any other inbound emails in this thread that were already processed
+            # This helps detect replies even if we don't have the outbound record
+            previous_emails = await self.db.emails.count_documents({
                 "thread_id": email_data['thread_id'],
                 "user_id": user_id,
-                "direction": "outbound",
-                "replied": True  # We sent an auto-reply in this thread
+                "direction": "inbound",
+                "from_email": email_data['from']  # Same sender
             })
-            # If we sent an email in this thread and this is from the original sender (not us)
-            if sent_in_thread:
-                # Get the original inbound email in this thread
-                original_email = await self.db.emails.find_one({
+            
+            # If there's at least one previous email from the same sender in this thread,
+            # and we replied to it (indicated by replied=True), this is a reply
+            if previous_emails > 0:
+                previous_replied = await self.db.emails.find_one({
                     "thread_id": email_data['thread_id'],
                     "user_id": user_id,
-                    "direction": "inbound"
-                }, sort=[("received_at", 1)])  # Get the first inbound email
-                
-                # If this email is from the same person as the original email, it's a reply
-                if original_email and email_data['from'] == original_email['from_email']:
-                    is_reply = True
+                    "direction": "inbound",
+                    "from_email": email_data['from'],
+                    "replied": True  # We sent a reply to their email
+                })
+                is_reply = previous_replied is not None
         
         email_obj = Email(
             user_id=user_id,
