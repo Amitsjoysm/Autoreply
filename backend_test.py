@@ -14,7 +14,7 @@ import redis
 import os
 
 # Configuration - Use the correct backend URL from review request
-BACKEND_URL = "https://app-restart-setup.preview.emergentagent.com"
+BACKEND_URL = "https://worker-restart-1.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test data - Use existing user from review request
