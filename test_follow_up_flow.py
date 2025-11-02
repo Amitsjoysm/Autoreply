@@ -64,14 +64,16 @@ async def get_user_and_account():
     account = await db.email_accounts.find_one({"email": RECIPIENT_EMAIL, "is_active": True})
     if not account:
         print(f"❌ No active email account found for {RECIPIENT_EMAIL}")
+        client.close()
         return None, None, None
     
     user = await db.users.find_one({"id": account['user_id']})
     if not user:
         print(f"❌ No user found for account {account['id']}")
+        client.close()
         return None, None, None
     
-    await client.close()
+    client.close()
     return user, account, db
 
 async def check_email_processing(user_id, subject):
