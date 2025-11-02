@@ -110,13 +110,13 @@ async def check_email_processing(user_id, subject):
             
             if email.get('replied'):
                 print(f"\n✅ Auto-reply sent!")
-                await client.close()
+                client.close()
                 return email
         
         await asyncio.sleep(5)
         print("   Waiting... (checking every 5 seconds)")
     
-    await client.close()
+    client.close()
     print(f"\n❌ Timeout: Email not processed within {max_wait} seconds")
     return None
 
