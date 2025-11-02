@@ -10,6 +10,7 @@ class FollowUp(BaseModel):
     user_id: str
     email_id: str
     email_account_id: str
+    thread_id: Optional[str] = None  # Thread ID for sending in same conversation
     
     # Schedule
     scheduled_at: str
