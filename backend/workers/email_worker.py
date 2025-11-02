@@ -363,25 +363,48 @@ async def process_email(email_id: str):
                         })
                         logger.info(f"Auto-sent reply for email {email.id}")
                         
-                        # Create automatic follow-up for sent emails
-                        from models.follow_up import FollowUp
-                        follow_up_date = datetime.now(timezone.utc) + timedelta(days=2)
-                        
-                        follow_up = FollowUp(
-                            user_id=email.user_id,
-                            email_id=email.id,
-                            email_account_id=email.email_account_id,
-                            scheduled_at=follow_up_date.isoformat(),
-                            subject=f"Follow-up: {email.subject}",
-                            body=f"Just following up on my previous email regarding: {email.subject}\n\nLet me know if you have any questions.\n\n{account.signature if account.signature else 'Best regards'}"
-                        )
-                        
-                        await db.follow_ups.insert_one(follow_up.model_dump())
-                        await add_action(email_id, "follow_up_scheduled", {
-                            "scheduled_at": follow_up_date.isoformat(),
-                            "days_from_now": 2
-                        })
-                        logger.info(f"Scheduled follow-up for email {email.id} at {follow_up_date}")
+                        # Create automatic follow-ups for sent emails based on account settings
+                        if account.follow_up_enabled:
+                            from models.follow_up import FollowUp
+                            
+                            # Create multiple follow-ups based on account settings
+                            follow_ups_created = []
+                            for i in range(account.follow_up_count):
+                                days_offset = account.follow_up_days * (i + 1)
+                                follow_up_date = datetime.now(timezone.utc) + timedelta(days=days_offset)
+                                
+                                # Customize message based on follow-up number
+                                if i == 0:
+                                    body = f"Just following up on my previous email regarding: {email.subject}\n\nLet me know if you have any questions.\n\n{account.signature if account.signature else 'Best regards'}"
+                                elif i == 1:
+                                    body = f"I wanted to circle back on my email about: {email.subject}\n\nHave you had a chance to review it?\n\n{account.signature if account.signature else 'Best regards'}"
+                                else:
+                                    body = f"Final follow-up regarding: {email.subject}\n\nPlease let me know if you need any additional information.\n\n{account.signature if account.signature else 'Best regards'}"
+                                
+                                follow_up = FollowUp(
+                                    user_id=email.user_id,
+                                    email_id=email.id,
+                                    email_account_id=email.email_account_id,
+                                    thread_id=email.thread_id,  # Store thread_id for same conversation
+                                    scheduled_at=follow_up_date.isoformat(),
+                                    subject=f"Follow-up #{i+1}: {email.subject}",
+                                    body=body
+                                )
+                                
+                                await db.follow_ups.insert_one(follow_up.model_dump())
+                                follow_ups_created.append({
+                                    "number": i + 1,
+                                    "scheduled_at": follow_up_date.isoformat(),
+                                    "days_from_now": days_offset
+                                })
+                            
+                            await add_action(email_id, "follow_ups_scheduled", {
+                                "follow_ups": follow_ups_created,
+                                "total_count": len(follow_ups_created)
+                            })
+                            logger.info(f"Scheduled {len(follow_ups_created)} follow-ups for email {email.id}")
+                        else:
+                            logger.info(f"Follow-ups disabled for account {account.email}")
                     else:
                         update_data['status'] = 'error'
                         update_data['error_message'] = "Failed to send email"
