@@ -81,3 +81,6 @@ class EmailAccountResponse(BaseModel):
     created_at: str
     persona: Optional[str] = None
     signature: Optional[str] = None
+    follow_up_enabled: bool = True
+    follow_up_days: int = 2
+    follow_up_count: int = 3
