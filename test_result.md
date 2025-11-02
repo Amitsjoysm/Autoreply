@@ -788,6 +788,53 @@ agent_communication:
   
   - agent: "main"
     message: |
+      🔧 CURRENT SESSION - SEED DATA CREATED & PRODUCTION VERIFICATION
+      
+      USER: amits.joys@gmail.com (ID: 2d41b84c-6be3-4c44-9263-8e14fe2483b6)
+      
+      ✅ SEED DATA CREATED:
+      - 8 Intents (7 with auto_send=true, 1 manual review)
+      - 7 Knowledge Base entries
+      - All data properly configured
+      
+      ✅ CODE VERIFICATION COMPLETED:
+      
+      ISSUE #1: Event details with joining links
+      STATUS: ✅ ALREADY CORRECTLY IMPLEMENTED
+      - Calendar events created with Google Meet links (conferenceDataVersion=1)
+      - meet_link and html_link properly extracted (line 221-222 in email_worker.py)
+      - Event details stored in update_data['calendar_event'] (line 234)
+      - Draft generation receives calendar_event parameter (line 269)
+      - AI prompt explicitly includes meeting details with links (lines 217-233 in ai_agent_service.py)
+      
+      ISSUE #2: Single email in same thread
+      STATUS: ✅ ALREADY CORRECTLY IMPLEMENTED
+      - send_calendar_notification function exists but is NEVER called
+      - Only ONE email sent with all details (line 352)
+      - Thread ID properly passed to Gmail API (thread_id parameter)
+      - Draft includes BOTH reply AND event details in single message
+      - No separate calendar notification email sent
+      
+      CALENDAR AGENT THREAD CONTEXT:
+      STATUS: ✅ CONFIRMED
+      - detect_meeting() receives thread_context parameter (line 154)
+      - Thread context passed from email_service.get_thread_context (line 127)
+      - AI can avoid duplicate event creation using conversation history
+      
+      SYSTEM ARCHITECTURE VERIFICATION:
+      1. Email received → Thread context extracted (line 127)
+      2. Meeting detected WITH thread context (line 154)
+      3. Calendar event created WITH meet_link
+      4. Event details stored for draft generation
+      5. Draft generated WITH event details in prompt
+      6. SINGLE email sent in SAME thread with ALL details
+      
+      READY FOR TESTING WITH PROVIDED CREDENTIALS:
+      - Test email: sashadhagle@gmail.com
+      - SMTP password: dibphfyezwffocsa
+  
+  - agent: "main"
+    message: |
       🔧 PRODUCTION-READY ENHANCEMENTS COMPLETED (PREVIOUS SESSION)
       
       USER: amits.joys@gmail.com (ID: 93235fa9-9071-4e00-bcde-ea9152fef14e)
