@@ -230,8 +230,8 @@ async def process_email(email_id: str):
                         email.id
                     )
                     
-                    # Store event for draft generation
-                    update_data['calendar_event'] = event_created
+                    # Store event for draft generation (convert to dict for MongoDB compatibility)
+                    update_data['calendar_event'] = event_created.model_dump() if hasattr(event_created, 'model_dump') else event_created
                     
                     await add_action(email_id, "calendar_event_created", {
                         "event_id": event_result['event_id'],
