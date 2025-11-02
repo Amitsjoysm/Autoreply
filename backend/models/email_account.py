@@ -65,6 +65,9 @@ class EmailAccountUpdate(BaseModel):
     signature: Optional[str] = None
     persona: Optional[str] = None
     is_active: Optional[bool] = None
+    follow_up_enabled: Optional[bool] = None
+    follow_up_days: Optional[int] = None
+    follow_up_count: Optional[int] = None
 
 class EmailAccountResponse(BaseModel):
     id: str
