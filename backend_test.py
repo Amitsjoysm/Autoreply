@@ -19,13 +19,13 @@ API_BASE = f"{BACKEND_URL}/api"
 
 # Test data - Use existing user from review request
 TEST_USER = {
-    "email": "samhere.joy@gmail.com",
+    "email": "amits.joys@gmail.com",
     "password": "SecurePass2024!",
-    "name": "Sam Joy"
+    "name": "Amit Joy"
 }
 
 # Target user ID from review request
-TARGET_USER_ID = "af3a5d43-8c97-4395-a57e-64fa8cb1c4b3"
+TARGET_USER_ID = "93235fa9-9071-4e00-bcde-ea9152fef14e"
 
 class ProductionFlowTester:
     def __init__(self):
