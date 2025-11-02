@@ -345,6 +345,28 @@ class EmailService:
             })
             is_reply = sent_email is not None
         
+        # Also check if this is a response in an existing thread where we sent an email
+        if not is_reply and email_data.get('thread_id'):
+            # Check if we have sent any emails in this thread
+            sent_in_thread = await self.db.emails.find_one({
+                "thread_id": email_data['thread_id'],
+                "user_id": user_id,
+                "direction": "outbound",
+                "replied": True  # We sent an auto-reply in this thread
+            })
+            # If we sent an email in this thread and this is from the original sender (not us)
+            if sent_in_thread:
+                # Get the original inbound email in this thread
+                original_email = await self.db.emails.find_one({
+                    "thread_id": email_data['thread_id'],
+                    "user_id": user_id,
+                    "direction": "inbound"
+                }, sort=[("received_at", 1)])  # Get the first inbound email
+                
+                # If this email is from the same person as the original email, it's a reply
+                if original_email and email_data['from'] == original_email['from_email']:
+                    is_reply = True
+        
         email_obj = Email(
             user_id=user_id,
             email_account_id=account_id,
