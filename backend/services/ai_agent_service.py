@@ -198,21 +198,29 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
             # Build calendar event details if meeting was created
             calendar_str = ""
             if calendar_event:
+                # Handle both dict and Pydantic model
+                if hasattr(calendar_event, 'model_dump'):
+                    # It's a Pydantic model
+                    event_dict = calendar_event.model_dump()
+                else:
+                    # It's already a dict
+                    event_dict = calendar_event
+                
                 calendar_str = f"""
 
 IMPORTANT - A CALENDAR EVENT WAS CREATED:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Title: {calendar_event.title}
-Date & Time: {calendar_event.start_time} to {calendar_event.end_time} ({calendar_event.timezone})
-Location: {calendar_event.location or 'Virtual Meeting'}
+Title: {event_dict.get('title')}
+Date & Time: {event_dict.get('start_time')} to {event_dict.get('end_time')} ({event_dict.get('timezone', 'UTC')})
+Location: {event_dict.get('location') or 'Virtual Meeting'}
 """
-                if calendar_event.meet_link:
-                    calendar_str += f"Google Meet Link: {calendar_event.meet_link}\n"
-                if calendar_event.html_link:
-                    calendar_str += f"View in Calendar: {calendar_event.html_link}\n"
+                if event_dict.get('meet_link'):
+                    calendar_str += f"Google Meet Link: {event_dict.get('meet_link')}\n"
+                if event_dict.get('html_link'):
+                    calendar_str += f"View in Calendar: {event_dict.get('html_link')}\n"
                 
-                if calendar_event.attendees:
-                    calendar_str += f"Attendees: {', '.join(calendar_event.attendees)}\n"
+                if event_dict.get('attendees'):
+                    calendar_str += f"Attendees: {', '.join(event_dict.get('attendees', []))}\n"
                 
                 calendar_str += """━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
