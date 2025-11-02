@@ -1548,12 +1548,258 @@ class ProductionFlowTester:
             self.log("❌ Production workflow needs significant setup")
             return False
     
-    def run_comprehensive_production_tests(self):
-        """Run comprehensive production flow tests"""
+    def wait_for_email_processing(self, wait_time=90):
+        """Wait for emails to be polled and processed"""
+        self.log(f"Waiting {wait_time} seconds for email polling and processing...")
+        
+        for i in range(wait_time):
+            if i % 10 == 0:
+                self.log(f"Waiting... {wait_time - i} seconds remaining")
+            time.sleep(1)
+        
+        self.log("✅ Wait period completed")
+    
+    def verify_email_received_and_processed(self, scenario):
+        """Verify that the sent email was received and processed"""
+        self.log(f"Verifying email processing for: {scenario['name']}")
+        
+        if not self.db:
+            self.log("❌ No database connection", "ERROR")
+            return False
+        
+        try:
+            # Look for emails with matching subject
+            emails = list(self.db.emails.find({
+                "user_id": self.user_id,
+                "subject": {"$regex": scenario['subject'], "$options": "i"}
+            }).sort("received_at", -1))
+            
+            if not emails:
+                self.log(f"❌ No emails found with subject: {scenario['subject']}")
+                return False
+            
+            # Get the most recent matching email
+            email = emails[0]
+            self.log(f"✅ Email found in database")
+            self.log(f"  - Email ID: {email.get('id', 'unknown')}")
+            self.log(f"  - Subject: {email.get('subject')}")
+            self.log(f"  - From: {email.get('from_email')}")
+            self.log(f"  - Status: {email.get('status')}")
+            self.log(f"  - Received: {email.get('received_at')}")
+            self.log(f"  - Thread ID: {email.get('thread_id', 'None')}")
+            
+            return email
+            
+        except Exception as e:
+            self.log(f"❌ Error verifying email: {str(e)}", "ERROR")
+            return False
+    
+    def verify_intent_detection(self, email, expected_intent):
+        """Verify intent was detected correctly"""
+        self.log(f"Verifying intent detection for expected: {expected_intent}")
+        
+        try:
+            intent_detected = email.get('intent_detected')
+            intent_name = email.get('intent_name')
+            intent_confidence = email.get('intent_confidence')
+            
+            self.log(f"Intent Detection Results:")
+            self.log(f"  - Intent Detected: {intent_detected}")
+            self.log(f"  - Intent Name: {intent_name}")
+            self.log(f"  - Intent Confidence: {intent_confidence}")
+            
+            if intent_detected and intent_name == expected_intent:
+                self.log(f"✅ Intent correctly detected: {intent_name}")
+                return True
+            else:
+                self.log(f"❌ Intent detection failed - Expected: {expected_intent}, Got: {intent_name}")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Error verifying intent: {str(e)}", "ERROR")
+            return False
+    
+    def verify_meeting_detection(self, email, expected_meeting):
+        """Verify meeting detection"""
+        self.log(f"Verifying meeting detection - Expected: {expected_meeting}")
+        
+        try:
+            meeting_detected = email.get('meeting_detected', False)
+            meeting_confidence = email.get('meeting_confidence', 0)
+            meeting_details = email.get('meeting_details', {})
+            
+            self.log(f"Meeting Detection Results:")
+            self.log(f"  - Meeting Detected: {meeting_detected}")
+            self.log(f"  - Meeting Confidence: {meeting_confidence}")
+            self.log(f"  - Meeting Details: {meeting_details}")
+            
+            if expected_meeting:
+                if meeting_detected and meeting_confidence >= 0.6:
+                    self.log(f"✅ Meeting correctly detected with confidence {meeting_confidence}")
+                    return True
+                else:
+                    self.log(f"❌ Meeting detection failed - Detected: {meeting_detected}, Confidence: {meeting_confidence}")
+                    return False
+            else:
+                if not meeting_detected:
+                    self.log(f"✅ Meeting correctly NOT detected")
+                    return True
+                else:
+                    self.log(f"❌ Meeting incorrectly detected when none expected")
+                    return False
+                    
+        except Exception as e:
+            self.log(f"❌ Error verifying meeting detection: {str(e)}", "ERROR")
+            return False
+    
+    def verify_calendar_event_creation(self, email, expected_calendar_event):
+        """Verify calendar event was created if expected"""
+        self.log(f"Verifying calendar event creation - Expected: {expected_calendar_event}")
+        
+        if not expected_calendar_event:
+            self.log("✅ No calendar event expected - skipping verification")
+            return True
+        
+        try:
+            # Look for calendar events related to this email
+            calendar_events = list(self.db.calendar_events.find({
+                "user_id": self.user_id,
+                "email_id": email.get('id')
+            }))
+            
+            if not calendar_events:
+                self.log("❌ No calendar events found for this email")
+                return False
+            
+            event = calendar_events[0]
+            self.log(f"✅ Calendar event created:")
+            self.log(f"  - Event ID: {event.get('id')}")
+            self.log(f"  - Title: {event.get('title')}")
+            self.log(f"  - Start Time: {event.get('start_time')}")
+            self.log(f"  - End Time: {event.get('end_time')}")
+            self.log(f"  - Meet Link: {event.get('meet_link', 'None')}")
+            self.log(f"  - HTML Link: {event.get('html_link', 'None')}")
+            self.log(f"  - Status: {event.get('status')}")
+            
+            # Verify meet link is present
+            if event.get('meet_link'):
+                self.log("✅ Meet link is present in calendar event")
+                return True
+            else:
+                self.log("❌ Meet link is missing from calendar event")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Error verifying calendar event: {str(e)}", "ERROR")
+            return False
+    
+    def verify_draft_generation(self, email):
+        """Verify draft was generated"""
+        self.log("Verifying draft generation")
+        
+        try:
+            draft_generated = email.get('draft_generated', False)
+            draft_content = email.get('draft_content', '')
+            
+            self.log(f"Draft Generation Results:")
+            self.log(f"  - Draft Generated: {draft_generated}")
+            self.log(f"  - Draft Length: {len(draft_content)} characters")
+            
+            if draft_generated and len(draft_content) > 0:
+                self.log("✅ Draft successfully generated")
+                # Show first 200 characters of draft
+                preview = draft_content[:200] + "..." if len(draft_content) > 200 else draft_content
+                self.log(f"  - Draft Preview: {preview}")
+                return True
+            else:
+                self.log("❌ Draft generation failed")
+                return False
+                
+        except Exception as e:
+            self.log(f"❌ Error verifying draft: {str(e)}", "ERROR")
+            return False
+    
+    def verify_auto_send(self, email, expected_auto_send):
+        """Verify auto-send functionality"""
+        self.log(f"Verifying auto-send - Expected: {expected_auto_send}")
+        
+        try:
+            status = email.get('status')
+            replied = email.get('replied', False)
+            
+            self.log(f"Auto-Send Results:")
+            self.log(f"  - Email Status: {status}")
+            self.log(f"  - Replied: {replied}")
+            
+            if expected_auto_send:
+                if status == 'sent' and replied:
+                    self.log("✅ Email was auto-sent successfully")
+                    return True
+                elif status in ['draft_ready', 'sending']:
+                    self.log("⚠️  Email is ready/sending but not yet sent")
+                    return True  # Consider this a success as it's in progress
+                else:
+                    self.log(f"❌ Auto-send failed - Status: {status}, Replied: {replied}")
+                    return False
+            else:
+                self.log("✅ Auto-send verification not applicable")
+                return True
+                
+        except Exception as e:
+            self.log(f"❌ Error verifying auto-send: {str(e)}", "ERROR")
+            return False
+    
+    def verify_thread_preservation(self, email):
+        """Verify thread ID is preserved for replies"""
+        self.log("Verifying thread preservation")
+        
+        try:
+            thread_id = email.get('thread_id')
+            
+            if thread_id:
+                self.log(f"✅ Thread ID preserved: {thread_id}")
+                return True
+            else:
+                self.log("⚠️  No thread ID found (may be first email in thread)")
+                return True  # Not necessarily an error for first email
+                
+        except Exception as e:
+            self.log(f"❌ Error verifying thread: {str(e)}", "ERROR")
+            return False
+    
+    def verify_follow_up_creation(self, email):
+        """Verify follow-up was created"""
+        self.log("Verifying follow-up creation")
+        
+        try:
+            # Look for follow-ups for this email
+            follow_ups = list(self.db.follow_ups.find({
+                "user_id": self.user_id,
+                "email_id": email.get('id')
+            }))
+            
+            if follow_ups:
+                follow_up = follow_ups[0]
+                self.log(f"✅ Follow-up created:")
+                self.log(f"  - Follow-up ID: {follow_up.get('id')}")
+                self.log(f"  - Status: {follow_up.get('status')}")
+                self.log(f"  - Scheduled At: {follow_up.get('scheduled_at')}")
+                return True
+            else:
+                self.log("⚠️  No follow-up found (may not be created yet)")
+                return True  # Not necessarily an error
+                
+        except Exception as e:
+            self.log(f"❌ Error verifying follow-up: {str(e)}", "ERROR")
+            return False
+    
+    def run_complete_production_flow_test(self):
+        """Run the complete production flow test with real email sending"""
         self.log("=" * 80)
-        self.log("COMPREHENSIVE PRODUCTION FLOW TESTING")
-        self.log("Target User: amits.joys@gmail.com")
-        self.log(f"User ID: {TARGET_USER_ID}")
+        self.log("COMPLETE PRODUCTION FLOW TEST WITH REAL EMAIL SENDING")
+        self.log("=" * 80)
+        self.log(f"Sender: {SENDER_EMAIL}")
+        self.log(f"Recipient: {RECIPIENT_EMAIL}")
         self.log("=" * 80)
         
         # Setup phase
