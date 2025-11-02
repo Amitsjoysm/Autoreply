@@ -29,6 +29,7 @@ class CalendarEvent(BaseModel):
     user_id: str
     calendar_provider_id: str
     email_id: Optional[str] = None  # Linked email
+    thread_id: Optional[str] = None  # Thread ID for sending reminders in same conversation
     
     # Event details
     event_id: str  # Provider's event ID
