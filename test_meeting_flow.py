@@ -210,7 +210,7 @@ John Doe""",
             "subject": "Another Meeting Request - Same Time",
             "from_email": "jane.smith@example.com",
             "from_name": "Jane Smith",
-            "to_email": TARGET_EMAIL,
+            "to_email": [TARGET_EMAIL],
             "body": """Hi Amit,
 
 Can we schedule a meeting tomorrow at 2pm? I need to discuss the budget review.
