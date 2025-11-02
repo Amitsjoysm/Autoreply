@@ -165,6 +165,9 @@ async def process_email(email_id: str):
         
         # Step 3: If meeting detected, create calendar event and send notification
         event_created = None
+        has_conflict = False
+        conflict_details = []
+        
         if is_meeting and meeting_confidence >= config.MEETING_CONFIDENCE_THRESHOLD and meeting_details:
             provider_doc = await db.calendar_providers.find_one({
                 "user_id": email.user_id,
@@ -175,37 +178,65 @@ async def process_email(email_id: str):
                 from models.calendar import CalendarProvider
                 provider = CalendarProvider(**provider_doc)
                 
+                # Check for conflicts
                 conflicts = await calendar_service.check_conflicts(
                     provider.id,
                     meeting_details['start_time'],
                     meeting_details['end_time']
                 )
                 
-                if not conflicts:
-                    event_id = await calendar_service.create_event_google(provider, meeting_details)
+                if conflicts:
+                    # Log conflicts but still create event (user can decide later)
+                    has_conflict = True
+                    conflict_details = [
+                        {
+                            "title": c.title,
+                            "start_time": c.start_time,
+                            "end_time": c.end_time
+                        } for c in conflicts
+                    ]
                     
-                    if event_id:
-                        meeting_details['event_id'] = event_id
-                        meeting_details['detected_from_email'] = True
-                        meeting_details['confidence'] = meeting_confidence
-                        
-                        event_created = await calendar_service.save_event(
-                            email.user_id,
-                            provider.id,
-                            meeting_details,
-                            email.id
-                        )
-                        
-                        await add_action(email_id, "calendar_event_created", {
-                            "event_id": event_id,
-                            "title": meeting_details.get('title'),
-                            "start_time": meeting_details.get('start_time')
-                        })
-                        
-                        logger.info(f"Created calendar event for email {email.id}")
-                        
-                        # Send calendar event notification email
-                        await send_calendar_notification(email, event_created, email_service)
+                    await add_action(email_id, "calendar_conflicts_detected", {
+                        "conflicts": conflict_details,
+                        "message": "Meeting conflicts detected. Event will be created for review."
+                    })
+                    
+                    logger.warning(f"Meeting conflicts detected for email {email.id}: {len(conflicts)} conflicts")
+                    
+                    # Store conflict info in meeting details
+                    meeting_details['has_conflicts'] = True
+                    meeting_details['conflicts'] = conflict_details
+                
+                # Create event even if there are conflicts (user can resolve)
+                event_id = await calendar_service.create_event_google(provider, meeting_details)
+                
+                if event_id:
+                    meeting_details['event_id'] = event_id
+                    meeting_details['detected_from_email'] = True
+                    meeting_details['confidence'] = meeting_confidence
+                    
+                    event_created = await calendar_service.save_event(
+                        email.user_id,
+                        provider.id,
+                        meeting_details,
+                        email.id
+                    )
+                    
+                    await add_action(email_id, "calendar_event_created", {
+                        "event_id": event_id,
+                        "title": meeting_details.get('title'),
+                        "start_time": meeting_details.get('start_time'),
+                        "has_conflicts": has_conflict
+                    })
+                    
+                    logger.info(f"Created calendar event for email {email.id}")
+                    
+                    # Send calendar event notification email
+                    await send_calendar_notification(email, event_created, email_service, has_conflict, conflict_details)
+                else:
+                    await add_action(email_id, "calendar_event_creation_failed", {
+                        "message": "Failed to create event in Google Calendar"
+                    }, "failed")
         
         # Step 4: Generate draft with retry logic (max 2 attempts)
         await db.emails.update_one({"id": email_id}, {"$set": {"status": "drafting"}})
