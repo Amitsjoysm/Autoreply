@@ -38,8 +38,23 @@ const FollowUps = () => {
       await API.deleteFollowUp(followUpId);
       toast.success('Follow-up cancelled');
       loadFollowUps();
+      setShowDetailsModal(false);
     } catch (error) {
       toast.error('Failed to cancel follow-up');
+    }
+  };
+
+  const handleViewDetails = async (followUpId) => {
+    setDetailsLoading(true);
+    setShowDetailsModal(true);
+    try {
+      const details = await API.getFollowUp(followUpId);
+      setSelectedFollowUp(details);
+    } catch (error) {
+      toast.error('Failed to load follow-up details');
+      setShowDetailsModal(false);
+    } finally {
+      setDetailsLoading(false);
     }
   };
 
