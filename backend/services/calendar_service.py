@@ -199,12 +199,13 @@ class CalendarService:
             logger.error(f"Error checking conflicts: {e}")
             return []
     
-    async def save_event(self, user_id: str, provider_id: str, event_data: Dict, email_id: Optional[str] = None) -> CalendarEvent:
+    async def save_event(self, user_id: str, provider_id: str, event_data: Dict, email_id: Optional[str] = None, thread_id: Optional[str] = None) -> CalendarEvent:
         """Save calendar event to database"""
         event = CalendarEvent(
             user_id=user_id,
             calendar_provider_id=provider_id,
             email_id=email_id,
+            thread_id=thread_id,  # Store thread_id for reminder sending
             event_id=event_data.get('event_id', str(uuid.uuid4())),
             title=event_data['title'],
             description=event_data.get('description'),
