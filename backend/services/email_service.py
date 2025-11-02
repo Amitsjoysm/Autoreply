@@ -261,7 +261,8 @@ class EmailService:
             
             # Build message body with thread support
             message_body = {'raw': raw_message}
-            if thread_id:
+            if thread_id and not thread_id.startswith('test-'):
+                # Only use thread_id if it's a real Gmail thread (not a test thread)
                 message_body['threadId'] = thread_id
             
             service.users().messages().send(
@@ -272,6 +273,18 @@ class EmailService:
             return True
         except Exception as e:
             logger.error(f"Error sending Gmail OAuth email: {e}")
+            # If thread_id error, try without thread_id
+            if 'Invalid thread_id' in str(e) and thread_id:
+                try:
+                    logger.info("Retrying without thread_id...")
+                    message_body = {'raw': raw_message}
+                    service.users().messages().send(
+                        userId='me',
+                        body=message_body
+                    ).execute()
+                    return True
+                except Exception as retry_e:
+                    logger.error(f"Retry failed: {retry_e}")
             return False
     
     async def send_email_smtp(self, account: EmailAccount, email_data: EmailSend) -> bool:
