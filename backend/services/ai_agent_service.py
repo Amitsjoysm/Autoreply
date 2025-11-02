@@ -59,38 +59,61 @@ class AIAgentService:
                 for msg in thread_context:
                     thread_str += f"From: {msg['from']} | {msg['received_at']}\nSubject: {msg['subject']}\nBody: {msg['body'][:200]}...\n\n"
             
-            prompt = f"""Current Date & Time: {current_time}
+            prompt = f"""Current Date & Time: {current_time} (UTC)
 {thread_str}
 
-Analyze this email and determine if it contains a meeting request or invitation.
+Analyze this email and determine if it contains a meeting request, invitation, or scheduling discussion.
 
 Email Subject: {email.subject}
 Email Body: {email.body}
 
+MEETING DETECTION RULES:
+1. Look for explicit meeting requests or invitations
+2. Look for date/time mentions with context of scheduling
+3. Check for meeting-related keywords: meeting, call, zoom, teams, schedule, discuss, sync, catch up
+4. Ignore casual mentions like "let's meet sometime" without specific details
+
 If a meeting is detected, extract:
-1. Meeting date and time (convert to ISO format YYYY-MM-DDTHH:MM:SS)
-2. Duration or end time
-3. Location (physical or virtual)
-4. Meeting title/purpose
-5. Attendees
+1. Meeting date and time - IMPORTANT:
+   - Convert to ISO format: YYYY-MM-DDTHH:MM:SS
+   - If timezone is mentioned, convert to UTC
+   - If no year mentioned, assume current year ({datetime.now(timezone.utc).year})
+   - If only date mentioned, assume 10:00 AM local time
+   - Common formats to recognize:
+     * "tomorrow at 3pm" 
+     * "next Tuesday at 2:30pm"
+     * "January 15 at 2pm EST"
+     * "15th at 14:00"
+
+2. Duration/end time:
+   - If duration mentioned (e.g., "30 min meeting"), calculate end time
+   - If no duration, default to 1 hour
+   - Format: YYYY-MM-DDTHH:MM:SS
+
+3. Location: physical address or virtual (Zoom, Teams, Google Meet, etc.)
+
+4. Meeting title/purpose: extract or infer from context
+
+5. Attendees: email addresses mentioned
 
 IMPORTANT: Use the thread context to avoid extracting duplicate meeting information if this is a follow-up message about an existing meeting.
 
 Respond in JSON format:
 {{
   "is_meeting": true/false,
-  "confidence": 0.0-1.0,
+  "confidence": 0.0-1.0 (use 0.8+ for explicit requests, 0.6-0.8 for implied meetings),
   "details": {{
-    "title": "...",
+    "title": "Meeting title or purpose",
     "start_time": "2025-01-15T14:00:00",
     "end_time": "2025-01-15T15:00:00",
-    "location": "...",
-    "description": "...",
-    "attendees": ["email@example.com"]
+    "location": "Location or 'Virtual' or 'TBD'",
+    "description": "Brief description",
+    "attendees": ["email@example.com"],
+    "timezone": "UTC"
   }}
 }}
 
-If no meeting detected, set is_meeting to false and confidence to 0.0."""
+If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
             
             async with httpx.AsyncClient(timeout=30.0) as client:
                 response = await client.post(
