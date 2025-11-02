@@ -40,7 +40,7 @@ class MeetingFlowTester:
             "subject": "Meeting Request - Project Discussion",
             "from_email": "john.doe@example.com",
             "from_name": "John Doe",
-            "to_email": TARGET_EMAIL,
+            "to_email": [TARGET_EMAIL],
             "body": f"""Hi Amit,
 
 Can we schedule a meeting tomorrow at 2pm for 30 minutes? I'd like to discuss the upcoming project requirements and timeline.
