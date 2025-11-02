@@ -283,8 +283,8 @@ class ProductionFlowTester:
         
         try:
             # Query intents for target user
-            intents = list(self.db.intents.find({"user_id": TARGET_USER_ID}))
-            self.log(f"Found {len(intents)} intents for user {TARGET_USER_ID}")
+            intents = list(self.db.intents.find({"user_id": self.user_id}))
+            self.log(f"Found {len(intents)} intents for user {self.user_id}")
             
             if len(intents) != 7:
                 self.log(f"❌ Expected 7 intents, found {len(intents)}")
@@ -318,8 +318,8 @@ class ProductionFlowTester:
         
         try:
             # Query knowledge base for target user
-            kb_entries = list(self.db.knowledge_base.find({"user_id": TARGET_USER_ID}))
-            self.log(f"Found {len(kb_entries)} knowledge base entries for user {TARGET_USER_ID}")
+            kb_entries = list(self.db.knowledge_base.find({"user_id": self.user_id}))
+            self.log(f"Found {len(kb_entries)} knowledge base entries for user {self.user_id}")
             
             if len(kb_entries) != 6:
                 self.log(f"❌ Expected 6 knowledge base entries, found {len(kb_entries)}")
@@ -346,8 +346,8 @@ class ProductionFlowTester:
         
         try:
             # Query email accounts for target user
-            email_accounts = list(self.db.email_accounts.find({"user_id": TARGET_USER_ID}))
-            self.log(f"Found {len(email_accounts)} email accounts for user {TARGET_USER_ID}")
+            email_accounts = list(self.db.email_accounts.find({"user_id": self.user_id}))
+            self.log(f"Found {len(email_accounts)} email accounts for user {self.user_id}")
             
             if len(email_accounts) == 0:
                 self.log("❌ No email accounts found")
@@ -400,8 +400,8 @@ class ProductionFlowTester:
         
         try:
             # Query calendar providers for target user
-            calendar_providers = list(self.db.calendar_providers.find({"user_id": TARGET_USER_ID}))
-            self.log(f"Found {len(calendar_providers)} calendar providers for user {TARGET_USER_ID}")
+            calendar_providers = list(self.db.calendar_providers.find({"user_id": self.user_id}))
+            self.log(f"Found {len(calendar_providers)} calendar providers for user {self.user_id}")
             
             if len(calendar_providers) == 0:
                 self.log("⚠️  No calendar providers found - calendar events won't be created")
@@ -525,7 +525,7 @@ class ProductionFlowTester:
         
         try:
             # Get intents from database
-            intents = list(self.db.intents.find({"user_id": TARGET_USER_ID}))
+            intents = list(self.db.intents.find({"user_id": self.user_id}))
             self.log(f"✅ Retrieved {len(intents)} intents from database")
             
             # Verify auto_send flags and priorities
@@ -631,7 +631,7 @@ class ProductionFlowTester:
             self.log(f"✅ System health: {health_data.get('status')}")
             
             # Check knowledge base in database
-            kb_entries = list(self.db.knowledge_base.find({"user_id": TARGET_USER_ID}))
+            kb_entries = list(self.db.knowledge_base.find({"user_id": self.user_id}))
             self.log(f"✅ Knowledge base database check - {len(kb_entries)} entries")
             
             # Verify knowledge base content for AI agents
@@ -641,7 +641,7 @@ class ProductionFlowTester:
                 self.log(f"  - Content length: {content_length} characters")
             
             # Check intents in database
-            intents = list(self.db.intents.find({"user_id": TARGET_USER_ID}))
+            intents = list(self.db.intents.find({"user_id": self.user_id}))
             self.log(f"✅ AI agents can access {len(intents)} intents from database")
             
             # Verify system prompt components are available
@@ -764,7 +764,7 @@ class ProductionFlowTester:
         
         try:
             # Check email accounts for polling status
-            email_accounts = list(self.db.email_accounts.find({"user_id": TARGET_USER_ID}))
+            email_accounts = list(self.db.email_accounts.find({"user_id": self.user_id}))
             
             if not email_accounts:
                 self.log("❌ No email accounts found for polling")
@@ -804,8 +804,8 @@ class ProductionFlowTester:
         
         try:
             # Query emails for target user
-            emails = list(self.db.emails.find({"user_id": TARGET_USER_ID}).sort("received_at", -1).limit(10))
-            self.log(f"Found {len(emails)} recent emails for user {TARGET_USER_ID}")
+            emails = list(self.db.emails.find({"user_id": self.user_id}).sort("received_at", -1).limit(10))
+            self.log(f"Found {len(emails)} recent emails for user {self.user_id}")
             
             if len(emails) == 0:
                 self.log("❌ No emails found in database")
@@ -859,7 +859,7 @@ class ProductionFlowTester:
         
         try:
             # Get emails with various statuses
-            emails = list(self.db.emails.find({"user_id": TARGET_USER_ID}).limit(20))
+            emails = list(self.db.emails.find({"user_id": self.user_id}).limit(20))
             
             if not emails:
                 self.log("❌ No emails to check status tracking")
@@ -910,7 +910,7 @@ class ProductionFlowTester:
         try:
             # Find emails with action history
             emails_with_history = list(self.db.emails.find({
-                "user_id": TARGET_USER_ID,
+                "user_id": self.user_id,
                 "action_history": {"$exists": True, "$ne": []}
             }).limit(5))
             
@@ -967,8 +967,8 @@ class ProductionFlowTester:
         
         try:
             # Check follow-ups collection
-            follow_ups = list(self.db.follow_ups.find({"user_id": TARGET_USER_ID}).limit(10))
-            self.log(f"Found {len(follow_ups)} follow-ups for user {TARGET_USER_ID}")
+            follow_ups = list(self.db.follow_ups.find({"user_id": self.user_id}).limit(10))
+            self.log(f"Found {len(follow_ups)} follow-ups for user {self.user_id}")
             
             if len(follow_ups) == 0:
                 self.log("⚠️  No follow-ups found - may not have been created yet")
@@ -1014,7 +1014,7 @@ class ProductionFlowTester:
         try:
             # Look for emails with thread_id (indicating replies)
             emails_with_threads = list(self.db.emails.find({
-                "user_id": TARGET_USER_ID,
+                "user_id": self.user_id,
                 "thread_id": {"$exists": True, "$ne": None}
             }).limit(10))
             
@@ -1026,7 +1026,7 @@ class ProductionFlowTester:
             
             # Check for cancelled follow-ups due to replies
             cancelled_follow_ups = list(self.db.follow_ups.find({
-                "user_id": TARGET_USER_ID,
+                "user_id": self.user_id,
                 "status": "cancelled",
                 "cancellation_reason": {"$regex": "reply", "$options": "i"}
             }))
@@ -1057,7 +1057,7 @@ class ProductionFlowTester:
         
         try:
             # Get emails and group by thread_id
-            emails = list(self.db.emails.find({"user_id": TARGET_USER_ID}).limit(50))
+            emails = list(self.db.emails.find({"user_id": self.user_id}).limit(50))
             
             thread_groups = {}
             for email in emails:
@@ -1200,8 +1200,8 @@ class ProductionFlowTester:
         
         try:
             # Query calendar events for target user
-            events = list(self.db.calendar_events.find({"user_id": TARGET_USER_ID}).limit(10))
-            self.log(f"Found {len(events)} calendar events for user {TARGET_USER_ID}")
+            events = list(self.db.calendar_events.find({"user_id": self.user_id}).limit(10))
+            self.log(f"Found {len(events)} calendar events for user {self.user_id}")
             
             if len(events) == 0:
                 self.log("⚠️  No calendar events found - may not have been created yet")
@@ -1233,8 +1233,8 @@ class ProductionFlowTester:
         
         try:
             # Query reminders for target user
-            reminders = list(self.db.reminders.find({"user_id": TARGET_USER_ID}).limit(10))
-            self.log(f"Found {len(reminders)} reminders for user {TARGET_USER_ID}")
+            reminders = list(self.db.reminders.find({"user_id": self.user_id}).limit(10))
+            self.log(f"Found {len(reminders)} reminders for user {self.user_id}")
             
             if len(reminders) == 0:
                 self.log("⚠️  No reminders found - may not have been created yet")
@@ -1477,7 +1477,7 @@ class ProductionFlowTester:
         # Check each component (simplified checks)
         if self.db is not None:
             # Check if we have emails being processed
-            emails = list(self.db.emails.find({"user_id": TARGET_USER_ID}).limit(5))
+            emails = list(self.db.emails.find({"user_id": self.user_id}).limit(5))
             if emails:
                 workflow_readiness["email_polling"] = True
                 
@@ -1492,7 +1492,7 @@ class ProductionFlowTester:
                     workflow_readiness["validation_system"] = True
             
             # Check intents
-            intents = list(self.db.intents.find({"user_id": TARGET_USER_ID}))
+            intents = list(self.db.intents.find({"user_id": self.user_id}))
             if len(intents) >= 6:
                 workflow_readiness["intent_classification"] = True
                 
@@ -1501,7 +1501,7 @@ class ProductionFlowTester:
                     workflow_readiness["auto_send"] = True
             
             # Check follow-ups
-            follow_ups = list(self.db.follow_ups.find({"user_id": TARGET_USER_ID}))
+            follow_ups = list(self.db.follow_ups.find({"user_id": self.user_id}))
             if follow_ups:
                 workflow_readiness["follow_up_management"] = True
                 
@@ -1510,16 +1510,16 @@ class ProductionFlowTester:
                     workflow_readiness["reply_detection"] = True
             
             # Check calendar components
-            calendar_providers = list(self.db.calendar_providers.find({"user_id": TARGET_USER_ID}))
+            calendar_providers = list(self.db.calendar_providers.find({"user_id": self.user_id}))
             if calendar_providers:
                 workflow_readiness["calendar_integration"] = True
             
-            calendar_events = list(self.db.calendar_events.find({"user_id": TARGET_USER_ID}))
+            calendar_events = list(self.db.calendar_events.find({"user_id": self.user_id}))
             if calendar_events:
                 workflow_readiness["meeting_detection"] = True
                 workflow_readiness["notification_system"] = True
             
-            reminders = list(self.db.reminders.find({"user_id": TARGET_USER_ID}))
+            reminders = list(self.db.reminders.find({"user_id": self.user_id}))
             if reminders:
                 workflow_readiness["reminder_system"] = True
         
