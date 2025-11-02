@@ -134,10 +134,15 @@ async def process_email(email_id: str):
         
         # Get intent name
         intent_name = None
+        auto_send_enabled = False
         if intent_id:
             intent_doc = await db.intents.find_one({"id": intent_id})
             if intent_doc:
                 intent_name = intent_doc.get('name', 'Unknown')
+                auto_send_enabled = intent_doc.get('auto_send', False)
+                logger.info(f"Intent matched for email {email.id}: {intent_name} (confidence: {intent_confidence}, auto_send: {auto_send_enabled})")
+        else:
+            logger.info(f"No intent matched for email {email.id} (subject: {email.subject})")
         
         await add_action(email_id, "classified", {
             "intent_id": intent_id,
