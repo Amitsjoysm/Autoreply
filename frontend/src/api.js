@@ -176,6 +176,11 @@ class API {
     return response.data;
   }
 
+  async getFollowUp(id) {
+    const response = await this.axios.get(`/follow-ups/${id}`);
+    return response.data;
+  }
+
   async createFollowUp(data) {
     const response = await this.axios.post('/follow-ups', data);
     return response.data;
