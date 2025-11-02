@@ -227,7 +227,8 @@ async def process_email(email_id: str):
                         email.user_id,
                         provider.id,
                         meeting_details,
-                        email.id
+                        email.id,
+                        email.thread_id  # Pass thread_id for reminder sending
                     )
                     
                     # Store event for draft generation (convert to dict for MongoDB compatibility)
