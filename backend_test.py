@@ -24,8 +24,8 @@ TEST_USER = {
     "name": "Amit Joy"
 }
 
-# Target user ID from review request
-TARGET_USER_ID = "1086e721-86cf-4c3d-b567-329b20bc29de"
+# Target user ID from review request - will be updated after login
+TARGET_USER_ID = "2d41b84c-6be3-4c44-9263-8e14fe2483b6"
 
 class ProductionFlowTester:
     def __init__(self):
