@@ -1398,7 +1398,7 @@ class ProductionFlowTester:
         }
         
         # Check each component (simplified checks)
-        if self.db:
+        if self.db is not None:
             # Check if we have emails being processed
             emails = list(self.db.emails.find({"user_id": TARGET_USER_ID}).limit(5))
             if emails:
