@@ -91,6 +91,12 @@ class CalendarService:
                         'timeZone': event_data.get('timezone', 'UTC'),
                     },
                     'attendees': [{'email': email} for email in event_data.get('attendees', [])],
+                    'conferenceData': {
+                        'createRequest': {
+                            'requestId': str(uuid.uuid4()),
+                            'conferenceSolutionKey': {'type': 'hangoutsMeet'}
+                        }
+                    },
                     'reminders': {
                         'useDefault': False,
                         'overrides': [
@@ -99,13 +105,23 @@ class CalendarService:
                     },
                 }
                 
-                result = service.events().insert(calendarId='primary', body=event).execute()
-                return result.get('id')
+                result = service.events().insert(
+                    calendarId='primary', 
+                    body=event,
+                    conferenceDataVersion=1  # Required for Google Meet link
+                ).execute()
+                
+                return {
+                    'event_id': result.get('id'),
+                    'meet_link': result.get('hangoutLink'),
+                    'html_link': result.get('htmlLink'),
+                    'status': result.get('status')
+                }
             
             # Run synchronous Google API call in executor
-            event_id = await asyncio.to_thread(_create_event)
-            logger.info(f"Successfully created calendar event: {event_id}")
-            return event_id
+            event_result = await asyncio.to_thread(_create_event)
+            logger.info(f"Successfully created calendar event: {event_result['event_id']} with Meet link: {event_result.get('meet_link')}")
+            return event_result
         except Exception as e:
             logger.error(f"Error creating Google Calendar event: {e}", exc_info=True)
             return None
