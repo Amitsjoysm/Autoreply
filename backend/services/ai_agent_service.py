@@ -195,6 +195,35 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
             if validation_issues:
                 feedback_str = f"\n\nPrevious draft had these issues (MUST FIX):\n" + "\n".join([f"- {issue}" for issue in validation_issues])
             
+            # Build calendar event details if meeting was created
+            calendar_str = ""
+            if calendar_event:
+                calendar_str = f"""
+
+IMPORTANT - A CALENDAR EVENT WAS CREATED:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Title: {calendar_event.title}
+Date & Time: {calendar_event.start_time} to {calendar_event.end_time} ({calendar_event.timezone})
+Location: {calendar_event.location or 'Virtual Meeting'}
+"""
+                if calendar_event.meet_link:
+                    calendar_str += f"Google Meet Link: {calendar_event.meet_link}\n"
+                if calendar_event.html_link:
+                    calendar_str += f"View in Calendar: {calendar_event.html_link}\n"
+                
+                if calendar_event.attendees:
+                    calendar_str += f"Attendees: {', '.join(calendar_event.attendees)}\n"
+                
+                calendar_str += """━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+YOU MUST include these meeting details in your response:
+1. Confirm the meeting has been scheduled
+2. Include the date, time, and timezone
+3. Include the Google Meet link (if available)
+4. Include the calendar link so they can view/add to their calendar
+5. Keep the tone professional and helpful
+"""
+            
             prompt = f"""Current Date & Time: {current_time}
 
 You are an AI email assistant. Generate a professional email response.
@@ -206,17 +235,18 @@ Incoming Email:
 From: {email.from_email}
 Subject: {email.subject}
 Body: {email.body}
+{calendar_str}
 {feedback_str}
 
 Generate a clear, professional response that:
 1. Addresses all points from the email
-2. Matches the persona and tone
-3. Uses information from the knowledge base if relevant
-4. Includes the signature
-5. Is concise and actionable
-6. Contains NO placeholders like [Your Name] or [Date]
-7. IMPORTANT: Use thread context to avoid repeating information already discussed
-8. Do NOT repeat meeting details or calendar information already sent
+2. If calendar event was created, INCLUDE the meeting details with links in your response
+3. Matches the persona and tone
+4. Uses information from the knowledge base if relevant
+5. Includes the signature
+6. Is concise and actionable
+7. Contains NO placeholders like [Your Name] or [Date]
+8. IMPORTANT: Use thread context to avoid repeating information already discussed
 9. If validation issues provided, fix them specifically
 
 Respond with ONLY the email body text, no subject line."""
