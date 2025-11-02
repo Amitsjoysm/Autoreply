@@ -74,33 +74,40 @@ class CalendarService:
                 client_secret=config.GOOGLE_CLIENT_SECRET
             )
             
-            service = build('calendar', 'v3', credentials=creds)
+            # Build service in thread-safe manner
+            def _create_event():
+                service = build('calendar', 'v3', credentials=creds)
+                
+                event = {
+                    'summary': event_data.get('title'),
+                    'description': event_data.get('description', ''),
+                    'location': event_data.get('location', ''),
+                    'start': {
+                        'dateTime': event_data.get('start_time'),
+                        'timeZone': event_data.get('timezone', 'UTC'),
+                    },
+                    'end': {
+                        'dateTime': event_data.get('end_time'),
+                        'timeZone': event_data.get('timezone', 'UTC'),
+                    },
+                    'attendees': [{'email': email} for email in event_data.get('attendees', [])],
+                    'reminders': {
+                        'useDefault': False,
+                        'overrides': [
+                            {'method': 'email', 'minutes': 60},
+                        ],
+                    },
+                }
+                
+                result = service.events().insert(calendarId='primary', body=event).execute()
+                return result.get('id')
             
-            event = {
-                'summary': event_data.get('title'),
-                'description': event_data.get('description', ''),
-                'location': event_data.get('location', ''),
-                'start': {
-                    'dateTime': event_data.get('start_time'),
-                    'timeZone': event_data.get('timezone', 'UTC'),
-                },
-                'end': {
-                    'dateTime': event_data.get('end_time'),
-                    'timeZone': event_data.get('timezone', 'UTC'),
-                },
-                'attendees': [{'email': email} for email in event_data.get('attendees', [])],
-                'reminders': {
-                    'useDefault': False,
-                    'overrides': [
-                        {'method': 'email', 'minutes': 60},
-                    ],
-                },
-            }
-            
-            result = service.events().insert(calendarId='primary', body=event).execute()
-            return result.get('id')
+            # Run synchronous Google API call in executor
+            event_id = await asyncio.to_thread(_create_event)
+            logger.info(f"Successfully created calendar event: {event_id}")
+            return event_id
         except Exception as e:
-            logger.error(f"Error creating Google Calendar event: {e}")
+            logger.error(f"Error creating Google Calendar event: {e}", exc_info=True)
             return None
     
     async def update_event_google(self, provider: CalendarProvider, event_id: str, event_data: Dict) -> bool:
