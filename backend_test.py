@@ -70,10 +70,54 @@ class ProductionFlowTester:
         self.mongo_client = None
         self.redis_client = None
         self.db = None
+        self.test_results = {}
+        self.sent_emails = []
         
     def log(self, message, level="INFO"):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         print(f"[{timestamp}] {level}: {message}")
+        
+    def send_test_email(self, scenario):
+        """Send a test email using SMTP"""
+        self.log(f"Sending test email: {scenario['name']}")
+        
+        try:
+            # Create message
+            msg = MIMEMultipart()
+            msg['From'] = SENDER_EMAIL
+            msg['To'] = RECIPIENT_EMAIL
+            msg['Subject'] = scenario['subject']
+            
+            # Add body
+            msg.attach(MIMEText(scenario['body'], 'plain'))
+            
+            # Connect to Gmail SMTP
+            server = smtplib.SMTP('smtp.gmail.com', 587)
+            server.starttls()
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            
+            # Send email
+            text = msg.as_string()
+            server.sendmail(SENDER_EMAIL, RECIPIENT_EMAIL, text)
+            server.quit()
+            
+            # Record sent email
+            sent_email = {
+                'scenario': scenario['name'],
+                'subject': scenario['subject'],
+                'body': scenario['body'],
+                'sent_at': datetime.now(),
+                'from_email': SENDER_EMAIL,
+                'to_email': RECIPIENT_EMAIL
+            }
+            self.sent_emails.append(sent_email)
+            
+            self.log(f"✅ Email sent successfully: {scenario['subject']}")
+            return True
+            
+        except Exception as e:
+            self.log(f"❌ Failed to send email: {str(e)}", "ERROR")
+            return False
     
     def setup_database_connections(self):
         """Setup direct database connections for verification"""
