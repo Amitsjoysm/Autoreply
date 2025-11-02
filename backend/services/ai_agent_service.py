@@ -171,7 +171,8 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
             return False, 0.0, None
     
     async def generate_draft(self, email: Email, user_id: str, intent_id: Optional[str] = None, 
-                            thread_context: List[Dict] = None, validation_issues: List[str] = None) -> Tuple[str, int]:
+                            thread_context: List[Dict] = None, validation_issues: List[str] = None,
+                            calendar_event = None) -> Tuple[str, int]:
         """Generate email draft using Groq (Draft Agent) with thread context"""
         try:
             current_time = config.get_datetime_string()
