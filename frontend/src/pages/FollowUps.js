@@ -163,53 +163,257 @@ const FollowUps = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <CardTitle className="text-lg">Follow-up for: {followUp.original_subject}</CardTitle>
-                      {getStatusBadge(followUp)}
+                      <CardTitle className="text-lg">{followUp.subject}</CardTitle>
+                      {getStatusBadge(followUp.status)}
                     </div>
-                    <CardDescription className="flex items-center gap-4">
-                      <span>To: {followUp.recipient_email}</span>
+                    <CardDescription className="space-y-1">
+                      {followUp.original_email && (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Mail className="w-4 h-4" />
+                            <span>Original: {followUp.original_email.subject}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <User className="w-4 h-4" />
+                            <span>From: {followUp.original_email.from_email}</span>
+                          </div>
+                        </>
+                      )}
                       {followUp.scheduled_at && (
-                        <span className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
                           <Clock className="w-4 h-4" />
-                          Scheduled: {format(new Date(followUp.scheduled_at), 'MMM dd, yyyy HH:mm')}
-                        </span>
+                          <span>Scheduled: {format(new Date(followUp.scheduled_at), 'MMM dd, yyyy HH:mm')}</span>
+                        </div>
                       )}
                     </CardDescription>
                   </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                {followUp.follow_up_message && (
+                {followUp.body && (
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <Label className="text-sm font-medium text-gray-700">Follow-up Message</Label>
-                    <p className="text-sm text-gray-900 mt-2 whitespace-pre-wrap line-clamp-3">
-                      {followUp.follow_up_message}
+                    <p className="text-sm text-gray-900 whitespace-pre-wrap line-clamp-3">
+                      {followUp.body}
                     </p>
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-2 border-t">
+                <div className="flex items-center justify-between pt-2 border-t gap-2">
                   <div className="text-sm text-gray-600">
-                    {followUp.sent && followUp.sent_at && (
+                    {followUp.status === 'sent' && followUp.sent_at && (
                       <span>Sent: {format(new Date(followUp.sent_at), 'MMM dd, yyyy HH:mm')}</span>
                     )}
+                    {followUp.status === 'cancelled' && followUp.cancelled_reason && (
+                      <span className="text-red-600">Cancelled: {followUp.cancelled_reason}</span>
+                    )}
                   </div>
-                  {!followUp.sent && !followUp.cancelled && (
+                  <div className="flex gap-2">
                     <Button
                       size="sm"
-                      variant="destructive"
-                      onClick={() => handleDelete(followUp.id)}
+                      variant="outline"
+                      onClick={() => handleViewDetails(followUp.id)}
                     >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Cancel Follow-up
+                      <Eye className="w-4 h-4 mr-2" />
+                      View Details
                     </Button>
-                  )}
+                    {followUp.status === 'pending' && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDelete(followUp.id)}
+                      >
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Cancel
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Details Modal */}
+      <Dialog open={showDetailsModal} onOpenChange={setShowDetailsModal}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Follow-up Details</DialogTitle>
+            <DialogDescription>
+              Complete information about this follow-up email
+            </DialogDescription>
+          </DialogHeader>
+
+          {detailsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="text-gray-500">Loading details...</div>
+            </div>
+          ) : selectedFollowUp ? (
+            <div className="space-y-6">
+              {/* Status and Basic Info */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Status</Label>
+                  <div className="mt-2">{getStatusBadge(selectedFollowUp.status)}</div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-gray-700">Thread ID</Label>
+                  <div className="mt-2 text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded border">
+                    {selectedFollowUp.thread_id || 'N/A'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Timing Information */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Scheduled At
+                  </Label>
+                  <div className="mt-2 text-sm text-gray-900">
+                    {format(new Date(selectedFollowUp.scheduled_at), 'MMMM dd, yyyy HH:mm:ss')}
+                  </div>
+                </div>
+                {selectedFollowUp.sent_at && (
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Sent At
+                    </Label>
+                    <div className="mt-2 text-sm text-gray-900">
+                      {format(new Date(selectedFollowUp.sent_at), 'MMMM dd, yyyy HH:mm:ss')}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Follow-up Content */}
+              <div>
+                <Label className="text-sm font-medium text-gray-700">Subject</Label>
+                <div className="mt-2 text-sm text-gray-900 bg-gray-50 p-3 rounded border">
+                  {selectedFollowUp.subject}
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" />
+                  Follow-up Message
+                </Label>
+                <div className="mt-2 text-sm text-gray-900 bg-gray-50 p-4 rounded border whitespace-pre-wrap max-h-48 overflow-y-auto">
+                  {selectedFollowUp.body || 'No message content'}
+                </div>
+              </div>
+
+              {/* Cancellation Reason */}
+              {selectedFollowUp.status === 'cancelled' && selectedFollowUp.cancelled_reason && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <Label className="text-sm font-medium text-red-900 flex items-center gap-2">
+                    <XCircle className="w-4 h-4" />
+                    Cancellation Reason
+                  </Label>
+                  <div className="mt-2 text-sm text-red-700">
+                    {selectedFollowUp.cancelled_reason}
+                  </div>
+                </div>
+              )}
+
+              {/* Original Email */}
+              {selectedFollowUp.original_email && (
+                <div className="border-t pt-6">
+                  <h3 className="text-lg font-semibold mb-4">Original Email</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">From</Label>
+                        <div className="mt-2 text-sm text-gray-900">
+                          {selectedFollowUp.original_email.from_email}
+                        </div>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Received At</Label>
+                        <div className="mt-2 text-sm text-gray-900">
+                          {selectedFollowUp.original_email.received_at ? 
+                            format(new Date(selectedFollowUp.original_email.received_at), 'MMM dd, yyyy HH:mm') 
+                            : 'N/A'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Subject</Label>
+                      <div className="mt-2 text-sm text-gray-900 bg-blue-50 p-3 rounded border border-blue-200">
+                        {selectedFollowUp.original_email.subject}
+                      </div>
+                    </div>
+
+                    {selectedFollowUp.original_email.intent_name && (
+                      <div>
+                        <Label className="text-sm font-medium text-gray-700">Detected Intent</Label>
+                        <div className="mt-2">
+                          <Badge className="bg-purple-500">
+                            {selectedFollowUp.original_email.intent_name}
+                          </Badge>
+                        </div>
+                      </div>
+                    )}
+
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Original Message</Label>
+                      <div className="mt-2 text-sm text-gray-900 bg-blue-50 p-4 rounded border border-blue-200 whitespace-pre-wrap max-h-48 overflow-y-auto">
+                        {selectedFollowUp.original_email.body || 'No content'}
+                      </div>
+                    </div>
+
+                    {selectedFollowUp.original_email.replied && (
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                        <div className="flex items-center gap-2 text-green-700">
+                          <CheckCircle2 className="w-4 h-4" />
+                          <span className="text-sm font-medium">Auto-reply was sent for this email</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Email Account Info */}
+              {selectedFollowUp.email_account && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <Label className="text-sm font-medium text-gray-700">Email Account</Label>
+                  <div className="mt-2 text-sm text-gray-900">
+                    {selectedFollowUp.email_account.email}
+                    <Badge className="ml-2" variant="outline">
+                      {selectedFollowUp.email_account.account_type}
+                    </Badge>
+                  </div>
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                {selectedFollowUp.status === 'pending' && (
+                  <Button
+                    variant="destructive"
+                    onClick={() => handleDelete(selectedFollowUp.id)}
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Cancel Follow-up
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDetailsModal(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
