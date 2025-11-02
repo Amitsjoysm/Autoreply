@@ -326,6 +326,7 @@ async def process_email(email_id: str):
         if intent_id and update_data.get('draft_validated'):
             intent_doc = await db.intents.find_one({"id": intent_id})
             if intent_doc and intent_doc.get('auto_send'):
+                logger.info(f"Auto-send conditions met for email {email.id}. Sending reply...")
                 await db.emails.update_one({"id": email_id}, {"$set": {"status": "sending"}})
                 await add_action(email_id, "sending", {"auto_send": True})
                 
