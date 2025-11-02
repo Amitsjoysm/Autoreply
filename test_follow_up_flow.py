@@ -136,7 +136,7 @@ async def check_follow_ups(user_id, email_id):
     
     if not follow_ups:
         print("❌ No follow-ups found")
-        await client.close()
+        client.close()
         return None
     
     print(f"✅ Found {len(follow_ups)} follow-up(s):\n")
@@ -149,7 +149,7 @@ async def check_follow_ups(user_id, email_id):
         print(f"      Subject: {fu.get('subject')}")
         print()
     
-    await client.close()
+    client.close()
     return follow_ups
 
 async def check_calendar_event(user_id, email_id):
