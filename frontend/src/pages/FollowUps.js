@@ -3,13 +3,18 @@ import API from '../api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
+import { Label } from '../components/ui/label';
 import { toast } from 'sonner';
-import { UserPlus, Clock, Trash2, CheckCircle2, XCircle } from 'lucide-react';
+import { UserPlus, Clock, Trash2, CheckCircle2, XCircle, Eye, Mail, Calendar, User, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 
 const FollowUps = () => {
   const [followUps, setFollowUps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedFollowUp, setSelectedFollowUp] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
 
   useEffect(() => {
     loadFollowUps();
