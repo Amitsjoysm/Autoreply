@@ -213,6 +213,8 @@ class CalendarService:
             end_time=event_data['end_time'],
             timezone=event_data.get('timezone', 'UTC'),
             attendees=event_data.get('attendees', []),
+            meet_link=event_data.get('meet_link'),
+            html_link=event_data.get('html_link'),
             detected_from_email=event_data.get('detected_from_email', False),
             confidence=event_data.get('confidence')
         )
