@@ -238,53 +238,58 @@ class EmailService:
             # Ensure token is valid
             account = await self.ensure_token_valid(account)
             
-            creds = Credentials(
-                token=account.access_token,
-                refresh_token=account.refresh_token,
-                token_uri="https://oauth2.googleapis.com/token",
-                client_id=config.GOOGLE_CLIENT_ID,
-                client_secret=config.GOOGLE_CLIENT_SECRET
-            )
-            
-            service = build('gmail', 'v1', credentials=creds)
-            
-            message = MIMEMultipart()
-            message['to'] = ', '.join(email_data.to_email)
-            message['subject'] = email_data.subject
-            
-            if email_data.cc:
-                message['cc'] = ', '.join(email_data.cc)
-            
-            message.attach(MIMEText(email_data.body, 'plain'))
-            
-            raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
-            
-            # Build message body with thread support
-            message_body = {'raw': raw_message}
-            if thread_id and not thread_id.startswith('test-'):
-                # Only use thread_id if it's a real Gmail thread (not a test thread)
-                message_body['threadId'] = thread_id
-            
-            service.users().messages().send(
-                userId='me',
-                body=message_body
-            ).execute()
-            
-            return True
-        except Exception as e:
-            logger.error(f"Error sending Gmail OAuth email: {e}")
-            # If thread_id error, try without thread_id
-            if 'Invalid thread_id' in str(e) and thread_id:
+            def _send_gmail():
+                """Synchronous Gmail send function"""
+                creds = Credentials(
+                    token=account.access_token,
+                    refresh_token=account.refresh_token,
+                    token_uri="https://oauth2.googleapis.com/token",
+                    client_id=config.GOOGLE_CLIENT_ID,
+                    client_secret=config.GOOGLE_CLIENT_SECRET
+                )
+                
+                service = build('gmail', 'v1', credentials=creds)
+                
+                message = MIMEMultipart()
+                message['to'] = ', '.join(email_data.to_email)
+                message['subject'] = email_data.subject
+                
+                if email_data.cc:
+                    message['cc'] = ', '.join(email_data.cc)
+                
+                message.attach(MIMEText(email_data.body, 'plain'))
+                
+                raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
+                
+                # Build message body with thread support
+                message_body = {'raw': raw_message}
+                if thread_id and not thread_id.startswith('test-'):
+                    # Only use thread_id if it's a real Gmail thread (not a test thread)
+                    message_body['threadId'] = thread_id
+                
                 try:
-                    logger.info("Retrying without thread_id...")
-                    message_body = {'raw': raw_message}
                     service.users().messages().send(
                         userId='me',
                         body=message_body
                     ).execute()
                     return True
-                except Exception as retry_e:
-                    logger.error(f"Retry failed: {retry_e}")
+                except Exception as e:
+                    # If thread_id error, try without thread_id
+                    if 'Invalid thread_id' in str(e) and thread_id:
+                        logger.info("Retrying without thread_id...")
+                        message_body = {'raw': raw_message}
+                        service.users().messages().send(
+                            userId='me',
+                            body=message_body
+                        ).execute()
+                        return True
+                    raise
+            
+            # Run synchronous Gmail API call in executor
+            result = await asyncio.to_thread(_send_gmail)
+            return result
+        except Exception as e:
+            logger.error(f"Error sending Gmail OAuth email: {e}")
             return False
     
     async def send_email_smtp(self, account: EmailAccount, email_data: EmailSend) -> bool:
