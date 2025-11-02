@@ -279,7 +279,7 @@ class ProductionFlowTester:
             # Check for oauth_gmail account
             oauth_gmail_account = None
             for account in email_accounts:
-                if account.get('account_type') == 'oauth_gmail' and account.get('email') == 'samhere.joy@gmail.com':
+                if account.get('account_type') == 'oauth_gmail' and account.get('email') == 'amits.joys@gmail.com':
                     oauth_gmail_account = account
                     break
             
