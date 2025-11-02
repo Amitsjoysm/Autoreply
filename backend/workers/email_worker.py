@@ -383,7 +383,7 @@ async def process_email(email_id: str):
         )
         await add_action(email_id, "error", {"message": str(e)}, "failed")
 
-async def send_calendar_notification(email: Email, event, email_service):
+async def send_calendar_notification(email: Email, event, email_service, has_conflict=False, conflict_details=None):
     """Send email notification about created calendar event"""
     try:
         account = await email_service.get_account(email.email_account_id)
@@ -391,6 +391,24 @@ async def send_calendar_notification(email: Email, event, email_service):
             return
         
         from models.email import EmailSend
+        
+        # Build conflict warning if applicable
+        conflict_warning = ""
+        if has_conflict and conflict_details:
+            conflict_warning = f"""
+
+⚠️  SCHEDULING CONFLICT DETECTED  ⚠️
+
+The following existing event(s) conflict with this meeting:
+"""
+            for conflict in conflict_details:
+                conflict_warning += f"""
+• {conflict['title']}
+  Time: {conflict['start_time']} to {conflict['end_time']}
+"""
+            conflict_warning += """
+Please review and reschedule if needed.
+"""
         
         # Format event details
         event_body = f"""A calendar event has been created based on your email:
@@ -404,6 +422,7 @@ Location: {event.location or 'Not specified'}
 Description: {event.description or 'No description'}
 Attendees: {', '.join(event.attendees) if event.attendees else 'None'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+{conflict_warning}
 
 This event has been added to your calendar. You will receive a reminder 1 hour before the meeting.
 
