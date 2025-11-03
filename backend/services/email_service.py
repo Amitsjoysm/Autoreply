@@ -16,6 +16,7 @@ from config import config
 from models.email import Email, EmailSend
 from models.email_account import EmailAccount
 from services.oauth_service import OAuthService
+from services.email_formatter import EmailFormatter
 
 logger = logging.getLogger(__name__)
 
