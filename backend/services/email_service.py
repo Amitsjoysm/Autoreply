@@ -251,14 +251,20 @@ class EmailService:
                 
                 service = build('gmail', 'v1', credentials=creds)
                 
-                message = MIMEMultipart()
+                # Create multipart message for HTML + plain text
+                message = MIMEMultipart('alternative')
                 message['to'] = ', '.join(email_data.to_email)
                 message['subject'] = email_data.subject
                 
                 if email_data.cc:
                     message['cc'] = ', '.join(email_data.cc)
                 
-                message.attach(MIMEText(email_data.body, 'plain'))
+                # Convert plain text to HTML
+                html_body, plain_body = EmailFormatter.create_html_and_plain(email_data.body)
+                
+                # Attach both plain text and HTML (email clients will choose the best one)
+                message.attach(MIMEText(plain_body, 'plain'))
+                message.attach(MIMEText(html_body, 'html'))
                 
                 raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
                 
