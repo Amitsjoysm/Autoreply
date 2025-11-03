@@ -50,8 +50,8 @@ async def list_knowledge_base(
             title=kb['title'],
             content=kb['content'],
             category=kb.get('category'),
-            tags=kb['tags'],
-            is_active=kb['is_active'],
+            tags=kb.get('tags', []),
+            is_active=kb.get('is_active', True),
             created_at=kb['created_at']
         )
         for kb in kbs
