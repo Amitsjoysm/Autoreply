@@ -33,6 +33,7 @@ class Config:
     # AI APIs
     GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
     COHERE_API_KEY = os.environ.get('COHERE_API_KEY', '')
+    EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
     
     # Groq Models (cost-effective)
     GROQ_DRAFT_MODEL = 'llama-3.3-70b-versatile'  # Good balance of quality and cost
