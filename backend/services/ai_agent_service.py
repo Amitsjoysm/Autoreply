@@ -251,7 +251,7 @@ Respond with ONLY the email body text, no subject line."""
     
     async def validate_draft(self, draft: str, email: Email, user_id: str, intent_id: Optional[str] = None,
                             thread_context: List[Dict] = None) -> Tuple[bool, List[str]]:
-        """Validate draft using Groq (Validation Agent) with thread context"""
+        """Validate draft using Emergent LLM (Validation Agent) with thread context"""
         try:
             current_time = config.get_datetime_string()
             
@@ -260,6 +260,11 @@ Respond with ONLY the email body text, no subject line."""
             if intent_id:
                 intent_doc = await self.db.intents.find_one({"id": intent_id})
                 if intent_doc:
+                    # Convert datetime fields
+                    if isinstance(intent_doc.get('created_at'), datetime):
+                        intent_doc['created_at'] = intent_doc['created_at'].isoformat()
+                    if isinstance(intent_doc.get('updated_at'), datetime):
+                        intent_doc['updated_at'] = intent_doc['updated_at'].isoformat()
                     intent = Intent(**intent_doc)
                     intent_prompt = f"Intent: {intent.name}\nIntent Requirements: {intent.prompt}"
             
@@ -301,47 +306,26 @@ Respond in JSON:
   "issues": ["list of issues found, empty if valid"]
 }}"""
             
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(
-                    'https://api.groq.com/openai/v1/chat/completions',
-                    headers={
-                        'Authorization': f'Bearer {self.groq_api_key}',
-                        'Content-Type': 'application/json'
-                    },
-                    json={
-                        'model': config.GROQ_VALIDATION_MODEL,
-                        'messages': [
-                            {'role': 'system', 'content': 'You are a validation AI. Always respond with valid JSON.'},
-                            {'role': 'user', 'content': prompt}
-                        ],
-                        'temperature': 0.2,
-                        'max_tokens': 300
-                    }
-                )
+            # Use Emergent LLM service
+            system_message = "You are a validation AI. Always respond with valid JSON."
+            data = await self.llm_service.validate_draft(
+                draft=draft,
+                validation_prompt=prompt,
+                system_message=system_message
+            )
             
-            if response.status_code == 200:
-                result = response.json()
-                content = result['choices'][0]['message']['content']
-                
-                # Track tokens
-                usage = result.get('usage', {})
-                tokens = usage.get('total_tokens', 0)
-                self.tokens_used += tokens
-                
-                try:
-                    data = json.loads(content)
-                    valid = data.get('valid', False)
-                    issues = data.get('issues', [])
-                    return valid, issues
-                except json.JSONDecodeError:
-                    logger.error(f"Failed to parse validation JSON: {content}")
-                    return True, []  # Assume valid if parse fails
-            else:
-                logger.error(f"Groq API error: {response.status_code} - {response.text}")
-                return True, []
+            valid = data.get('valid', False)
+            issues = data.get('issues', [])
+            
+            # Token tracking (estimated)
+            tokens = len(prompt.split())
+            self.tokens_used += tokens
+            
+            return valid, issues
+            
         except Exception as e:
-            logger.error(f"Error validating draft: {e}")
-            return True, []
+            logger.error(f"Error validating draft: {e}", exc_info=True)
+            return True, []  # Assume valid if error occurs
     
     async def _get_draft_context(self, user_id: str, account_id: str, intent_id: Optional[str] = None) -> str:
         """Get context for draft generation"""
