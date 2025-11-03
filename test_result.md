@@ -1701,10 +1701,11 @@ agent_communication:
 user_problem_statement: |
   User: amits.joys@gmail.com (logged in with pass ij@123)
   - Has added an Email account and calendar provider
-  - Requested: Remove any previous seed and add new seed data for knowledgebase and Intents
+  - Remove any previous seed data
+  - Add comprehensive seed data for Knowledge Base and Intents matching model and frontend requirements
   - Fix "failed to load Intents / Knowledge bases error" in frontend
-  - Ensure other functionality doesn't get affected and app is production ready
-  - Create deployment script for complete production deployment
+  - Fix auto-reply email formatting issue (emails appearing on one side only)
+  - Ensure no other functionality is affected and app is production ready
 
 backend:
   - task: "Remove existing seed data and create comprehensive seed data"
