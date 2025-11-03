@@ -19,33 +19,46 @@ class AIAgentService:
         self.cohere_api_key = config.COHERE_API_KEY
         self.tokens_used = 0
     
-    async def classify_intent(self, email: Email, user_id: str) -> Tuple[Optional[str], float]:
-        """Classify email intent using keywords and Cohere"""
+    async def classify_intent(self, email: Email, user_id: str) -> Tuple[Optional[str], float, Optional[Dict]]:
+        """Classify email intent using keywords - returns (intent_id, confidence, intent_dict)"""
         try:
             # Get user intents
             intents = await self.db.intents.find({"user_id": user_id, "is_active": True}).sort("priority", -1).to_list(100)
             
             if not intents:
-                return None, 0.0
+                return None, 0.0, None
             
             # First try keyword matching
             email_text = f"{email.subject} {email.body}".lower()
             
             for intent_doc in intents:
+                # Convert datetime fields to strings for Pydantic validation
+                if isinstance(intent_doc.get('created_at'), datetime):
+                    intent_doc['created_at'] = intent_doc['created_at'].isoformat()
+                if isinstance(intent_doc.get('updated_at'), datetime):
+                    intent_doc['updated_at'] = intent_doc['updated_at'].isoformat()
+                
                 intent = Intent(**intent_doc)
                 for keyword in intent.keywords:
                     if keyword.lower() in email_text:
                         logger.info(f"Intent '{intent.name}' matched by keyword: {keyword}")
-                        return intent.id, 0.9  # High confidence for keyword match
+                        return intent.id, 0.9, intent_doc  # High confidence for keyword match
             
-            # Fallback to Cohere classification
-            # For MVP, we'll use simple keyword matching only to save costs
-            # In production, you can add Cohere classification here
+            # No keyword match found - return default intent if exists
+            default_intent = next((i for i in intents if i.get('name', '').lower() == 'default' or i.get('is_default', False)), None)
+            if default_intent:
+                # Convert datetime fields
+                if isinstance(default_intent.get('created_at'), datetime):
+                    default_intent['created_at'] = default_intent['created_at'].isoformat()
+                if isinstance(default_intent.get('updated_at'), datetime):
+                    default_intent['updated_at'] = default_intent['updated_at'].isoformat()
+                logger.info(f"Using default intent for unmatched email")
+                return default_intent['id'], 0.5, default_intent  # Medium confidence for default
             
-            return None, 0.0
+            return None, 0.0, None
         except Exception as e:
-            logger.error(f"Error classifying intent: {e}")
-            return None, 0.0
+            logger.error(f"Error classifying intent: {e}", exc_info=True)
+            return None, 0.0, None
     
     async def detect_meeting(self, email: Email, thread_context: List[Dict] = None) -> Tuple[bool, float, Optional[Dict]]:
         """Detect if email contains meeting request using Groq with thread context"""
