@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 import uuid
 
 # User ID for amits.joys@gmail.com
-USER_ID = "1086e721-86cf-4c3d-b567-329b20bc29de"
+USER_ID = "600977ca-d1b2-42f3-b742-fbf2885c4f01"
 USER_EMAIL = "amits.joys@gmail.com"
 
 async def create_seed_data():
