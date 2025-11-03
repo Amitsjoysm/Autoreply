@@ -53,7 +53,7 @@ async def list_knowledge_base(
             category=kb.get('category'),
             tags=kb['tags'],
             is_active=kb['is_active'],
-            created_at=kb['created_at']
+            created_at=kb['created_at'].isoformat() if isinstance(kb['created_at'], datetime) else kb['created_at']
         )
         for kb in kbs
     ]
