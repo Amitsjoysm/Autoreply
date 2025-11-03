@@ -51,7 +51,7 @@ class Email(BaseModel):
     draft_retry_count: int = 0  # Track regeneration attempts
     
     # Status tracking
-    status: Literal['pending', 'classifying', 'drafting', 'validating', 'sending', 'sent', 'escalated', 'error'] = 'pending'
+    status: Literal['pending', 'classifying', 'drafting', 'validating', 'sending', 'sent', 'escalated', 'error', 'draft_ready'] = 'pending'
     replied: bool = False
     reply_sent_at: Optional[str] = None
     error_message: Optional[str] = None
