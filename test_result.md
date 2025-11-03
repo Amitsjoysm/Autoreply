@@ -1910,7 +1910,7 @@ backend:
             Backend restarted successfully to apply changes.
 
 frontend:
-  - task: "Verify frontend can load Intents and Knowledge Base"
+  - task: "Verify Intents and Knowledge Base pages loading"
     implemented: true
     working: true
     file: "pages/Intents.js, pages/KnowledgeBase.js"
