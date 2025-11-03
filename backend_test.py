@@ -1555,11 +1555,32 @@ class ProductionFlowTester:
             # Verify intent detection
             intent_detected = email.get('intent_detected')
             if intent_detected:
-                self.log(f"✅ Intent detected: {intent_detected}")
-                if scenario['expected_intent'] != "Default":
-                    if intent_detected != scenario['expected_intent']:
-                        self.log(f"❌ Expected intent '{scenario['expected_intent']}', got '{intent_detected}'")
+                # Check if it's a UUID (intent ID) and resolve to name
+                if len(intent_detected) == 36 and '-' in intent_detected:  # UUID format
+                    intent_doc = self.db.intents.find_one({"id": intent_detected})
+                    if intent_doc:
+                        intent_name = intent_doc.get('name')
+                        self.log(f"✅ Intent detected: {intent_name} (ID: {intent_detected[:8]}...)")
+                        
+                        if scenario['expected_intent'] != "Default":
+                            if intent_name != scenario['expected_intent']:
+                                self.log(f"❌ Expected intent '{scenario['expected_intent']}', got '{intent_name}'")
+                                return False
+                        else:
+                            # For default intent, check if it's actually the default
+                            if not intent_doc.get('is_default', False):
+                                self.log(f"❌ Expected default intent, got '{intent_name}' (not default)")
+                                return False
+                    else:
+                        self.log(f"❌ Intent ID {intent_detected} not found in database")
                         return False
+                else:
+                    # Direct intent name
+                    self.log(f"✅ Intent detected: {intent_detected}")
+                    if scenario['expected_intent'] != "Default":
+                        if intent_detected != scenario['expected_intent']:
+                            self.log(f"❌ Expected intent '{scenario['expected_intent']}', got '{intent_detected}'")
+                            return False
             else:
                 self.log("❌ No intent detected")
                 return False
