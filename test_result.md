@@ -1721,30 +1721,84 @@ backend:
           comment: |
             ✅ COMPLETED SUCCESSFULLY
             
-            Created comprehensive seed data script (create_seed_for_amit.py):
-            - Removed any existing intents and knowledge base entries for user
-            - Created 8 Intents:
-              * Meeting Request (Priority 10, auto_send: true)
-              * Support Request (Priority 8, auto_send: true) 
-              * General Inquiry (Priority 5, auto_send: true)
-              * Follow-up Request (Priority 7, auto_send: true)
-              * Introduction (Priority 6, auto_send: true)
-              * Thank You (Priority 4, auto_send: true)
-              * Urgent Request (Priority 10, auto_send: false - manual review)
-              * Default (Priority 1, auto_send: true, is_default: true)
+            User: amits.joys@gmail.com (ID: 2439b157-de4c-45ce-813c-59ecd4d8d841)
             
-            - Created 6 Knowledge Base Entries:
-              * Company Overview (Company Information)
-              * Product Features (Product)
-              * Pricing Information (Pricing)
-              * Getting Started Guide (Documentation)
-              * Support and Contact (Support)
-              * Security and Privacy (Security)
+            Removed Previous Data:
+            - Deleted 0 existing intents (database was clean)
+            - Deleted 0 existing knowledge base entries (database was clean)
+            
+            Created Comprehensive Seed Data:
+            
+            8 INTENTS:
+            1. Meeting Request (Priority: 10, Auto-send: ✅)
+               - Keywords: meeting, schedule, calendar, appointment, call, zoom, teams, meet, conference
+               - Handles meeting scheduling and coordination
+            
+            2. Support Request (Priority: 8, Auto-send: ✅)
+               - Keywords: issue, problem, error, help, support, not working, bug, broken, fix, trouble
+               - Handles technical support inquiries with empathy
+            
+            3. General Inquiry (Priority: 5, Auto-send: ✅)
+               - Keywords: question, inquiry, information, help, how, what, when, where, why, details
+               - Handles general questions using knowledge base
+            
+            4. Follow-up Request (Priority: 7, Auto-send: ✅)
+               - Keywords: follow up, followup, checking in, status, update, progress, any news
+               - Handles follow-ups on previous conversations
+            
+            5. Introduction (Priority: 6, Auto-send: ✅)
+               - Keywords: introduction, introduce, connection, network, reach out, get to know, collaborate
+               - Handles networking and introduction requests
+            
+            6. Thank You (Priority: 4, Auto-send: ✅)
+               - Keywords: thank you, thanks, appreciate, grateful, appreciation, gratitude
+               - Handles appreciation messages graciously
+            
+            7. Urgent Request (Priority: 10, Auto-send: ❌ - Manual Review)
+               - Keywords: urgent, asap, immediately, emergency, critical, important, now, right away
+               - Requires manual review for urgent matters
+            
+            8. Default (Priority: 1, Auto-send: ✅, is_default: true)
+               - No specific keywords - catches all unmatched emails
+               - Uses knowledge base to provide intelligent responses
+            
+            7 KNOWLEDGE BASE ENTRIES:
+            1. Company Overview (Company Information)
+               - Mission, features, contact information
+               - Core platform capabilities
+            
+            2. Product Features (Product)
+               - Complete feature list across 7 categories
+               - AI capabilities, automation, integrations
+            
+            3. Meeting and Calendar Features (Meetings)
+               - Meeting detection and scheduling
+               - Calendar integration details
+               - Meeting response format specifications
+            
+            4. Pricing Information (Pricing)
+               - All pricing tiers (Free, Professional, Business, Enterprise)
+               - Feature comparisons and contact information
+            
+            5. Getting Started Guide (Documentation)
+               - Step-by-step onboarding
+               - Configuration best practices
+               - Testing guidelines
+            
+            6. Support and Contact (Support)
+               - Multiple support channels
+               - Common troubleshooting solutions
+               - Response time expectations
+            
+            7. Security and Privacy (Security)
+               - Data security measures
+               - Privacy commitments
+               - Compliance standards (GDPR, SOC 2, CCPA)
             
             All data properly structured with:
-            - Proper ISO datetime strings
+            - ISO datetime strings
             - User ID association
-            - Active status
+            - Active status flags
             - Comprehensive content for AI agents
   
   - task: "Verify API endpoints working correctly"
