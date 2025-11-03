@@ -199,34 +199,24 @@ test_plan:
 agent_communication:
     - agent: "main"
       message: |
-        COMPLETED TASKS:
-        1. ✓ Installed Redis and started all workers
-        2. ✓ Created comprehensive seed data (6 intents + 8 KB entries)
-        3. ✓ Fixed Groq API restriction by integrating Emergent LLM
-        4. ✓ Verified default intent handling is implemented
-        5. ✓ Backend restarted successfully with new integration
+        PRODUCTION READINESS CHECK - STARTED
         
-        SEED DATA CREATED:
-        - 6 Intents: Meeting Request (auto-send), Job Application, Customer Support (auto-send), 
-          Partnership Inquiry, General Inquiry (auto-send), Default Response (auto-send, is_default=True)
-        - 8 Knowledge Base: Company Overview, Services & Pricing, Meeting Availability, Technical Expertise,
-          Project Timeline, Contact & Support, Client Success Stories, Partnership Opportunities
-        - User persona updated for amits.joys@gmail.com
+        Updated Groq API key provided by user. System configured with:
+        - Primary: Groq API (llama-3.3-70b-versatile) 
+        - Fallback: Emergent LLM (gpt-4o-mini)
         
-        INTEGRATION CHANGES:
-        - Replaced Groq API (restricted) with Emergent LLM (emergentintegrations library)
-        - Using gpt-4o-mini model via OpenAI through universal key
-        - Updated detect_meeting(), generate_draft(), validate_draft() methods
+        Testing complete flow:
+        1. Email Polling
+        2. Intent Classification (with default intent)
+        3. Meeting Detection
+        4. Draft Generation
+        5. Draft Validation
+        6. Auto-Send
+        7. Follow-up Creation
+        8. Meeting Reminders
         
-        NEXT STEPS:
-        1. Need to test backend API endpoints for intents and knowledge base
-        2. Need to send test email to trigger auto-send flow
-        3. Verify email is classified (with default intent if needed)
-        4. Verify draft generation and validation works with Emergent LLM
-        5. Verify auto-send functionality
-        6. Test actual email sending to sagarshinde15798796456@gmail.com
-        
-        READY FOR TESTING!
+        Backend restarted with new Groq API key.
+        Ready to run comprehensive production readiness tests.
 
 user_problem_statement: |
   Fix OAuth Google email account integration, auto-reply functionality, and calendar event creation issues.
