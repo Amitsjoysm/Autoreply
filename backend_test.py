@@ -25,7 +25,7 @@ import redis
 import os
 
 # Configuration - Use the correct backend URL from review request
-BACKEND_URL = "https://codebase-redis-setup.preview.emergentagent.com"
+BACKEND_URL = "https://codebase-sync-38.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user credentials from review request
