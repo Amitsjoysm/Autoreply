@@ -25,7 +25,7 @@ import redis
 import os
 
 # Configuration - Use the correct backend URL from review request
-BACKEND_URL = "https://worker-restart-1.preview.emergentagent.com"
+BACKEND_URL = "https://sync-and-restart.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user credentials
