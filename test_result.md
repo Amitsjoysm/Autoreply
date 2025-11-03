@@ -1708,10 +1708,10 @@ user_problem_statement: |
   - Ensure no other functionality is affected and app is production ready
 
 backend:
-  - task: "Remove existing seed data and create comprehensive seed data"
+  - task: "Remove existing seed data and create comprehensive new seed"
     implemented: true
     working: true
-    file: "create_seed_for_amit.py"
+    file: "create_seed_data_for_amit.py"
     stuck_count: 0
     priority: "high"
     needs_retesting: false
