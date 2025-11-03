@@ -107,8 +107,8 @@ async def update_knowledge_base(
         title=updated_doc['title'],
         content=updated_doc['content'],
         category=updated_doc.get('category'),
-        tags=updated_doc['tags'],
-        is_active=updated_doc['is_active'],
+        tags=updated_doc.get('tags', []),
+        is_active=updated_doc.get('is_active', True),
         created_at=updated_doc['created_at']
     )
 
