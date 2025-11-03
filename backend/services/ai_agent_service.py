@@ -275,6 +275,14 @@ Generate a clear, professional response that:
 8. IMPORTANT: Use thread context to avoid repeating information already discussed
 9. If validation issues provided, fix them specifically
 
+FORMATTING GUIDELINES:
+- Use clear paragraphs separated by double line breaks
+- Use headings for different sections (ALL CAPS or "SECTION:" format)
+- Use bullet points (-, •, or *) for lists
+- Highlight important information clearly
+- Keep lines reasonably short (under 80 characters when possible)
+- Use separators (===, ---, ━━━) to divide major sections if needed
+
 Respond with ONLY the email body text, no subject line."""
             
             # Try Groq first, fallback to Emergent LLM
