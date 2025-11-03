@@ -317,7 +317,8 @@ class EmailService:
     def _send_smtp_sync(self, account: EmailAccount, email_data: EmailSend) -> bool:
         """Synchronous SMTP send"""
         try:
-            message = MIMEMultipart()
+            # Create multipart message for HTML + plain text
+            message = MIMEMultipart('alternative')
             message['From'] = account.email
             message['To'] = ', '.join(email_data.to_email)
             message['Subject'] = email_data.subject
@@ -325,7 +326,12 @@ class EmailService:
             if email_data.cc:
                 message['Cc'] = ', '.join(email_data.cc)
             
-            message.attach(MIMEText(email_data.body, 'plain'))
+            # Convert plain text to HTML
+            html_body, plain_body = EmailFormatter.create_html_and_plain(email_data.body)
+            
+            # Attach both plain text and HTML
+            message.attach(MIMEText(plain_body, 'plain'))
+            message.attach(MIMEText(html_body, 'html'))
             
             server = smtplib.SMTP_SSL(account.smtp_host, account.smtp_port)
             server.login(account.email, account.password)
