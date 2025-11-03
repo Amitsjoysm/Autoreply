@@ -74,8 +74,8 @@ async def get_knowledge_base(
         title=kb_doc['title'],
         content=kb_doc['content'],
         category=kb_doc.get('category'),
-        tags=kb_doc['tags'],
-        is_active=kb_doc['is_active'],
+        tags=kb_doc.get('tags', []),
+        is_active=kb_doc.get('is_active', True),
         created_at=kb_doc['created_at']
     )
 
