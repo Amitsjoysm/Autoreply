@@ -53,11 +53,11 @@ async def list_intents(
             id=intent['id'],
             name=intent['name'],
             description=intent.get('description'),
-            prompt=intent['prompt'],
-            keywords=intent['keywords'],
-            auto_send=intent['auto_send'],
-            priority=intent['priority'],
-            is_active=intent['is_active'],
+            prompt=intent.get('prompt') or intent.get('custom_prompt', ''),
+            keywords=intent.get('keywords', []),
+            auto_send=intent.get('auto_send', False),
+            priority=intent.get('priority', 0),
+            is_active=intent.get('is_active', True),
             created_at=intent['created_at']
         )
         for intent in intents
