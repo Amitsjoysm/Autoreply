@@ -120,7 +120,7 @@ async def update_intent(
         auto_send=updated_doc['auto_send'],
         priority=updated_doc['priority'],
         is_active=updated_doc['is_active'],
-        created_at=updated_doc['created_at']
+        created_at=updated_doc['created_at'].isoformat() if isinstance(updated_doc['created_at'], datetime) else updated_doc['created_at']
     )
 
 @router.delete("/{intent_id}")
