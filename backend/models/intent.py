@@ -14,6 +14,7 @@ class Intent(BaseModel):
     keywords: List[str] = []  # Keywords to help detect this intent
     auto_send: bool = False  # Auto-send replies for this intent
     priority: int = 0  # Higher priority intents checked first
+    is_default: bool = False  # Default intent for unmatched emails
     
     is_active: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
