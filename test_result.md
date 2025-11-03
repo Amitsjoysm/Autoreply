@@ -1948,7 +1948,7 @@ frontend:
 
 metadata:
   created_by: "main_agent"
-  version: "3.0"
+  version: "4.0"
   test_sequence: 0
   run_ui: false
 
