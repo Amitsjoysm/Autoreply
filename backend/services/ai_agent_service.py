@@ -63,7 +63,7 @@ class AIAgentService:
             return None, 0.0, None
     
     async def detect_meeting(self, email: Email, thread_context: List[Dict] = None) -> Tuple[bool, float, Optional[Dict]]:
-        """Detect if email contains meeting request using Emergent LLM with thread context"""
+        """Detect if email contains meeting request using Groq/Emergent LLM with thread context"""
         try:
             current_time = config.get_datetime_string()
             
@@ -130,14 +130,61 @@ Respond in JSON format:
 
 If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
             
-            # Use Emergent LLM service
-            data = await self.llm_service.detect_meeting(prompt)
-            
-            is_meeting = data.get('is_meeting', False)
-            confidence = data.get('confidence', 0.0)
-            details = data.get('details')
-            
-            return is_meeting, confidence, details
+            # Try Groq first, fallback to Emergent LLM
+            try:
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    response = await client.post(
+                        'https://api.groq.com/openai/v1/chat/completions',
+                        headers={
+                            'Authorization': f'Bearer {self.groq_api_key}',
+                            'Content-Type': 'application/json'
+                        },
+                        json={
+                            'model': config.GROQ_CALENDAR_MODEL,
+                            'messages': [
+                                {'role': 'system', 'content': 'You are a meeting detection AI. Always respond with valid JSON.'},
+                                {'role': 'user', 'content': prompt}
+                            ],
+                            'temperature': 0.3,
+                            'max_tokens': 500
+                        }
+                    )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    content = result['choices'][0]['message']['content']
+                    
+                    # Track tokens
+                    usage = result.get('usage', {})
+                    tokens = usage.get('total_tokens', 0)
+                    self.tokens_used += tokens
+                    
+                    # Parse JSON response
+                    json_content = content.strip()
+                    if json_content.startswith('```json'):
+                        json_content = json_content[7:]
+                    if json_content.startswith('```'):
+                        json_content = json_content[3:]
+                    if json_content.endswith('```'):
+                        json_content = json_content[:-3]
+                    json_content = json_content.strip()
+                    
+                    data = json.loads(json_content)
+                    is_meeting = data.get('is_meeting', False)
+                    confidence = data.get('confidence', 0.0)
+                    details = data.get('details')
+                    
+                    return is_meeting, confidence, details
+                else:
+                    logger.warning(f"Groq API error: {response.status_code}, falling back to Emergent LLM")
+                    raise Exception("Groq API failed")
+            except Exception as groq_error:
+                logger.info(f"Using Emergent LLM fallback for meeting detection: {groq_error}")
+                data = await self.llm_service.detect_meeting(prompt)
+                is_meeting = data.get('is_meeting', False)
+                confidence = data.get('confidence', 0.0)
+                details = data.get('details')
+                return is_meeting, confidence, details
             
         except Exception as e:
             logger.error(f"Error detecting meeting: {e}", exc_info=True)
