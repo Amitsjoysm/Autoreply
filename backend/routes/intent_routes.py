@@ -79,11 +79,11 @@ async def get_intent(
         id=intent_doc['id'],
         name=intent_doc['name'],
         description=intent_doc.get('description'),
-        prompt=intent_doc['prompt'],
-        keywords=intent_doc['keywords'],
-        auto_send=intent_doc['auto_send'],
-        priority=intent_doc['priority'],
-        is_active=intent_doc['is_active'],
+        prompt=intent_doc.get('prompt') or intent_doc.get('custom_prompt', ''),
+        keywords=intent_doc.get('keywords', []),
+        auto_send=intent_doc.get('auto_send', False),
+        priority=intent_doc.get('priority', 0),
+        is_active=intent_doc.get('is_active', True),
         created_at=intent_doc['created_at']
     )
 
