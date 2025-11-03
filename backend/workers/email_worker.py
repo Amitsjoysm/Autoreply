@@ -130,17 +130,15 @@ async def process_email(email_id: str):
         await db.emails.update_one({"id": email_id}, {"$set": {"status": "classifying"}})
         await add_action(email_id, "classifying", {"step": "intent_detection"})
         
-        intent_id, intent_confidence = await ai_service.classify_intent(email, email.user_id)
+        intent_id, intent_confidence, intent_doc = await ai_service.classify_intent(email, email.user_id)
         
         # Get intent name
         intent_name = None
         auto_send_enabled = False
-        if intent_id:
-            intent_doc = await db.intents.find_one({"id": intent_id})
-            if intent_doc:
-                intent_name = intent_doc.get('name', 'Unknown')
-                auto_send_enabled = intent_doc.get('auto_send', False)
-                logger.info(f"Intent matched for email {email.id}: {intent_name} (confidence: {intent_confidence}, auto_send: {auto_send_enabled})")
+        if intent_id and intent_doc:
+            intent_name = intent_doc.get('name', 'Unknown')
+            auto_send_enabled = intent_doc.get('auto_send', False)
+            logger.info(f"Intent matched for email {email.id}: {intent_name} (confidence: {intent_confidence}, auto_send: {auto_send_enabled})")
         else:
             logger.info(f"No intent matched for email {email.id} (subject: {email.subject})")
         
