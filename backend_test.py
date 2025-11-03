@@ -299,7 +299,7 @@ class ProductionFlowTester:
         return results
     
     def check_intents_setup(self):
-        """Check if 7 intents exist with 6 having auto_send=true"""
+        """Check if 8 intents exist with 7 having auto_send=true (including default intent)"""
         self.log("Checking intents setup...")
         
         if self.db is None:
@@ -311,22 +311,36 @@ class ProductionFlowTester:
             intents = list(self.db.intents.find({"user_id": self.user_id}))
             self.log(f"Found {len(intents)} intents for user {self.user_id}")
             
-            if len(intents) != 7:
-                self.log(f"❌ Expected 7 intents, found {len(intents)}")
+            if len(intents) != 8:
+                self.log(f"❌ Expected 8 intents (including default), found {len(intents)}")
                 return False
             
             auto_send_count = sum(1 for intent in intents if intent.get('auto_send', False))
             self.log(f"Found {auto_send_count} intents with auto_send=true")
             
-            if auto_send_count != 6:
-                self.log(f"❌ Expected 6 intents with auto_send=true, found {auto_send_count}")
+            if auto_send_count != 7:
+                self.log(f"❌ Expected 7 intents with auto_send=true (including default), found {auto_send_count}")
                 return False
+            
+            # Check for default intent
+            default_intent = None
+            for intent in intents:
+                if intent.get('is_default', False):
+                    default_intent = intent
+                    break
+            
+            if not default_intent:
+                self.log("❌ No default intent found (is_default=True)")
+                return False
+            
+            self.log(f"✅ Default intent found: {default_intent.get('name')} (auto_send: {default_intent.get('auto_send')})")
             
             # Log intent details
             for i, intent in enumerate(intents):
-                self.log(f"Intent {i+1}: {intent.get('name')} (auto_send: {intent.get('auto_send')}, priority: {intent.get('priority')})")
+                is_default = " [DEFAULT]" if intent.get('is_default') else ""
+                self.log(f"Intent {i+1}: {intent.get('name')}{is_default} (auto_send: {intent.get('auto_send')}, priority: {intent.get('priority')})")
             
-            self.log("✅ Intents setup verified - 7 intents with 6 auto_send enabled")
+            self.log("✅ Intents setup verified - 8 intents with 7 auto_send enabled (including default)")
             return True
             
         except Exception as e:
