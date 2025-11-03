@@ -77,7 +77,7 @@ async def get_knowledge_base(
         category=kb_doc.get('category'),
         tags=kb_doc['tags'],
         is_active=kb_doc['is_active'],
-        created_at=kb_doc['created_at']
+        created_at=kb_doc['created_at'].isoformat() if isinstance(kb_doc['created_at'], datetime) else kb_doc['created_at']
     )
 
 @router.patch("/{kb_id}", response_model=KnowledgeBaseResponse)
