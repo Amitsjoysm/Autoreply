@@ -348,7 +348,7 @@ class ProductionFlowTester:
             return False
     
     def check_knowledge_base_setup(self):
-        """Check if 6 knowledge base entries exist"""
+        """Check if 7 knowledge base entries exist"""
         self.log("Checking knowledge base setup...")
         
         if self.db is None:
@@ -360,15 +360,15 @@ class ProductionFlowTester:
             kb_entries = list(self.db.knowledge_base.find({"user_id": self.user_id}))
             self.log(f"Found {len(kb_entries)} knowledge base entries for user {self.user_id}")
             
-            if len(kb_entries) != 6:
-                self.log(f"❌ Expected 6 knowledge base entries, found {len(kb_entries)}")
+            if len(kb_entries) != 7:
+                self.log(f"❌ Expected 7 knowledge base entries, found {len(kb_entries)}")
                 return False
             
             # Log KB entry details
             for i, entry in enumerate(kb_entries):
-                self.log(f"KB Entry {i+1}: {entry.get('title', 'No title')}")
+                self.log(f"KB Entry {i+1}: {entry.get('title', 'No title')} ({entry.get('category', 'No category')})")
             
-            self.log("✅ Knowledge base setup verified - 6 entries found")
+            self.log("✅ Knowledge base setup verified - 7 entries found")
             return True
             
         except Exception as e:
