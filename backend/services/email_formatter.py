@@ -75,7 +75,7 @@ class EmailFormatter:
             sig_html += '</div>'
             html_parts.append(sig_html)
         
-        # Wrap everything in a nice container
+        # Wrap everything in a nice container with table-based layout for better email client compatibility
         html = f"""
 <!DOCTYPE html>
 <html>
@@ -84,9 +84,19 @@ class EmailFormatter:
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px;">
-        {''.join(html_parts)}
-    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0; padding: 20px 0; background-color: #f5f5f5;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; padding: 30px; border-radius: 8px; max-width: 600px;">
+                    <tr>
+                        <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+                            {''.join(html_parts)}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>
 """
