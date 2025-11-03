@@ -85,7 +85,7 @@ async def get_intent(
         auto_send=intent_doc['auto_send'],
         priority=intent_doc['priority'],
         is_active=intent_doc['is_active'],
-        created_at=intent_doc['created_at']
+        created_at=intent_doc['created_at'].isoformat() if isinstance(intent_doc['created_at'], datetime) else intent_doc['created_at']
     )
 
 @router.patch("/{intent_id}", response_model=IntentResponse)
