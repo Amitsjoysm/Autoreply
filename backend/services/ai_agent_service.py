@@ -9,6 +9,7 @@ from config import config
 from models.email import Email
 from models.intent import Intent
 from models.knowledge_base import KnowledgeBase
+from services.emergent_llm_service import emergent_llm_service
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class AIAgentService:
         self.db = db
         self.groq_api_key = config.GROQ_API_KEY
         self.cohere_api_key = config.COHERE_API_KEY
+        self.llm_service = emergent_llm_service
         self.tokens_used = 0
     
     async def classify_intent(self, email: Email, user_id: str) -> Tuple[Optional[str], float, Optional[Dict]]:
