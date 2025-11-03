@@ -28,37 +28,62 @@ import os
 BACKEND_URL = "https://redis-restart.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
-# Test user credentials
+# Test user credentials from review request
 TEST_USER = {
     "email": "amits.joys@gmail.com",
     "password": "ij@123",
-    "name": "Amit Joy"
+    "name": "Amit Joy",
+    "expected_id": "f429a110-4548-4ed9-92a5-528c94fcb164"
 }
 
-# Email sending credentials
-SENDER_EMAIL = "sashadhagle@gmail.com"
-SENDER_PASSWORD = "dibphfyezwffocsa"
+# Email sending credentials from review request
+SENDER_EMAIL = "sagarshinde15798796456@gmail.com"
+SENDER_PASSWORD = "bmwqmytxrsgrlusp"
 RECIPIENT_EMAIL = "amits.joys@gmail.com"
 
-# Test scenarios
+# Test scenarios from review request
 TEST_SCENARIOS = [
     {
-        "name": "Meeting Request with Calendar Event",
-        "subject": "Meeting Request - Discussion",
-        "body": "Hi, can we schedule a meeting tomorrow at 2 PM EST to discuss the project? Looking forward to connecting.",
+        "name": "Meeting Request Email",
+        "subject": "Let's Schedule a Call",
+        "body": "Hi, I'd like to schedule a meeting with you tomorrow at 3 PM EST to discuss our collaboration. Can you confirm your availability?",
         "expected_intent": "Meeting Request",
         "expected_meeting_detected": True,
         "expected_calendar_event": True,
-        "expected_auto_send": True
+        "expected_auto_send": True,
+        "expected_keywords": ["meeting", "schedule"]
     },
     {
-        "name": "General Inquiry (Non-meeting)",
-        "subject": "Question about Features",
-        "body": "Hi, I wanted to ask about your product features and pricing. Can you provide more information?",
-        "expected_intent": "General Inquiry",
+        "name": "General Question (Unmatched - Tests Default Intent)",
+        "subject": "Quick Question",
+        "body": "Hi, I came across your service and wanted to learn more about what you offer. Could you provide some details?",
+        "expected_intent": "Default",
         "expected_meeting_detected": False,
         "expected_calendar_event": False,
-        "expected_auto_send": True
+        "expected_auto_send": True,
+        "expected_confidence": 0.5,
+        "expected_kb_grounded": True
+    },
+    {
+        "name": "Support Request Email",
+        "subject": "Issue with Email Syncing",
+        "body": "Hi, I'm having trouble with my email account not syncing properly. It hasn't updated in 2 hours. Can you help?",
+        "expected_intent": "Support Request",
+        "expected_meeting_detected": False,
+        "expected_calendar_event": False,
+        "expected_auto_send": True,
+        "expected_keywords": ["issue", "trouble", "help"],
+        "expected_confidence": 0.9
+    },
+    {
+        "name": "Thank You Email",
+        "subject": "Thanks for your help!",
+        "body": "Thank you so much for your quick response and assistance. Really appreciate it!",
+        "expected_intent": "Thank You",
+        "expected_meeting_detected": False,
+        "expected_calendar_event": False,
+        "expected_auto_send": True,
+        "expected_keywords": ["thank you", "appreciate"]
     }
 ]
 
