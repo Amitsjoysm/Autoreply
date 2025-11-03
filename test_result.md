@@ -1841,76 +1841,73 @@ backend:
             - Sort and display logic working
             - Create/Edit/Delete functionality intact
   
-  - task: "Create production deployment script"
+  - task: "Fix email formatting issue (appearing on one side)"
     implemented: true
     working: true
-    file: "deploy.sh"
+    file: "services/email_formatter.py, services/ai_agent_service.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
         - working: true
           agent: "main"
           comment: |
-            ✅ DEPLOYMENT SCRIPT CREATED
+            ✅ EMAIL FORMATTING IMPROVED
             
-            Created comprehensive deploy.sh script with:
+            ISSUES IDENTIFIED:
+            1. Email HTML used div-based layout with margin: 0 auto
+               - Not well-supported in all email clients
+               - Caused emails to appear on one side in some clients
             
-            1. Git Operations:
-               - Configurable branch support
-               - Pull latest code
-               - Checkout specified branch
+            2. Draft generation didn't emphasize formatting
+               - AI wasn't consistently using structured formatting
+               - Paragraphs, lists, and sections not clearly defined
             
-            2. System Dependencies:
-               - Auto-detect and install Python3, Node.js, MongoDB
-               - Verify all required commands
+            FIXES IMPLEMENTED:
             
-            3. Redis Setup:
-               - Install Redis if missing
-               - Start Redis daemon
-               - Verify connectivity
+            1. Updated EmailFormatter (email_formatter.py):
+               - Changed from div-based to table-based layout
+               - Better email client compatibility (Gmail, Outlook, etc.)
+               - Uses width="600" with cellpadding/cellspacing
+               - Proper centering with align="center"
+               - Maintains responsive design for mobile
             
-            4. MongoDB Setup:
-               - Start MongoDB if not running
-               - Configurable database name
-               - Verify connectivity
+            2. Enhanced AI Prompt (ai_agent_service.py):
+               - Added explicit formatting guidelines
+               - Instructions for clear paragraphs and sections
+               - Guidance on using headings and bullet points
+               - Line length recommendations
+               - Section separator usage
             
-            5. Backend Setup:
-               - Create virtual environment
-               - Install all Python dependencies
-               - Create .env template if missing
-               - Include emergentintegrations installation
+            TECHNICAL CHANGES:
             
-            6. Frontend Setup:
-               - Install Node dependencies via yarn
-               - Create .env template if missing  
-               - Build optimized production bundle
+            email_formatter.py (lines 79-93):
+            - Replaced div container with table-based layout
+            - Added outer table with 100% width
+            - Inner table with 600px fixed width
+            - Proper alignment and spacing
+            - Maintains all existing formatting features:
+              * Heading detection
+              * List formatting
+              * Meeting info highlighting
+              * Link conversion
+              * Signature handling
             
-            7. Process Management:
-               - Configure supervisor for backend/frontend
-               - Auto-restart on failure
-               - Log file management
+            ai_agent_service.py (lines 267-278):
+            - Added "FORMATTING GUIDELINES" section to prompt
+            - Instructs AI to use clear paragraphs
+            - Encourages headings and bullet points
+            - Suggests separators for major sections
+            - Maintains all existing requirements
             
-            8. Background Workers:
-               - Automatically started with backend
-               - Email polling (60s)
-               - Follow-ups (5min)
-               - Reminders (1hr)
+            BENEFITS:
+            - Better rendering across all email clients
+            - More professional appearance
+            - Improved readability
+            - Consistent formatting
+            - Mobile-responsive design
             
-            9. Health Checks:
-               - Verify all services responding
-               - Check connectivity to MongoDB, Redis
-            
-            Features:
-            - Command line arguments support
-            - --branch: specify git branch
-            - --db-name: specify MongoDB database
-            - --skip-git: skip git operations
-            - --skip-deps: skip dependency installation
-            - --dev: run in development mode
-            - Colored output for clarity
-            - Error handling and validation
-            - Production build optimization
+            Backend restarted successfully to apply changes.
 
 frontend:
   - task: "Verify frontend can load Intents and Knowledge Base"
