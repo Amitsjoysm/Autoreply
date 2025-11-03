@@ -352,6 +352,69 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: |
+      🔧 CRITICAL FIX - Intents and Knowledge Base API Endpoints
+      
+      USER: amits.joys@gmail.com (ID: 600977ca-d1b2-42f3-b742-fbf2885c4f01)
+      DATE: 2025-11-03
+      
+      ISSUE IDENTIFIED:
+      - Frontend failed to load intents and knowledge base entries
+      - APIs returning 500 Internal Server Error
+      - Root cause: Field name mismatch between seed data and API routes
+      
+      PROBLEMS FOUND:
+      1. Intents API:
+         - Seed data used 'custom_prompt' field
+         - API routes expected 'prompt' field
+         - Caused KeyError when accessing intent['prompt']
+      
+      2. Knowledge Base API:
+         - API routes expected 'tags' field (required)
+         - Seed data didn't include 'tags' field
+         - Caused KeyError when accessing kb['tags']
+      
+      FIXES IMPLEMENTED:
+      1. Updated intent_routes.py (3 endpoints):
+         - list_intents(): Use intent.get('prompt') or intent.get('custom_prompt', '')
+         - get_intent(): Handle both field names with fallback
+         - update_intent(): Handle both field names with fallback
+         - Added .get() with defaults for all optional fields
+      
+      2. Updated knowledge_base_routes.py (3 endpoints):
+         - list_knowledge_base(): Use kb.get('tags', []) with default empty list
+         - get_knowledge_base(): Handle missing tags gracefully
+         - update_knowledge_base(): Handle missing tags gracefully
+      
+      3. Updated ai_agent_service.py:
+         - _get_draft_context(): Handle both 'prompt' and 'custom_prompt' fields
+         - Ensures AI draft generation works with both field names
+      
+      BACKWARD COMPATIBILITY:
+      - All fixes maintain backward compatibility
+      - Works with both old and new data formats
+      - No breaking changes to existing functionality
+      
+      TESTING COMPLETED:
+      ✅ Intents API: Returns 200 OK with 8 intents
+      ✅ Knowledge Base API: Returns 200 OK with 7 entries
+      ✅ Email Accounts API: Working correctly
+      ✅ Health Check: Backend healthy
+      ✅ Background Workers: Active and polling
+      ✅ Redis: Running and responding
+      ✅ MongoDB: Connected and accessible
+      
+      SEED DATA CONFIRMED:
+      - 8 Intents (7 auto-send, 1 manual review)
+      - 7 Knowledge Base entries
+      - All data accessible via APIs
+      
+      PRODUCTION STATUS: ✅ READY FOR DEPLOYMENT
+      
+      All critical APIs fixed and tested. Frontend should now be able to load
+      intents and knowledge base without errors.
+  
+  - agent: "main"
+    message: |
       Fixed OAuth integration issues:
       
       ROOT CAUSES IDENTIFIED:
