@@ -404,9 +404,11 @@ Respond in JSON:
         if intent_id:
             intent_doc = await self.db.intents.find_one({"id": intent_id})
             if intent_doc:
-                intent = Intent(**intent_doc)
-                context_parts.append(f"Intent: {intent.name}")
-                context_parts.append(f"Response Guidelines: {intent.prompt}")
+                # Handle both 'prompt' and 'custom_prompt' for backward compatibility
+                intent_prompt = intent_doc.get('prompt') or intent_doc.get('custom_prompt', '')
+                context_parts.append(f"Intent: {intent_doc.get('name')}")
+                if intent_prompt:
+                    context_parts.append(f"Response Guidelines: {intent_prompt}")
         
         # Get relevant knowledge base (simple: get all active KB)
         kb_docs = await self.db.knowledge_base.find({"user_id": user_id, "is_active": True}).limit(5).to_list(5)
