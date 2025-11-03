@@ -1954,10 +1954,13 @@ metadata:
 
 test_plan:
   current_focus:
-    - "User login and access seed data"
-    - "Frontend loading of Intents page"
-    - "Frontend loading of Knowledge Base page"
-    - "Test deployment script in clean environment"
+    - "User login and verify JWT authentication"
+    - "Load Intents page and verify 8 intents display"
+    - "Load Knowledge Base page and verify 7 entries display"
+    - "Test creating new intent"
+    - "Test creating new KB entry"
+    - "Send test email and verify formatting"
+    - "Verify auto-reply with proper HTML formatting"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
