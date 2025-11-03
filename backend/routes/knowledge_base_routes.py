@@ -110,7 +110,7 @@ async def update_knowledge_base(
         category=updated_doc.get('category'),
         tags=updated_doc['tags'],
         is_active=updated_doc['is_active'],
-        created_at=updated_doc['created_at']
+        created_at=updated_doc['created_at'].isoformat() if isinstance(updated_doc['created_at'], datetime) else updated_doc['created_at']
     )
 
 @router.delete("/{kb_id}")
