@@ -327,7 +327,7 @@ Respond with ONLY the email body text, no subject line."""
     
     async def validate_draft(self, draft: str, email: Email, user_id: str, intent_id: Optional[str] = None,
                             thread_context: List[Dict] = None) -> Tuple[bool, List[str]]:
-        """Validate draft using Emergent LLM (Validation Agent) with thread context"""
+        """Validate draft using Groq/Emergent LLM (Validation Agent) with thread context"""
         try:
             current_time = config.get_datetime_string()
             
@@ -382,22 +382,65 @@ Respond in JSON:
   "issues": ["list of issues found, empty if valid"]
 }}"""
             
-            # Use Emergent LLM service
-            system_message = "You are a validation AI. Always respond with valid JSON."
-            data = await self.llm_service.validate_draft(
-                draft=draft,
-                validation_prompt=prompt,
-                system_message=system_message
-            )
-            
-            valid = data.get('valid', False)
-            issues = data.get('issues', [])
-            
-            # Token tracking (estimated)
-            tokens = len(prompt.split())
-            self.tokens_used += tokens
-            
-            return valid, issues
+            # Try Groq first, fallback to Emergent LLM
+            try:
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    response = await client.post(
+                        'https://api.groq.com/openai/v1/chat/completions',
+                        headers={
+                            'Authorization': f'Bearer {self.groq_api_key}',
+                            'Content-Type': 'application/json'
+                        },
+                        json={
+                            'model': config.GROQ_VALIDATION_MODEL,
+                            'messages': [
+                                {'role': 'system', 'content': 'You are a validation AI. Always respond with valid JSON.'},
+                                {'role': 'user', 'content': prompt}
+                            ],
+                            'temperature': 0.2,
+                            'max_tokens': 300
+                        }
+                    )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    content = result['choices'][0]['message']['content']
+                    
+                    # Track tokens
+                    usage = result.get('usage', {})
+                    tokens = usage.get('total_tokens', 0)
+                    self.tokens_used += tokens
+                    
+                    # Parse JSON
+                    json_content = content.strip()
+                    if json_content.startswith('```json'):
+                        json_content = json_content[7:]
+                    if json_content.startswith('```'):
+                        json_content = json_content[3:]
+                    if json_content.endswith('```'):
+                        json_content = json_content[:-3]
+                    json_content = json_content.strip()
+                    
+                    data = json.loads(json_content)
+                    valid = data.get('valid', False)
+                    issues = data.get('issues', [])
+                    return valid, issues
+                else:
+                    logger.warning(f"Groq API error: {response.status_code}, falling back to Emergent LLM")
+                    raise Exception("Groq API failed")
+            except Exception as groq_error:
+                logger.info(f"Using Emergent LLM fallback for draft validation: {groq_error}")
+                system_message = "You are a validation AI. Always respond with valid JSON."
+                data = await self.llm_service.validate_draft(
+                    draft=draft,
+                    validation_prompt=prompt,
+                    system_message=system_message
+                )
+                valid = data.get('valid', False)
+                issues = data.get('issues', [])
+                tokens = len(prompt.split())
+                self.tokens_used += tokens
+                return valid, issues
             
         except Exception as e:
             logger.error(f"Error validating draft: {e}", exc_info=True)
