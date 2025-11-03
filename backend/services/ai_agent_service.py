@@ -146,7 +146,7 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
     async def generate_draft(self, email: Email, user_id: str, intent_id: Optional[str] = None, 
                             thread_context: List[Dict] = None, validation_issues: List[str] = None,
                             calendar_event = None) -> Tuple[str, int]:
-        """Generate email draft using Groq (Draft Agent) with thread context"""
+        """Generate email draft using Emergent LLM (Draft Agent) with thread context"""
         try:
             current_time = config.get_datetime_string()
             
@@ -232,39 +232,21 @@ Generate a clear, professional response that:
 
 Respond with ONLY the email body text, no subject line."""
             
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(
-                    'https://api.groq.com/openai/v1/chat/completions',
-                    headers={
-                        'Authorization': f'Bearer {self.groq_api_key}',
-                        'Content-Type': 'application/json'
-                    },
-                    json={
-                        'model': config.GROQ_DRAFT_MODEL,
-                        'messages': [
-                            {'role': 'system', 'content': 'You are a professional email writing assistant. Write clear, actionable emails with no placeholders.'},
-                            {'role': 'user', 'content': prompt}
-                        ],
-                        'temperature': 0.7,
-                        'max_tokens': 800
-                    }
-                )
+            # Use Emergent LLM service
+            system_message = "You are a professional email writing assistant. Write clear, actionable emails with no placeholders."
+            draft = await self.llm_service.generate_draft(
+                context=prompt,
+                system_message=system_message
+            )
             
-            if response.status_code == 200:
-                result = response.json()
-                draft = result['choices'][0]['message']['content'].strip()
-                
-                # Track tokens
-                usage = result.get('usage', {})
-                tokens = usage.get('total_tokens', 0)
-                self.tokens_used += tokens
-                
-                return draft, tokens
-            else:
-                logger.error(f"Groq API error: {response.status_code} - {response.text}")
-                return "Error generating draft", 0
+            # Token tracking (estimated for now)
+            tokens = len(prompt.split()) + len(draft.split())
+            self.tokens_used += tokens
+            
+            return draft, tokens
+            
         except Exception as e:
-            logger.error(f"Error generating draft: {e}")
+            logger.error(f"Error generating draft: {e}", exc_info=True)
             return f"Error: {str(e)}", 0
     
     async def validate_draft(self, draft: str, email: Email, user_id: str, intent_id: Optional[str] = None,
