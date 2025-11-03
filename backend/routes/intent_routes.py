@@ -114,11 +114,11 @@ async def update_intent(
         id=updated_doc['id'],
         name=updated_doc['name'],
         description=updated_doc.get('description'),
-        prompt=updated_doc['prompt'],
-        keywords=updated_doc['keywords'],
-        auto_send=updated_doc['auto_send'],
-        priority=updated_doc['priority'],
-        is_active=updated_doc['is_active'],
+        prompt=updated_doc.get('prompt') or updated_doc.get('custom_prompt', ''),
+        keywords=updated_doc.get('keywords', []),
+        auto_send=updated_doc.get('auto_send', False),
+        priority=updated_doc.get('priority', 0),
+        is_active=updated_doc.get('is_active', True),
         created_at=updated_doc['created_at']
     )
 
