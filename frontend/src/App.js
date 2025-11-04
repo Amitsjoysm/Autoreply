@@ -327,6 +327,16 @@ function App() {
             }
           />
           <Route
+            path="/campaign/campaigns"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Campaigns />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/campaign/contacts"
             element={
               <ProtectedRoute>
@@ -342,6 +352,16 @@ function App() {
               <ProtectedRoute>
                 <MainLayout>
                   <CampaignTemplates />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/campaign/analytics/:campaignId"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <CampaignAnalytics />
                 </MainLayout>
               </ProtectedRoute>
             }
