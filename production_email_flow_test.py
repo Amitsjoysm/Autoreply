@@ -519,7 +519,7 @@ class ProductionEmailFlowTester:
         
         # 2. MongoDB
         try:
-            if self.db:
+            if self.db is not None:
                 self.db.command('ping')
                 health_checks['mongodb'] = True
                 self.log("✅ MongoDB connected")
