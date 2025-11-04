@@ -107,6 +107,34 @@ const MainLayout = ({ children }) => {
               </Link>
             );
           })}
+
+          {/* Campaign Section */}
+          <div className="px-4 py-3 mt-2">
+            <div className="flex items-center gap-2 px-2 mb-2">
+              <Send className="w-4 h-4 text-purple-300" />
+              <span className="text-xs font-semibold text-purple-300 uppercase tracking-wider">Campaigns</span>
+            </div>
+          </div>
+          
+          {campaignMenuItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = currentPath === item.path || currentPath.startsWith(item.path);
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                onClick={() => setCurrentPath(item.path)}
+                className={`flex items-center gap-3 px-6 py-3 transition-colors ${
+                  isActive
+                    ? 'bg-gradient-to-r from-pink-500 to-purple-500 border-l-4 border-white'
+                    : 'hover:bg-purple-800/50'
+                }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-sm">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Logout */}
