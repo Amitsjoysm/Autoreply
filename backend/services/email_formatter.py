@@ -214,17 +214,21 @@ class EmailFormatter:
         return html_version, plain_version
     
     @staticmethod
-    def format_plain_text(draft_text: str, signature: Optional[str] = None) -> str:
+    def format_plain_text(draft_text: str, signature: Optional[str] = None, max_line_width: int = 72) -> str:
         """
         Format plain text email with proper paragraphs, spacing, and line breaks
+        Uses text wrapping to prevent text appearing to one side in email clients
         
         Args:
             draft_text: Plain text draft
             signature: Optional signature
+            max_line_width: Maximum characters per line (default 72 for email compatibility)
             
         Returns:
             Well-formatted plain text email
         """
+        import textwrap
+        
         lines = draft_text.split('\n')
         formatted_lines = []
         current_paragraph = []
@@ -235,8 +239,10 @@ class EmailFormatter:
             # Empty line indicates paragraph break
             if not stripped:
                 if current_paragraph:
-                    # Join current paragraph and add it
-                    formatted_lines.append(' '.join(current_paragraph))
+                    # Join current paragraph and wrap it
+                    paragraph_text = ' '.join(current_paragraph)
+                    wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
+                    formatted_lines.append(wrapped)
                     current_paragraph = []
                     # Add blank line for paragraph spacing
                     formatted_lines.append('')
@@ -245,7 +251,9 @@ class EmailFormatter:
                 if EmailFormatter._is_plain_text_heading(stripped):
                     # Flush current paragraph
                     if current_paragraph:
-                        formatted_lines.append(' '.join(current_paragraph))
+                        paragraph_text = ' '.join(current_paragraph)
+                        wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
+                        formatted_lines.append(wrapped)
                         current_paragraph = []
                         formatted_lines.append('')
                     
@@ -257,34 +265,50 @@ class EmailFormatter:
                 elif EmailFormatter._is_plain_text_list_item(stripped):
                     # Flush current paragraph
                     if current_paragraph:
-                        formatted_lines.append(' '.join(current_paragraph))
+                        paragraph_text = ' '.join(current_paragraph)
+                        wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
+                        formatted_lines.append(wrapped)
                         current_paragraph = []
                         formatted_lines.append('')
                     
-                    # Add list item as-is
-                    formatted_lines.append(stripped)
+                    # Wrap list item with hanging indent
+                    wrapped = textwrap.fill(stripped, width=max_line_width, subsequent_indent='  ', break_long_words=False, break_on_hyphens=False)
+                    formatted_lines.append(wrapped)
                 
                 # Check if it's a separator
                 elif re.match(r'^[=━\-]{3,}$', stripped):
                     # Flush current paragraph
                     if current_paragraph:
-                        formatted_lines.append(' '.join(current_paragraph))
+                        paragraph_text = ' '.join(current_paragraph)
+                        wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
+                        formatted_lines.append(wrapped)
                         current_paragraph = []
                         formatted_lines.append('')
                     
-                    formatted_lines.append(stripped)
+                    formatted_lines.append('-' * min(len(stripped), max_line_width))
                     formatted_lines.append('')
                 
                 # Check if line contains key-value pairs (like meeting details)
                 elif ':' in stripped and len(stripped) < 100:
                     # Flush current paragraph
                     if current_paragraph:
-                        formatted_lines.append(' '.join(current_paragraph))
+                        paragraph_text = ' '.join(current_paragraph)
+                        wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
+                        formatted_lines.append(wrapped)
                         current_paragraph = []
                         formatted_lines.append('')
                     
-                    # Add key-value line as-is
-                    formatted_lines.append(stripped)
+                    # Wrap key-value line with hanging indent for long values
+                    if len(stripped) > max_line_width:
+                        parts = stripped.split(':', 1)
+                        if len(parts) == 2:
+                            key, value = parts
+                            wrapped = textwrap.fill(stripped, width=max_line_width, subsequent_indent=' ' * (len(key) + 2), break_long_words=False, break_on_hyphens=False)
+                            formatted_lines.append(wrapped)
+                        else:
+                            formatted_lines.append(stripped[:max_line_width])
+                    else:
+                        formatted_lines.append(stripped)
                 
                 # Regular text - add to current paragraph
                 else:
@@ -292,7 +316,9 @@ class EmailFormatter:
         
         # Flush remaining paragraph
         if current_paragraph:
-            formatted_lines.append(' '.join(current_paragraph))
+            paragraph_text = ' '.join(current_paragraph)
+            wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
+            formatted_lines.append(wrapped)
         
         # Join all lines
         plain_version = '\n'.join(formatted_lines)
@@ -304,7 +330,17 @@ class EmailFormatter:
         if signature:
             # Ensure clean separation before signature
             plain_version = plain_version.rstrip()
-            plain_version += f"\n\n{signature}"
+            # Wrap signature lines too
+            sig_lines = signature.split('\n')
+            wrapped_sig_lines = []
+            for sig_line in sig_lines:
+                if sig_line.strip():
+                    if len(sig_line) > max_line_width:
+                        wrapped = textwrap.fill(sig_line, width=max_line_width, break_long_words=False, break_on_hyphens=False)
+                        wrapped_sig_lines.append(wrapped)
+                    else:
+                        wrapped_sig_lines.append(sig_line)
+            plain_version += f"\n\n{chr(10).join(wrapped_sig_lines)}"
         
         return plain_version.strip()
     
