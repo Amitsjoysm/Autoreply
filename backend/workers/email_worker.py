@@ -198,6 +198,7 @@ async def process_email(email_id: str):
         # Step 1.5: Check if this is a simple acknowledgment (no follow-up needed)
         is_simple_ack = ai_service.is_simple_acknowledgment(email)
         automated_followups_created = False
+        is_time_based_followup = False
         
         if is_simple_ack:
             logger.info(f"Email {email.id} is a simple acknowledgment - skipping follow-ups")
@@ -229,6 +230,7 @@ async def process_email(email_id: str):
                         ai_service=ai_service
                     )
                     automated_followups_created = True
+                    is_time_based_followup = True
                     logger.info(f"Created automated follow-ups based on time reference: {time_references[0]['matched_text']}")
         
         # Step 2: Detect meeting
