@@ -66,6 +66,9 @@ from routes.calendar_routes import router as calendar_router
 from routes.follow_up_routes import router as follow_up_router
 from routes.system_routes import router as system_router
 from routes.test_routes import router as test_router
+from routes.campaign_contact_routes import router as campaign_contact_router
+from routes.campaign_template_routes import router as campaign_template_router
+from routes.campaign_routes import router as campaign_router
 
 # Include routers under /api prefix
 app.include_router(auth_router, prefix="/api")
@@ -78,6 +81,9 @@ app.include_router(calendar_router, prefix="/api")
 app.include_router(follow_up_router, prefix="/api")
 app.include_router(system_router, prefix="/api")
 app.include_router(test_router, prefix="/api")
+app.include_router(campaign_contact_router, prefix="/api")
+app.include_router(campaign_template_router, prefix="/api")
+app.include_router(campaign_router, prefix="/api")
 
 # Special OAuth callback route (without /api prefix for Google OAuth redirect)
 from fastapi import Query
