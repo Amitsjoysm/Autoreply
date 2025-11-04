@@ -320,7 +320,7 @@ class EmailService:
     def _send_smtp_sync(self, account: EmailAccount, email_data: EmailSend) -> bool:
         """Synchronous SMTP send"""
         try:
-            # Create multipart message for HTML + plain text
+            # Create multipart message - PLAIN TEXT ONLY
             message = MIMEMultipart('alternative')
             message['From'] = account.email
             message['To'] = ', '.join(email_data.to_email)
@@ -334,9 +334,8 @@ class EmailService:
             signature = account.signature if hasattr(account, 'signature') and account.signature else None
             html_body, plain_body = EmailFormatter.create_html_and_plain(email_data.body, signature)
             
-            # Attach both plain text and HTML (plain text first as primary)
+            # Attach ONLY plain text (as requested by user)
             message.attach(MIMEText(plain_body, 'plain'))
-            message.attach(MIMEText(html_body, 'html'))
             
             server = smtplib.SMTP_SSL(account.smtp_host, account.smtp_port)
             server.login(account.email, account.password)
