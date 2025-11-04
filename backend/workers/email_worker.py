@@ -613,6 +613,7 @@ async def check_follow_ups():
         logger.info(f"Found {len(follow_ups)} follow-ups to send")
         
         email_service = EmailService(db)
+        ai_service = AIAgentService(db)
         
         for follow_up_doc in follow_ups:
             from models.follow_up import FollowUp
@@ -632,14 +633,89 @@ async def check_follow_ups():
             
             email = Email(**email_doc)
             
-            # Send follow-up
-            follow_up_email = EmailSend(
-                email_account_id=follow_up.email_account_id,
-                to_email=[email.from_email],
-                subject=follow_up.subject,
-                body=follow_up.body
-            )
+            # Handle automated follow-ups differently
+            if follow_up.is_automated:
+                logger.info(f"Processing automated follow-up {follow_up.id}")
+                
+                # Get thread context
+                thread_context = await email_service.get_thread_context(email)
+                
+                # Prepare follow-up context for draft generation
+                follow_up_context = {
+                    'is_automated_followup': True,
+                    'base_date': follow_up.base_date,
+                    'matched_text': follow_up.matched_text,
+                    'original_context': follow_up.follow_up_context
+                }
+                
+                # Generate draft using AI
+                try:
+                    draft, tokens = await ai_service.generate_draft(
+                        email=email,
+                        user_id=email.user_id,
+                        intent_id=email.intent_detected,
+                        thread_context=thread_context,
+                        follow_up_context=follow_up_context
+                    )
+                    
+                    # Validate draft
+                    valid, issues, _ = await ai_service.validate_draft(
+                        draft,
+                        email,
+                        thread_context
+                    )
+                    
+                    if not valid:
+                        logger.warning(f"Automated follow-up draft validation failed for {follow_up.id}: {issues}")
+                        # Try one more time with validation feedback
+                        draft, tokens = await ai_service.generate_draft(
+                            email=email,
+                            user_id=email.user_id,
+                            intent_id=email.intent_detected,
+                            thread_context=thread_context,
+                            validation_issues=issues,
+                            follow_up_context=follow_up_context
+                        )
+                        
+                        # Validate again
+                        valid, issues, _ = await ai_service.validate_draft(
+                            draft,
+                            email,
+                            thread_context
+                        )
+                    
+                    if valid:
+                        # Send the AI-generated follow-up
+                        follow_up_email = EmailSend(
+                            email_account_id=follow_up.email_account_id,
+                            to_email=[email.from_email],
+                            subject=f"Re: {email.subject}",
+                            body=draft
+                        )
+                    else:
+                        logger.error(f"Automated follow-up {follow_up.id} failed validation twice, skipping")
+                        await db.follow_ups.update_one(
+                            {"id": follow_up.id},
+                            {"$set": {
+                                "status": "cancelled",
+                                "cancellation_reason": "Draft validation failed after retries"
+                            }}
+                        )
+                        continue
+                        
+                except Exception as e:
+                    logger.error(f"Error generating automated follow-up draft: {e}")
+                    continue
+            else:
+                # Manual follow-up - use pre-written body
+                follow_up_email = EmailSend(
+                    email_account_id=follow_up.email_account_id,
+                    to_email=[email.from_email],
+                    subject=follow_up.subject,
+                    body=follow_up.body
+                )
             
+            # Send follow-up
             sent = False
             if account.account_type == 'oauth_gmail':
                 # Send in same thread if thread_id exists
@@ -652,10 +728,11 @@ async def check_follow_ups():
                     {"id": follow_up.id},
                     {"$set": {
                         "status": "sent",
-                        "sent_at": datetime.now(timezone.utc).isoformat()
+                        "sent_at": datetime.now(timezone.utc).isoformat(),
+                        "body": follow_up_email.body  # Store the actual sent body
                     }}
                 )
-                logger.info(f"Sent follow-up {follow_up.id}")
+                logger.info(f"Sent {'automated' if follow_up.is_automated else 'manual'} follow-up {follow_up.id}")
     except Exception as e:
         logger.error(f"Error checking follow-ups: {e}")
 
