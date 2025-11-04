@@ -275,10 +275,18 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
         intent_id: Optional[str] = None,
         thread_context: List[Dict] = None,
         validation_issues: List[str] = None,
-        calendar_event = None
+        calendar_event = None,
+        follow_up_context: Optional[Dict] = None
     ) -> Tuple[str, int]:
         """
         Generate email draft using Groq LLM with full context
+        
+        Args:
+            follow_up_context: Optional dict with:
+                - is_automated_followup: bool
+                - base_date: str (target date user mentioned)
+                - matched_text: str (original time reference)
+                - original_context: str (context from original email)
         
         Returns:
             Tuple of (draft_text, tokens_used)
@@ -296,7 +304,8 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
                 thread_context=thread_context,
                 validation_issues=validation_issues,
                 calendar_event=calendar_event,
-                current_time=current_time
+                current_time=current_time,
+                follow_up_context=follow_up_context
             )
             
             system_message = self._get_draft_system_message(context)
