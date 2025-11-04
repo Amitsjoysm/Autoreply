@@ -69,6 +69,7 @@ from routes.test_routes import router as test_router
 from routes.campaign_contact_routes import router as campaign_contact_router
 from routes.campaign_template_routes import router as campaign_template_router
 from routes.campaign_routes import router as campaign_router
+from routes.contact_list_routes import router as contact_list_router
 
 # Include routers under /api prefix
 app.include_router(auth_router, prefix="/api")
