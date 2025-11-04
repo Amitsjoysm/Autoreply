@@ -320,7 +320,11 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
             )
             
             draft = result.strip()
-            logger.info(f"✓ Draft generated ({len(draft)} chars)")
+            
+            # Remove any AI-generated signature to prevent double signatures
+            draft = SignatureHandler.remove_ai_signature(draft)
+            
+            logger.info(f"✓ Draft generated ({len(draft)} chars, signature removed)")
             
             return draft, self.tokens_used
             
