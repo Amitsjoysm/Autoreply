@@ -281,6 +281,7 @@ const Campaigns = () => {
       description: '',
       contact_ids: [],
       contact_tags: [],
+      list_ids: [],
       initial_template_id: '',
       follow_up_config: {
         enabled: true,
