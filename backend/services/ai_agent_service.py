@@ -468,7 +468,9 @@ CORE PRINCIPLES:
 FORMATTING:
 - Only output the email body (no subject line, no "Subject:" prefix)
 - Use proper paragraphs and formatting
-- Sign off appropriately for the context
+- DO NOT add any sign-off, closing, signature, or "Best regards" type phrases
+- DO NOT include sender name or contact information at the end
+- End with the main content only - signature will be added automatically
 - Use the persona's tone and style"""
         
         if context.get('persona'):
