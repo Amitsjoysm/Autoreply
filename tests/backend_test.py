@@ -581,7 +581,7 @@ class ProductionFlowTester:
                 self.log(f"  - Keywords: {len(intent.get('keywords', []))} keywords")
                 self.log(f"  - Active: {intent.get('is_active')}")
             
-            if len(auto_send_intents) == 6 and len(manual_intents) == 1:
+            if len(auto_send_intents) == 8 and len(manual_intents) == 1:
                 self.log("✅ Intent classification setup verified")
                 return True
             else:
@@ -628,7 +628,7 @@ class ProductionFlowTester:
                 self.log(f"  - Keywords: {len(intent.get('keywords', []))} keywords")
                 self.log(f"  - Active: {intent.get('is_active')}")
             
-            if len(auto_send_intents) == 6 and len(manual_intents) == 1:
+            if len(auto_send_intents) == 8 and len(manual_intents) == 1:
                 self.log("✅ Intent classification setup verified")
                 return True
             else:
