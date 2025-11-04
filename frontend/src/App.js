@@ -15,10 +15,14 @@ import MeetingDetection from './pages/MeetingDetection';
 import FollowUps from './pages/FollowUps';
 import LiveMonitoring from './pages/LiveMonitoring';
 import TestEmail from './pages/TestEmail';
+import CampaignContacts from './pages/CampaignContacts';
+import CampaignTemplates from './pages/CampaignTemplates';
+import Campaigns from './pages/Campaigns';
+import CampaignAnalytics from './pages/CampaignAnalytics';
 import '@/App.css';
 import {
   Mail, BarChart3, User, Calendar, CalendarDays, Brain, Target, 
-  Database, FileText, UserPlus, Activity, Zap, LogOut, MessageSquare
+  Database, FileText, UserPlus, Activity, Zap, LogOut, MessageSquare, Send, Users
 } from 'lucide-react';
 
 const MainLayout = ({ children }) => {
