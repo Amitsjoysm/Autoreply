@@ -112,8 +112,11 @@ class RealEmailTester:
                         print(f"   Status: {email.get('status', 'N/A')}")
                         print(f"   Intent: {email.get('intent_detected', 'N/A')}")
                         
-                        if email.get('draft_generated'):
-                            print(f"   Draft: ✅ Generated ({len(email['draft_generated'])} chars)")
+                        draft = email.get('draft_generated')
+                        if draft and isinstance(draft, str):
+                            print(f"   Draft: ✅ Generated ({len(draft)} chars)")
+                        elif draft:
+                            print(f"   Draft: ✅ Generated")
                         else:
                             print(f"   Draft: ❌ Not generated")
                         
