@@ -143,6 +143,62 @@ class AIAgentService:
             return []
     
     # ============================================================================
+    # SIMPLE REPLY DETECTION
+    # ============================================================================
+    
+    def is_simple_acknowledgment(self, email: Email) -> bool:
+        """
+        Detect if email is a simple acknowledgment that doesn't need follow-up
+        
+        Examples:
+        - "Thanks", "Thank you", "Thanks!"
+        - "Got it", "Received", "Noted"
+        - "OK", "Okay", "Sure"
+        - "Appreciate it", "Much appreciated"
+        
+        Returns:
+            True if this is a simple acknowledgment (no follow-up needed)
+        """
+        # Combine subject and body
+        full_text = f"{email.subject}\n{email.body}".lower().strip()
+        
+        # Remove common email signatures and footers
+        lines = [line.strip() for line in full_text.split('\n') if line.strip()]
+        
+        # If email is very short (1-3 lines), check for simple acknowledgments
+        if len(lines) <= 3:
+            content = ' '.join(lines)
+            
+            # Simple acknowledgment patterns
+            simple_patterns = [
+                r'\b(thanks?|thank you|thx|ty)\b',
+                r'\b(got it|received|noted|understood)\b',
+                r'\b(ok|okay|sure|alright)\b',
+                r'\b(appreciate it|appreciated|much appreciated)\b',
+                r'\b(will do|sounds good|perfect)\b',
+                r'\b(no problem|no worries)\b',
+                r'^\s*👍\s*$',  # Just a thumbs up emoji
+            ]
+            
+            import re
+            for pattern in simple_patterns:
+                if re.search(pattern, content):
+                    # Make sure there's no time reference or request
+                    request_patterns = [
+                        r'\b(when|where|how|what|why|can you|could you|would you|please)\b',
+                        r'\b(need|want|require|request|asking|question)\b',
+                        r'\b(follow up|get back|touch base|reach out)\b',
+                    ]
+                    
+                    has_request = any(re.search(p, content) for p in request_patterns)
+                    
+                    if not has_request and len(content) < 100:
+                        logger.info(f"Email {email.id} detected as simple acknowledgment")
+                        return True
+        
+        return False
+    
+    # ============================================================================
     # MEETING DETECTION
     # ============================================================================
     
