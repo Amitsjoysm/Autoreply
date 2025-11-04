@@ -339,7 +339,7 @@ class ProductionFlowTester:
                 is_default = " [DEFAULT]" if intent.get('is_default') else ""
                 self.log(f"Intent {i+1}: {intent.get('name')}{is_default} (auto_send: {intent.get('auto_send')}, priority: {intent.get('priority')})")
             
-            self.log("✅ Intents setup verified - 8 intents with 7 auto_send enabled (including default)")
+            self.log("✅ Intents setup verified - 9 intents with 8 auto_send enabled (including default)")
             return True
             
         except Exception as e:
