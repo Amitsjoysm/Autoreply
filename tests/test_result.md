@@ -1016,7 +1016,7 @@ agent_communication:
          - Deleted 0 old KB entries (fresh user)
       
       3. **Created Comprehensive Seed Data** ✅
-         - INTENTS (9 total):
+         - INTENTS (8 total):
            * Meeting Request (Priority 10, auto_send: ✅)
            * Meeting Reschedule (Priority 9, auto_send: ✅)
            * Support Request (Priority 8, auto_send: ✅)
@@ -1024,7 +1024,6 @@ agent_communication:
            * Introduction (Priority 6, auto_send: ✅)
            * General Inquiry (Priority 5, auto_send: ✅)
            * Thank You (Priority 4, auto_send: ✅)
-           * Urgent Request (Priority 10, auto_send: ❌ Manual)
            * Default (Priority 1, auto_send: ✅, is_default: True)
          
          - KNOWLEDGE BASE (7 entries):
