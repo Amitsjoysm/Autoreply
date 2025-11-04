@@ -261,6 +261,13 @@ const Campaigns = () => {
     setFormData({ ...formData, contact_ids: newContactIds });
   };
 
+  const handleListSelection = (listId) => {
+    const newListIds = formData.list_ids.includes(listId)
+      ? formData.list_ids.filter(id => id !== listId)
+      : [...formData.list_ids, listId];
+    setFormData({ ...formData, list_ids: newListIds });
+  };
+
   const handleEmailAccountSelection = (accountId) => {
     const newAccountIds = formData.email_account_ids.includes(accountId)
       ? formData.email_account_ids.filter(id => id !== accountId)
