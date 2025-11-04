@@ -97,6 +97,51 @@ class AIAgentService:
             return None, 0.0, None
     
     # ============================================================================
+    # TIME REFERENCE DETECTION
+    # ============================================================================
+    
+    async def detect_time_reference(self, email: Email) -> List[Dict]:
+        """
+        Detect time-based follow-up requests in email
+        
+        Returns:
+            List of time references with target dates and context
+            [
+                {
+                    'matched_text': 'next quarter',
+                    'target_date': datetime,
+                    'context': 'surrounding text',
+                    'original_email_body': full email body for reference
+                }
+            ]
+        """
+        try:
+            # Combine subject and body for analysis
+            full_text = f"{email.subject}\n\n{email.body}"
+            
+            # Parse time references
+            time_refs = self.date_parser.parse_time_references(full_text)
+            
+            if not time_refs:
+                return []
+            
+            results = []
+            for matched_text, target_date, context in time_refs:
+                results.append({
+                    'matched_text': matched_text,
+                    'target_date': target_date,
+                    'context': context,
+                    'original_email_body': email.body[:500]  # First 500 chars for context
+                })
+            
+            logger.info(f"Found {len(results)} time references in email {email.id}")
+            return results
+            
+        except Exception as e:
+            logger.error(f"Error detecting time reference: {e}")
+            return []
+    
+    # ============================================================================
     # MEETING DETECTION
     # ============================================================================
     
