@@ -279,11 +279,9 @@ async def process_email(email_id: str):
             await db.emails.update_one({"id": email_id}, {"$set": {"status": "validating"}})
             await add_action(email_id, "validating", {"attempt": attempt + 1})
             
-            valid, issues = await ai_service.validate_draft(
+            valid, issues, _ = await ai_service.validate_draft(
                 draft, 
                 email, 
-                email.user_id, 
-                intent_id,
                 thread_context
             )
             
