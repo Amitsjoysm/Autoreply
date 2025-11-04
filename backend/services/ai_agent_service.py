@@ -334,11 +334,23 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
         thread_context: List[Dict],
         validation_issues: List[str],
         calendar_event,
-        current_time: str
+        current_time: str,
+        follow_up_context: Optional[Dict] = None
     ) -> str:
         """Build comprehensive draft generation prompt"""
         
         prompt = f"Current Date & Time: {current_time}\n\n"
+        
+        # Add follow-up context if this is an automated follow-up
+        if follow_up_context and follow_up_context.get('is_automated_followup'):
+            prompt += "🔔 THIS IS AN AUTOMATED FOLLOW-UP\n"
+            prompt += "="*50 + "\n"
+            prompt += f"Original Request: {follow_up_context.get('matched_text', 'N/A')}\n"
+            prompt += f"Target Date User Mentioned: {follow_up_context.get('base_date', 'N/A')}\n"
+            prompt += f"Original Context: {follow_up_context.get('original_context', 'N/A')}\n"
+            prompt += "\nYou are now following up as requested by the sender.\n"
+            prompt += "Reference the original request naturally and provide a helpful update or check-in.\n"
+            prompt += "="*50 + "\n\n"
         
         # Add persona
         if context['persona']:
@@ -380,7 +392,13 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
             prompt += self._format_calendar_event(calendar_event)
         
         # Add current email
-        prompt += f"""CURRENT EMAIL TO RESPOND TO:
+        if follow_up_context and follow_up_context.get('is_automated_followup'):
+            prompt += f"""THIS IS A FOLLOW-UP EMAIL - NO NEW INCOMING EMAIL
+Generate a follow-up message based on the conversation history above.
+Reference the original request and provide a helpful check-in or update.
+"""
+        else:
+            prompt += f"""CURRENT EMAIL TO RESPOND TO:
 From: {email.from_email}
 To: {', '.join(email.to_email)}
 Subject: {email.subject}
