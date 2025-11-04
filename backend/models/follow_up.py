@@ -22,6 +22,13 @@ class FollowUp(BaseModel):
     
     # Status
     status: Literal['pending', 'sent', 'cancelled', 'responded'] = 'pending'
+    cancellation_reason: Optional[str] = None  # Why it was cancelled
+    
+    # Automated Follow-up Support
+    is_automated: bool = False  # True if this is AI-generated automated follow-up
+    follow_up_context: Optional[str] = None  # Context of what to follow up about
+    base_date: Optional[str] = None  # The target date user mentioned (e.g., "20th November")
+    matched_text: Optional[str] = None  # Original text that triggered follow-up
     
     # Detection
     response_detected: bool = False
