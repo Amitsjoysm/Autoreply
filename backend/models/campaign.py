@@ -127,6 +127,7 @@ class CampaignUpdate(BaseModel):
     description: Optional[str] = None
     contact_ids: Optional[List[str]] = None
     contact_tags: Optional[List[str]] = None
+    list_ids: Optional[List[str]] = None
     initial_template_id: Optional[str] = None
     follow_up_config: Optional[FollowUpConfig] = None
     email_account_ids: Optional[List[str]] = None
