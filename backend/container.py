@@ -37,13 +37,8 @@ class ServiceContainer:
             self._repository_factory.get_user_repository()
         )
         
-        # Initialize AI service with all required repositories
-        ai_repositories = {
-            'intents': self._repository_factory.get_intent_repository(),
-            'knowledge_base': self._repository_factory.get_knowledge_base_repository(),
-            'email_accounts': self._repository_factory.get_email_account_repository(),
-        }
-        self._services['ai_agent'] = AIAgentServiceV2(ai_repositories)
+        # Note: AI Agent Service is used directly by workers, not via container
+        # Workers instantiate AIAgentService(db) directly
         
         self._initialized = True
         logger.info("Service container initialized")
