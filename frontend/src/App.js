@@ -28,9 +28,15 @@ const MainLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [campaignExpanded, setCampaignExpanded] = useState(
+    window.location.pathname.startsWith('/campaign')
+  );
 
   useEffect(() => {
     setCurrentPath(window.location.pathname);
+    if (window.location.pathname.startsWith('/campaign')) {
+      setCampaignExpanded(true);
+    }
   }, [window.location.pathname]);
 
   const menuItems = [
@@ -46,6 +52,11 @@ const MainLayout = ({ children }) => {
     { path: '/follow-ups', label: 'Follow-ups', icon: UserPlus },
     { path: '/live-monitoring', label: 'Live Monitoring', icon: Activity },
     { path: '/test-email', label: 'Test Email', icon: Zap },
+  ];
+
+  const campaignMenuItems = [
+    { path: '/campaign/contacts', label: 'Contacts', icon: Users },
+    { path: '/campaign/templates', label: 'Templates', icon: FileText },
   ];
 
   return (
