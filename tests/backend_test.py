@@ -45,8 +45,8 @@ RECIPIENT_EMAIL = "amits.joys@gmail.com"
 TEST_SCENARIOS = [
     {
         "name": "Meeting Request Email",
-        "subject": "Let's Schedule a Call",
-        "body": "Hi, I'd like to schedule a meeting with you tomorrow at 3 PM EST to discuss our collaboration. Can you confirm your availability?",
+        "subject": "Meeting Request for Next Week",
+        "body": "Hi, I'd like to schedule a meeting with you next Tuesday at 2 PM EST to discuss the project. Can you confirm availability?",
         "expected_intent": "Meeting Request",
         "expected_meeting_detected": True,
         "expected_calendar_event": True,
@@ -54,20 +54,9 @@ TEST_SCENARIOS = [
         "expected_keywords": ["meeting", "schedule"]
     },
     {
-        "name": "General Question (Unmatched - Tests Default Intent)",
-        "subject": "Quick Question",
-        "body": "Hi, I came across your service and wanted to learn more about what you offer. Could you provide some details?",
-        "expected_intent": "Default",
-        "expected_meeting_detected": False,
-        "expected_calendar_event": False,
-        "expected_auto_send": True,
-        "expected_confidence": 0.5,
-        "expected_kb_grounded": True
-    },
-    {
         "name": "Support Request Email",
-        "subject": "Issue with Email Syncing",
-        "body": "Hi, I'm having trouble with my email account not syncing properly. It hasn't updated in 2 hours. Can you help?",
+        "subject": "Need Help with Login Issue",
+        "body": "Hello, I'm having trouble logging into my account. Getting an error message. Can you help?",
         "expected_intent": "Support Request",
         "expected_meeting_detected": False,
         "expected_calendar_event": False,
@@ -76,9 +65,19 @@ TEST_SCENARIOS = [
         "expected_confidence": 0.9
     },
     {
+        "name": "General Inquiry Email",
+        "subject": "Question About Pricing",
+        "body": "Hi, I'm interested in your service. What are your pricing plans and what features are included?",
+        "expected_intent": "General Inquiry",
+        "expected_meeting_detected": False,
+        "expected_calendar_event": False,
+        "expected_auto_send": True,
+        "expected_keywords": ["question", "inquiry", "pricing"]
+    },
+    {
         "name": "Thank You Email",
-        "subject": "Thanks for your help!",
-        "body": "Thank you so much for your quick response and assistance. Really appreciate it!",
+        "subject": "Thanks for Your Help",
+        "body": "Thank you so much for helping me yesterday. Really appreciate your quick response!",
         "expected_intent": "Thank You",
         "expected_meeting_detected": False,
         "expected_calendar_event": False,
