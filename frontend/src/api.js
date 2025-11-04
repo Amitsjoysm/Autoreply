@@ -222,6 +222,125 @@ class API {
     const response = await this.axios.post('/system/stop-polling');
     return response.data;
   }
+
+  // Campaign Contacts
+  async getCampaignContacts(params = {}) {
+    const response = await this.axios.get('/campaign/contacts', { params });
+    return response.data;
+  }
+
+  async getCampaignContact(id) {
+    const response = await this.axios.get(`/campaign/contacts/${id}`);
+    return response.data;
+  }
+
+  async createCampaignContact(data) {
+    const response = await this.axios.post('/campaign/contacts', data);
+    return response.data;
+  }
+
+  async updateCampaignContact(id, data) {
+    const response = await this.axios.put(`/campaign/contacts/${id}`, data);
+    return response.data;
+  }
+
+  async deleteCampaignContact(id) {
+    const response = await this.axios.delete(`/campaign/contacts/${id}`);
+    return response.data;
+  }
+
+  async bulkUploadContacts(formData) {
+    const response = await this.axios.post('/campaign/contacts/bulk-upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  }
+
+  async downloadContactTemplate() {
+    const response = await this.axios.get('/campaign/contacts/template/download', {
+      responseType: 'blob',
+    });
+    return response.data;
+  }
+
+  // Campaign Templates
+  async getCampaignTemplates(params = {}) {
+    const response = await this.axios.get('/campaign/templates', { params });
+    return response.data;
+  }
+
+  async getCampaignTemplate(id) {
+    const response = await this.axios.get(`/campaign/templates/${id}`);
+    return response.data;
+  }
+
+  async createCampaignTemplate(data) {
+    const response = await this.axios.post('/campaign/templates', data);
+    return response.data;
+  }
+
+  async updateCampaignTemplate(id, data) {
+    const response = await this.axios.put(`/campaign/templates/${id}`, data);
+    return response.data;
+  }
+
+  async deleteCampaignTemplate(id) {
+    const response = await this.axios.delete(`/campaign/templates/${id}`);
+    return response.data;
+  }
+
+  // Campaigns
+  async getCampaigns(params = {}) {
+    const response = await this.axios.get('/campaign/campaigns', { params });
+    return response.data;
+  }
+
+  async getCampaign(id) {
+    const response = await this.axios.get(`/campaign/campaigns/${id}`);
+    return response.data;
+  }
+
+  async createCampaign(data) {
+    const response = await this.axios.post('/campaign/campaigns', data);
+    return response.data;
+  }
+
+  async updateCampaign(id, data) {
+    const response = await this.axios.put(`/campaign/campaigns/${id}`, data);
+    return response.data;
+  }
+
+  async deleteCampaign(id) {
+    const response = await this.axios.delete(`/campaign/campaigns/${id}`);
+    return response.data;
+  }
+
+  async startCampaign(id) {
+    const response = await this.axios.post(`/campaign/campaigns/${id}/start`);
+    return response.data;
+  }
+
+  async pauseCampaign(id) {
+    const response = await this.axios.post(`/campaign/campaigns/${id}/pause`);
+    return response.data;
+  }
+
+  async resumeCampaign(id) {
+    const response = await this.axios.post(`/campaign/campaigns/${id}/resume`);
+    return response.data;
+  }
+
+  async stopCampaign(id) {
+    const response = await this.axios.post(`/campaign/campaigns/${id}/stop`);
+    return response.data;
+  }
+
+  async getCampaignAnalytics(id) {
+    const response = await this.axios.get(`/campaign/campaigns/${id}/analytics`);
+    return response.data;
+  }
 }
 
 export default new API();
