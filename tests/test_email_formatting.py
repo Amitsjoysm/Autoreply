@@ -53,5 +53,6 @@ print(f"✓ Plain text length: {len(plain_body)} characters")
 print(f"✓ HTML length: {len(html_body)} characters")
 print(f"✓ Signature included in plain text: {'Yes' if signature in plain_body else 'No'}")
 print(f"✓ Signature included in HTML: {'Yes' if 'john.doe@example.com' in html_body else 'No'}")
-print(f"✓ Proper paragraph spacing in plain text: {'Yes' if '\\n\\n' in plain_body else 'No'}")
+newline_check = 'Yes' if '\n\n' in plain_body else 'No'
+print(f"✓ Proper paragraph spacing in plain text: {newline_check}")
 print(f"✓ Meeting details preserved: {'Yes' if 'MEETING DETAILS' in plain_body else 'No'}")
