@@ -7,7 +7,7 @@ from models.campaign_template import (
     CampaignTemplateResponse, CampaignTemplateCreate, CampaignTemplateUpdate
 )
 from services.campaign_template_service import CampaignTemplateService
-from services.auth_service import get_current_user
+from routes.auth_routes import get_current_user_from_token, get_db
 from models.user import User
 from config import config
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -23,7 +23,7 @@ db = client[config.DB_NAME]
 @router.post("", response_model=CampaignTemplateResponse)
 async def create_template(
     template_data: CampaignTemplateCreate,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Create a new campaign template"""
     try:
@@ -40,7 +40,7 @@ async def list_templates(
     limit: int = 100,
     template_type: Optional[str] = None,
     is_active: Optional[bool] = None,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """List all templates for the current user"""
     try:
@@ -60,7 +60,7 @@ async def list_templates(
 @router.get("/{template_id}", response_model=CampaignTemplateResponse)
 async def get_template(
     template_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Get a specific template"""
     try:
@@ -79,7 +79,7 @@ async def get_template(
 async def update_template(
     template_id: str,
     update_data: CampaignTemplateUpdate,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Update a template"""
     try:
@@ -97,7 +97,7 @@ async def update_template(
 @router.delete("/{template_id}")
 async def delete_template(
     template_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Delete a template"""
     try:

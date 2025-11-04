@@ -42,7 +42,7 @@ async def list_contacts(
     limit: int = 100,
     tags: Optional[str] = None,
     status: Optional[str] = None,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """List all contacts for the current user"""
     try:
@@ -63,7 +63,7 @@ async def list_contacts(
 @router.get("/{contact_id}", response_model=CampaignContactResponse)
 async def get_contact(
     contact_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Get a specific contact"""
     try:
@@ -82,7 +82,7 @@ async def get_contact(
 async def update_contact(
     contact_id: str,
     update_data: CampaignContactUpdate,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Update a contact"""
     try:
@@ -100,7 +100,7 @@ async def update_contact(
 @router.delete("/{contact_id}")
 async def delete_contact(
     contact_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Delete a contact"""
     try:
@@ -119,7 +119,7 @@ async def delete_contact(
 async def bulk_upload_contacts(
     file: UploadFile = File(...),
     field_mapping: str = "",
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Bulk upload contacts from CSV file
     
@@ -167,7 +167,7 @@ async def bulk_upload_contacts(
 
 @router.get("/template/download")
 async def download_template(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Download sample CSV template"""
     try:

@@ -5,7 +5,7 @@ import logging
 
 from models.campaign import CampaignResponse, CampaignCreate, CampaignUpdate
 from services.campaign_service import CampaignService
-from services.auth_service import get_current_user
+from routes.auth_routes import get_current_user_from_token, get_db
 from models.user import User
 from config import config
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -21,7 +21,7 @@ db = client[config.DB_NAME]
 @router.post("", response_model=CampaignResponse)
 async def create_campaign(
     campaign_data: CampaignCreate,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Create a new campaign"""
     try:
@@ -39,7 +39,7 @@ async def list_campaigns(
     skip: int = 0,
     limit: int = 100,
     status: Optional[str] = None,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """List all campaigns for the current user"""
     try:
@@ -58,7 +58,7 @@ async def list_campaigns(
 @router.get("/{campaign_id}", response_model=CampaignResponse)
 async def get_campaign(
     campaign_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Get a specific campaign"""
     try:
@@ -77,7 +77,7 @@ async def get_campaign(
 async def update_campaign(
     campaign_id: str,
     update_data: CampaignUpdate,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Update a campaign"""
     try:
@@ -97,7 +97,7 @@ async def update_campaign(
 @router.delete("/{campaign_id}")
 async def delete_campaign(
     campaign_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Delete a campaign"""
     try:
@@ -117,7 +117,7 @@ async def delete_campaign(
 @router.post("/{campaign_id}/start", response_model=CampaignResponse)
 async def start_campaign(
     campaign_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Start a campaign"""
     try:
@@ -133,7 +133,7 @@ async def start_campaign(
 @router.post("/{campaign_id}/pause", response_model=CampaignResponse)
 async def pause_campaign(
     campaign_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Pause a running campaign"""
     try:
@@ -149,7 +149,7 @@ async def pause_campaign(
 @router.post("/{campaign_id}/resume", response_model=CampaignResponse)
 async def resume_campaign(
     campaign_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Resume a paused campaign"""
     try:
@@ -165,7 +165,7 @@ async def resume_campaign(
 @router.post("/{campaign_id}/stop", response_model=CampaignResponse)
 async def stop_campaign(
     campaign_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Stop a campaign (cannot be resumed)"""
     try:
@@ -181,7 +181,7 @@ async def stop_campaign(
 @router.get("/{campaign_id}/analytics")
 async def get_campaign_analytics(
     campaign_id: str,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Get campaign analytics"""
     try:
