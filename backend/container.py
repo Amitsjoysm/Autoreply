@@ -55,11 +55,12 @@ class ServiceContainer:
             raise RuntimeError("Service container not initialized")
         return self._services['auth']
     
-    def get_ai_agent_service(self) -> AIAgentServiceV2:
-        """Get AI agent service"""
-        if not self._initialized:
-            raise RuntimeError("Service container not initialized")
-        return self._services['ai_agent']
+    # AI Agent Service is used directly by workers, not via container
+    # def get_ai_agent_service(self):
+    #     """Get AI agent service"""
+    #     if not self._initialized:
+    #         raise RuntimeError("Service container not initialized")
+    #     return self._services['ai_agent']
     
     def get_repository(self, name: str) -> GenericRepository:
         """Get repository by name"""
