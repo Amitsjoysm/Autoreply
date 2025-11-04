@@ -133,15 +133,25 @@ async def startup_event():
         initialize_container(db, config.JWT_SECRET)
         logger.info("✓ Service container initialized")
         
-        # Start background worker in separate task
+        # Start background workers in separate tasks
         from workers.email_worker import poll_all_accounts, check_follow_ups, check_reminders
+        from workers.campaign_worker import process_campaign_emails, process_campaign_follow_ups, check_campaign_replies
         
         async def background_worker():
             poll_counter = 0
             follow_up_counter = 0
             reminder_counter = 0
+            campaign_counter = 0
+            campaign_followup_counter = 0
+            campaign_reply_counter = 0
             
-            logger.info("✓ Background worker started")
+            logger.info("✓ Background workers started")
+            logger.info("  - Email polling: Every 60 seconds")
+            logger.info("  - Follow-up checking: Every 5 minutes")
+            logger.info("  - Reminder checking: Every 1 hour")
+            logger.info("  - Campaign processor: Every 30 seconds")
+            logger.info("  - Campaign follow-ups: Every 5 minutes")
+            logger.info("  - Campaign reply checker: Every 2 minutes")
             
             while True:
                 try:
@@ -160,10 +170,28 @@ async def startup_event():
                         asyncio.create_task(check_reminders())
                         reminder_counter = 0
                     
+                    # Process campaign emails every 30 seconds
+                    if campaign_counter % 30 == 0:
+                        asyncio.create_task(process_campaign_emails())
+                        campaign_counter = 0
+                    
+                    # Process campaign follow-ups every 5 minutes (300 seconds)
+                    if campaign_followup_counter % 300 == 0:
+                        asyncio.create_task(process_campaign_follow_ups())
+                        campaign_followup_counter = 0
+                    
+                    # Check campaign replies every 2 minutes (120 seconds)
+                    if campaign_reply_counter % 120 == 0:
+                        asyncio.create_task(check_campaign_replies())
+                        campaign_reply_counter = 0
+                    
                     await asyncio.sleep(1)
                     poll_counter += 1
                     follow_up_counter += 1
                     reminder_counter += 1
+                    campaign_counter += 1
+                    campaign_followup_counter += 1
+                    campaign_reply_counter += 1
                 except Exception as e:
                     logger.error(f"Background worker error: {e}", exc_info=True)
                     await asyncio.sleep(5)
