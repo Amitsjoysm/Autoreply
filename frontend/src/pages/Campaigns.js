@@ -179,6 +179,7 @@ const Campaigns = () => {
       description: campaign.description || '',
       contact_ids: campaign.contact_ids,
       contact_tags: campaign.contact_tags,
+      list_ids: campaign.list_ids || [],
       initial_template_id: campaign.initial_template_id,
       follow_up_config: campaign.follow_up_config,
       email_account_ids: campaign.email_account_ids,
