@@ -251,7 +251,7 @@ class EmailService:
                 
                 service = build('gmail', 'v1', credentials=creds)
                 
-                # Create multipart message for HTML + plain text
+                # Create multipart message - PLAIN TEXT ONLY
                 message = MIMEMultipart('alternative')
                 message['to'] = ', '.join(email_data.to_email)
                 message['subject'] = email_data.subject
@@ -264,10 +264,8 @@ class EmailService:
                 signature = account.signature if hasattr(account, 'signature') and account.signature else None
                 html_body, plain_body = EmailFormatter.create_html_and_plain(email_data.body, signature)
                 
-                # Attach both plain text and HTML (email clients will choose the best one)
-                # Plain text first (primary), HTML second (alternative)
+                # Attach ONLY plain text (as requested by user)
                 message.attach(MIMEText(plain_body, 'plain'))
-                message.attach(MIMEText(html_body, 'html'))
                 
                 raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
                 
