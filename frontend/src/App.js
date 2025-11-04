@@ -60,6 +60,7 @@ const MainLayout = ({ children }) => {
   const campaignMenuItems = [
     { path: '/campaign/campaigns', label: 'Campaigns', icon: Send },
     { path: '/campaign/contacts', label: 'Contacts', icon: Users },
+    { path: '/campaign/lists', label: 'Contact Lists', icon: List },
     { path: '/campaign/templates', label: 'Templates', icon: FileText },
   ];
 
