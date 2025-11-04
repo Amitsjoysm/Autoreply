@@ -448,8 +448,11 @@ async def process_email(email_id: str):
                         })
                         logger.info(f"Auto-sent reply for email {email.id}")
                         
-                        # Create automatic follow-ups for sent emails based on account settings
-                        if account.follow_up_enabled:
+                        # Create automatic follow-ups ONLY if:
+                        # 1. Follow-ups are enabled for the account
+                        # 2. Automated time-based follow-ups were NOT already created
+                        # 3. This is NOT a simple acknowledgment
+                        if account.follow_up_enabled and not automated_followups_created and not is_simple_ack:
                             from models.follow_up import FollowUp
                             
                             # Create multiple follow-ups based on account settings
@@ -487,7 +490,11 @@ async def process_email(email_id: str):
                                 "follow_ups": follow_ups_created,
                                 "total_count": len(follow_ups_created)
                             })
-                            logger.info(f"Scheduled {len(follow_ups_created)} follow-ups for email {email.id}")
+                            logger.info(f"Scheduled {len(follow_ups_created)} standard follow-ups for email {email.id}")
+                        elif automated_followups_created:
+                            logger.info(f"Skipping standard follow-ups for email {email.id} - automated time-based follow-ups already created")
+                        elif is_simple_ack:
+                            logger.info(f"Skipping follow-ups for email {email.id} - simple acknowledgment detected")
                         else:
                             logger.info(f"Follow-ups disabled for account {account.email}")
                     else:
