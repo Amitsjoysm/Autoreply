@@ -23,7 +23,7 @@ db = client[config.DB_NAME]
 @router.post("", response_model=CampaignContactResponse)
 async def create_contact(
     contact_data: CampaignContactCreate,
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user_from_token)
 ):
     """Create a new campaign contact"""
     try:
