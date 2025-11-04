@@ -381,9 +381,39 @@ const Campaigns = () => {
                 </div>
               </div>
 
-              {/* Contacts Selection */}
+              {/* Contact Lists Selection */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700">Select Contacts</h3>
+                <h3 className="text-sm font-semibold text-gray-700">Select Contact Lists (Recommended)</h3>
+                {contactLists.length === 0 ? (
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                    <AlertCircle className="w-5 h-5 text-blue-600" />
+                    <span className="text-sm text-blue-800">No contact lists available. Create lists to organize your contacts easily.</span>
+                  </div>
+                ) : (
+                  <div className="border rounded-lg p-4 max-h-48 overflow-y-auto">
+                    {contactLists.map((list) => (
+                      <label key={list.id} className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={formData.list_ids.includes(list.id)}
+                          onChange={() => handleListSelection(list.id)}
+                          className="rounded"
+                        />
+                        <span className="text-sm flex items-center gap-2 flex-1">
+                          <Users className="w-4 h-4 text-blue-600" />
+                          {list.name}
+                          <span className="text-gray-500">({list.total_contacts} contacts)</span>
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-gray-500">{formData.list_ids.length} lists selected</p>
+              </div>
+
+              {/* Individual Contacts Selection */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-gray-700">Or Select Individual Contacts</h3>
                 {contacts.length === 0 ? (
                   <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center gap-2">
                     <AlertCircle className="w-5 h-5 text-yellow-600" />
@@ -410,7 +440,7 @@ const Campaigns = () => {
                     )}
                   </div>
                 )}
-                <p className="text-xs text-gray-500">{formData.contact_ids.length} contacts selected</p>
+                <p className="text-xs text-gray-500">{formData.contact_ids.length} individual contacts selected</p>
               </div>
 
               {/* Template Selection */}
