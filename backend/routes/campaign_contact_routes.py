@@ -7,7 +7,7 @@ from models.campaign_contact import (
     CampaignContactResponse, CampaignContactCreate, CampaignContactUpdate
 )
 from services.campaign_contact_service import CampaignContactService
-from services.auth_service import get_current_user
+from routes.auth_routes import get_current_user_from_token, get_db
 from models.user import User
 from config import config
 from motor.motor_asyncio import AsyncIOMotorClient
