@@ -444,7 +444,7 @@ const CampaignTemplates = () => {
                     <div className="space-y-2 text-xs">
                       {Object.entries(sampleData).map(([key, value]) => (
                         <div key={key} className="flex justify-between">
-                          <span className="text-blue-700 font-mono">{{'{' + key + '}'}}</span>
+                          <span className="text-blue-700 font-mono">{`{{${key}}}`}</span>
                           <span className="text-blue-900 font-medium">{value}</span>
                         </div>
                       ))}
