@@ -524,6 +524,7 @@ test_plan:
     - "Calendar Event Creation"
     - "Follow-up Management"
     - "Reply Detection and Cancellation"
+    - "Automated Time-Based Follow-Up Feature" # COMPLETED ✅
   stuck_tasks: []
   test_all: true
   test_priority: "comprehensive"
