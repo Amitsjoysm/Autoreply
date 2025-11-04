@@ -142,6 +142,7 @@ const Campaigns = () => {
       description: formData.description || null,
       contact_ids: formData.contact_ids,
       contact_tags: formData.contact_tags,
+      list_ids: formData.list_ids,
       initial_template_id: formData.initial_template_id,
       follow_up_config: formData.follow_up_config,
       email_account_ids: formData.email_account_ids,
