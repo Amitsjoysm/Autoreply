@@ -21,6 +21,7 @@ const Campaigns = () => {
   const [currentCampaign, setCurrentCampaign] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [contacts, setContacts] = useState([]);
+  const [contactLists, setContactLists] = useState([]);
   const [templates, setTemplates] = useState([]);
   const [emailAccounts, setEmailAccounts] = useState([]);
   
@@ -29,6 +30,7 @@ const Campaigns = () => {
     description: '',
     contact_ids: [],
     contact_tags: [],
+    list_ids: [],
     initial_template_id: '',
     follow_up_config: {
       enabled: true,
