@@ -301,7 +301,9 @@ class EmailFormatter:
         
         # Add signature if provided
         if signature:
-            plain_version += f"\n\n{'─' * 50}\n{signature}"
+            # Ensure clean separation before signature
+            plain_version = plain_version.rstrip()
+            plain_version += f"\n\n{signature}"
         
         return plain_version.strip()
     
