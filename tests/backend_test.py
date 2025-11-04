@@ -585,7 +585,7 @@ class ProductionFlowTester:
                 self.log("✅ Intent classification setup verified")
                 return True
             else:
-                self.log(f"❌ Expected 6 auto-send + 1 manual intent, got {len(auto_send_intents)} + {len(manual_intents)}")
+                self.log(f"❌ Expected 8 auto-send + 1 manual intent, got {len(auto_send_intents)} + {len(manual_intents)}")
                 return False
                 
         except Exception as e:
@@ -632,7 +632,7 @@ class ProductionFlowTester:
                 self.log("✅ Intent classification setup verified")
                 return True
             else:
-                self.log(f"❌ Expected 6 auto-send + 1 manual intent, got {len(auto_send_intents)} + {len(manual_intents)}")
+                self.log(f"❌ Expected 8 auto-send + 1 manual intent, got {len(auto_send_intents)} + {len(manual_intents)}")
                 return False
                 
         except Exception as e:
