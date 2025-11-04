@@ -2745,3 +2745,146 @@ agent_communication:
         - Verify sending in same thread
         - Verify cancellation on reply
 
+
+user_problem_statement: |
+  Current Session - Email Reply Enhancements
+  User: amits.joys@gmail.com (ID: afab1f05-37bf-4c23-9c94-0e2365986ea1)
+  
+  Requirements:
+  1. Plain Text replies well structured
+  2. Strictly use signatures from Email accounts
+  3. Avoid Double signatures in reply
+  
+  Implementation:
+  - Created SignatureHandler service to remove AI-generated signatures
+  - Updated AI system prompt to NOT generate signatures/sign-offs
+  - Ensured EmailFormatter consistently applies account signatures
+  - Improved plain text formatting with proper paragraph spacing
+  - Created seed data: 7 intents and 6 knowledge base entries
+  - Using Groq API (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)
+  - Test with real emails using: sagarshinde15798796456@gmail.com / bmwqmytxrsgrlusp
+
+backend:
+  - task: "Implement signature handling to prevent duplicates"
+    implemented: true
+    working: "NA"
+    file: "services/signature_handler.py, services/ai_agent_service.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Created SignatureHandler.remove_ai_signature() to strip AI-generated signatures. Updated AI system prompt to explicitly NOT add sign-offs. Draft now cleaned before EmailFormatter adds account signature."
+  
+  - task: "Improve plain text email formatting"
+    implemented: true
+    working: "NA"
+    file: "services/email_formatter.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Enhanced format_plain_text() for better structure. Clean signature separation without separator line. Improved HTML signature styling."
+  
+  - task: "Create seed data for intents and knowledge base"
+    implemented: true
+    working: true
+    file: "scripts/insert_seed_data.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+        - working: true
+          agent: "main"
+          comment: "Created 7 intents (all with auto_send enabled) and 6 knowledge base entries. Deleted old seed data script."
+
+frontend:
+  - task: "Verify frontend displays intents and KB correctly"
+    implemented: true
+    working: "NA"
+    file: "pages/Intents.js, pages/KnowledgeBase.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+        - working: "NA"
+          agent: "main"
+          comment: "Frontend should now load 7 intents and 6 KB entries. Need to verify display."
+
+metadata:
+  created_by: "main_agent"
+  version: "3.0"
+  test_sequence: 0
+  run_ui: false
+
+test_plan:
+  current_focus:
+    - "Test email sending with real SMTP credentials"
+    - "Verify NO double signatures in replies"
+    - "Verify plain text formatting is well-structured"
+    - "Verify account signature is properly applied"
+    - "Test complete flow: receive → classify → draft → validate → send"
+    - "Test intent classification with new intents"
+    - "Test knowledge base integration in responses"
+  stuck_tasks: []
+  test_all: true
+  test_priority: "comprehensive"
+
+agent_communication:
+    - agent: "main"
+      message: |
+        🔧 EMAIL REPLY ENHANCEMENTS IMPLEMENTED
+        
+        FIXES APPLIED:
+        
+        1. ✅ DOUBLE SIGNATURE PREVENTION:
+           - Created SignatureHandler service with remove_ai_signature() method
+           - Detects and strips common closing phrases (Best regards, Sincerely, etc.)
+           - AI system prompt updated to NOT generate signatures
+           - EmailFormatter applies account signature cleanly
+        
+        2. ✅ PLAIN TEXT FORMATTING ENHANCED:
+           - Improved paragraph spacing and structure
+           - Clean signature separation (no ugly separator lines)
+           - Better handling of lists, headings, and key-value pairs
+           - Proper HTML signature styling with border-top
+        
+        3. ✅ SIGNATURE FROM EMAIL ACCOUNT:
+           - EmailService pulls signature from email_account.signature field
+           - Passes to EmailFormatter.create_html_and_plain()
+           - Applied consistently to all outgoing emails
+        
+        4. ✅ SEED DATA CREATED:
+           - 7 intents (all with auto_send enabled):
+             * Meeting Request (Priority 10)
+             * Support Request (Priority 8)
+             * Introduction (Priority 7)
+             * Follow-up Request (Priority 6)
+             * General Inquiry (Priority 5)
+             * Thank You (Priority 4)
+             * Default Intent (Priority 1)
+           - 6 knowledge base entries:
+             * Company Overview
+             * Product Features
+             * Pricing Plans
+             * Getting Started Guide
+             * Support and Contact
+             * Security and Privacy
+        
+        5. ✅ SERVICES STATUS:
+           - Backend: RUNNING (pid 2590)
+           - Frontend: RUNNING (pid 982)
+           - MongoDB: RUNNING (pid 37)
+           - Redis: RUNNING (pid 1324)
+           - Email Worker: RUNNING (pid 1323)
+        
+        READY FOR COMPREHENSIVE TESTING:
+        - Send test emails from: sagarshinde15798796456@gmail.com
+        - To: amits.joys@gmail.com
+        - Verify: no double signatures, clean formatting, proper structure
+        - Test all intents and knowledge base integration
+        
+        All code changes applied and backend restarted successfully.
