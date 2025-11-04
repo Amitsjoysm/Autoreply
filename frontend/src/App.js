@@ -305,6 +305,46 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/campaign/contacts"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <CampaignContacts />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/campaign/templates"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <CampaignTemplates />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/campaigns"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Campaigns />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/campaign/analytics/:id"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <CampaignAnalytics />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors />
