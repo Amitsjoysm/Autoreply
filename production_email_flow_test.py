@@ -532,7 +532,7 @@ class ProductionEmailFlowTester:
         
         # 3. Redis
         try:
-            if self.redis_client:
+            if self.redis_client is not None:
                 self.redis_client.ping()
                 health_checks['redis'] = True
                 self.log("✅ Redis running")
