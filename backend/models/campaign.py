@@ -24,6 +24,7 @@ class Campaign(BaseModel):
     # Contact selection
     contact_ids: List[str] = []  # List of contact IDs to send to
     contact_tags: List[str] = []  # Or select by tags
+    list_ids: List[str] = []  # Or select by contact lists
     
     # Template selection
     initial_template_id: str  # Initial email template
