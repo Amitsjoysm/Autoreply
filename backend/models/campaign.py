@@ -109,6 +109,7 @@ class CampaignCreate(BaseModel):
     description: Optional[str] = None
     contact_ids: List[str] = []
     contact_tags: List[str] = []
+    list_ids: List[str] = []
     initial_template_id: str
     follow_up_config: FollowUpConfig = FollowUpConfig()
     email_account_ids: List[str]
