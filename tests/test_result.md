@@ -325,7 +325,7 @@ backend:
              - JWT authentication: ✅ Properly validates Bearer token
              - OAuth URL validation: ✅ Contains all required components:
                * Google OAuth endpoint: accounts.google.com
-               * Correct redirect_uri: https://codebase-refresh-10.preview.emergentagent.com/api/oauth/google/callback
+               * Correct redirect_uri: https://sync-agent-setup-1.preview.emergentagent.com/api/oauth/google/callback
                * Required Gmail scopes: gmail.readonly, gmail.send, calendar
                * State parameter: ✅ Generated and returned
                * Access type: offline (for refresh tokens)
@@ -1098,7 +1098,7 @@ agent_communication:
          - All 9 intents accessible via API endpoints
       
       7. ✅ INFRASTRUCTURE HEALTH:
-         - Backend API: Running and responding (https://codebase-refresh-10.preview.emergentagent.com)
+         - Backend API: Running and responding (https://sync-agent-setup-1.preview.emergentagent.com)
          - MongoDB: Connected and accessible
          - Redis: Running (version 7.0.15, connected clients: 1)
          - All API endpoints responding correctly
