@@ -329,10 +329,12 @@ class EmailService:
             if email_data.cc:
                 message['Cc'] = ', '.join(email_data.cc)
             
-            # Convert plain text to HTML
-            html_body, plain_body = EmailFormatter.create_html_and_plain(email_data.body)
+            # Convert plain text to HTML and format plain text properly
+            # Pass signature from account if available
+            signature = account.signature if hasattr(account, 'signature') and account.signature else None
+            html_body, plain_body = EmailFormatter.create_html_and_plain(email_data.body, signature)
             
-            # Attach both plain text and HTML
+            # Attach both plain text and HTML (plain text first as primary)
             message.attach(MIMEText(plain_body, 'plain'))
             message.attach(MIMEText(html_body, 'html'))
             
