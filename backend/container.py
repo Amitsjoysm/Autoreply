@@ -5,7 +5,7 @@ import logging
 
 from repositories.base_repository import RepositoryFactory, GenericRepository
 from services.auth_service_v2 import AuthService
-from services.ai_agent_service_v2 import AIAgentServiceV2
+# from services.ai_agent_service import AIAgentService  # Used directly by workers, not via container
 from utils.encryption import initialize_encryption
 
 logger = logging.getLogger(__name__)
