@@ -33,7 +33,7 @@ TEST_USER = {
     "email": "amits.joys@gmail.com",
     "password": "ij@123",
     "name": "Amit Joy",
-    "expected_id": "f429a110-4548-4ed9-92a5-528c94fcb164"
+    "expected_id": "0c34b9ea-6740-4aea-afe9-f36c8270a0e8"
 }
 
 # Email sending credentials from review request
