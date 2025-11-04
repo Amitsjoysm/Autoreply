@@ -49,6 +49,12 @@ const MainLayout = ({ children }) => {
     { path: '/test-email', label: 'Test Email', icon: Zap },
   ];
 
+  const campaignMenuItems = [
+    { path: '/campaign/contacts', label: 'Contacts', icon: Users },
+    { path: '/campaign/templates', label: 'Templates', icon: FileText },
+    { path: '/campaigns', label: 'Campaigns', icon: Send },
+  ];
+
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
