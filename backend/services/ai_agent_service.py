@@ -32,6 +32,7 @@ class AIAgentService:
         self.db = db
         self.groq_api_key = config.GROQ_API_KEY
         self.tokens_used = 0
+        self.date_parser = DateParserService()
         
         if not self.groq_api_key:
             logger.error("GROQ_API_KEY not configured! AI features will not work.")
