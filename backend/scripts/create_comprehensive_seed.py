@@ -41,7 +41,7 @@ async def create_seed_data():
             "name": "Meeting Request",
             "description": "Emails requesting to schedule a meeting or call",
             "keywords": ["meeting", "schedule", "call", "discuss", "meet", "zoom", "teams", "appointment"],
-            "system_prompt": "You are a professional assistant scheduling meetings. Be courteous, confirm availability, and suggest meeting times if not provided. Always include calendar details if a meeting is being scheduled.",
+            "prompt": "You are a professional assistant scheduling meetings. Be courteous, confirm availability, and suggest meeting times if not provided. Always include calendar details if a meeting is being scheduled.",
             "priority": 10,
             "auto_send": True,
             "is_active": True,
