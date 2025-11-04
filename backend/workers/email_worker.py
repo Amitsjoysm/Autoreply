@@ -232,6 +232,54 @@ async def process_email(email_id: str):
                     automated_followups_created = True
                     is_time_based_followup = True
                     logger.info(f"Created automated follow-ups based on time reference: {time_references[0]['matched_text']}")
+                    
+                    # Send simple acknowledgment immediately for time-based follow-up requests
+                    account = await email_service.get_account(email.email_account_id)
+                    if account and auto_send_enabled:
+                        from models.email import EmailSend
+                        
+                        # Create simple acknowledgment message
+                        target_date_str = time_references[0]['target_date'].strftime("%B %d, %Y")
+                        simple_ack_message = f"Thank you for your email. I'll follow up with you on {target_date_str}."
+                        
+                        reply = EmailSend(
+                            email_account_id=email.email_account_id,
+                            to_email=[email.from_email],
+                            subject=f"Re: {email.subject}",
+                            body=simple_ack_message
+                        )
+                        
+                        sent = False
+                        if account.account_type == 'oauth_gmail':
+                            sent = await email_service.send_email_oauth_gmail(account, reply, email.thread_id)
+                        else:
+                            sent = await email_service.send_email_smtp(account, reply)
+                        
+                        if sent:
+                            # Mark email as sent with simple acknowledgment
+                            await db.emails.update_one(
+                                {"id": email_id},
+                                {"$set": {
+                                    "status": "sent",
+                                    "replied": True,
+                                    "reply_sent_at": datetime.now(timezone.utc).isoformat(),
+                                    "draft_content": simple_ack_message,
+                                    "draft_generated": True,
+                                    "draft_validated": True,
+                                    "processed": True
+                                }}
+                            )
+                            
+                            await add_action(email_id, "simple_acknowledgment_sent", {
+                                "to": email.from_email,
+                                "message": simple_ack_message,
+                                "target_date": target_date_str,
+                                "note": "Simple acknowledgment sent. Full response will be generated at target date."
+                            })
+                            
+                            logger.info(f"Sent simple acknowledgment for time-based follow-up email {email.id}")
+                            # Skip further processing - we've already sent the acknowledgment
+                            return
         
         # Step 2: Detect meeting
         is_meeting, meeting_confidence, meeting_details = await ai_service.detect_meeting(email, thread_context)
