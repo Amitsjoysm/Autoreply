@@ -316,7 +316,7 @@ class ProductionEmailFlowTester:
         self.log("VERIFYING EMAIL PROCESSING")
         self.log("=" * 60)
         
-        if not self.db:
+        if self.db is None:
             self.log("❌ No database connection", "ERROR")
             return False
         
