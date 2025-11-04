@@ -169,16 +169,18 @@ async def google_oauth_callback_get(
     state: str = Query(...),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    """Handle Google OAuth callback (GET redirect from Google)"""
-    frontend_url = get_frontend_base_url()
-    
+    """Handle Google OAuth callback (GET redirect from Google) - works in any environment"""
     # Verify state
     state_doc = await db.oauth_states.find_one({"state": state})
     if not state_doc:
+        # Fallback URL if state not found
+        frontend_url = get_frontend_base_url()
         return RedirectResponse(url=f"{frontend_url}?error=invalid_state")
     
     user_id = state_doc['user_id']
     account_type = state_doc.get('account_type', 'email')
+    # Get stored frontend URL from OAuth initiation
+    frontend_url = state_doc.get('frontend_url', get_frontend_base_url())
     
     # Delete state
     await db.oauth_states.delete_one({"state": state})
