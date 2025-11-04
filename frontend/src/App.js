@@ -323,6 +323,26 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/campaign/contacts"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <CampaignContacts />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/campaign/templates"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <CampaignTemplates />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </BrowserRouter>
       <Toaster position="top-right" richColors />
