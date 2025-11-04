@@ -14,6 +14,7 @@ from config import config
 from models.email import Email
 from models.intent import Intent
 from models.knowledge_base import KnowledgeBase
+from services.date_parser_service import DateParserService
 
 logger = logging.getLogger(__name__)
 
