@@ -124,8 +124,8 @@ const Campaigns = () => {
     e.preventDefault();
     
     // Validation
-    if (formData.contact_ids.length === 0 && formData.contact_tags.length === 0) {
-      toast.error('Please select at least one contact or tag');
+    if (formData.contact_ids.length === 0 && formData.contact_tags.length === 0 && formData.list_ids.length === 0) {
+      toast.error('Please select at least one contact, list, or tag');
       return;
     }
     if (!formData.initial_template_id) {
