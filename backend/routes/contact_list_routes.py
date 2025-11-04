@@ -9,8 +9,7 @@ from models.contact_list import (
 )
 from models.user import User
 from services.contact_list_service import ContactListService
-from middleware.security import get_current_user_from_token
-from container import get_db
+from routes.auth_routes import get_current_user_from_token, get_db
 
 logger = logging.getLogger(__name__)
 db = get_db()
