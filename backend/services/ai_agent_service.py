@@ -326,7 +326,7 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
         # Add current email
         prompt += f"""CURRENT EMAIL TO RESPOND TO:
 From: {email.from_email}
-To: {', '.join(email.to)}
+To: {', '.join(email.to_email)}
 Subject: {email.subject}
 Body:
 {email.body}
