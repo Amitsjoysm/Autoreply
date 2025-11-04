@@ -15,27 +15,50 @@ from config import config
 
 router = APIRouter(prefix="/oauth", tags=["oauth"])
 
-def get_frontend_base_url() -> str:
-    """Extract base URL from redirect URI for frontend redirects"""
+def get_frontend_base_url(request: Request = None, stored_origin: str = None) -> str:
+    """
+    Dynamically get frontend URL from request origin or stored value
+    This ensures OAuth works in any environment (local, Codespaces, production)
+    """
+    if stored_origin:
+        return stored_origin
+    
+    if request:
+        # Try to get origin from various headers
+        origin = request.headers.get('origin')
+        referer = request.headers.get('referer')
+        
+        if origin:
+            return origin
+        elif referer:
+            parsed = urlparse(referer)
+            return f"{parsed.scheme}://{parsed.netloc}"
+    
+    # Fallback to config
     parsed = urlparse(config.GOOGLE_REDIRECT_URI)
     return f"{parsed.scheme}://{parsed.netloc}"
 
 @router.get("/google/url")
 async def get_google_oauth_url(
+    request: Request,
     account_type: str = Query('email', description='email or calendar'),
     user: User = Depends(get_current_user_from_token),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    """Get Google OAuth URL"""
+    """Get Google OAuth URL - dynamically detects frontend URL"""
     oauth_service = OAuthService(db)
     state = str(uuid.uuid4())
     
-    # Store state in DB for verification with account_type
+    # Get frontend URL from request origin
+    frontend_url = get_frontend_base_url(request)
+    
+    # Store state in DB for verification with account_type and frontend_url
     await db.oauth_states.insert_one({
         "state": state,
         "user_id": user.id,
         "provider": "google",
         "account_type": account_type,
+        "frontend_url": frontend_url,
         "created_at": datetime.now(timezone.utc).isoformat()
     })
     
