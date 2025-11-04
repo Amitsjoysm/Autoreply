@@ -15,6 +15,7 @@ from models.email import Email
 from models.intent import Intent
 from models.knowledge_base import KnowledgeBase
 from services.date_parser_service import DateParserService
+from services.signature_handler import SignatureHandler
 
 logger = logging.getLogger(__name__)
 
