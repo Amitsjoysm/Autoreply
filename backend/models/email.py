@@ -35,6 +35,10 @@ class Email(BaseModel):
     direction: Literal['inbound', 'outbound'] = 'inbound'
     is_reply: bool = False  # Is this a reply to our sent email?
     
+    # Campaign tracking
+    campaign_id: Optional[str] = None  # Link to campaign if part of campaign
+    campaign_email_id: Optional[str] = None  # Link to CampaignEmail
+    
     # AI Processing
     processed: bool = False
     intent_detected: Optional[str] = None
