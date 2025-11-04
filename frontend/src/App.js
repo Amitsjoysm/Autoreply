@@ -349,6 +349,16 @@ function App() {
             }
           />
           <Route
+            path="/campaign/lists"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <ContactLists />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/campaign/templates"
             element={
               <ProtectedRoute>
