@@ -87,7 +87,9 @@ async def verify_user_and_accounts():
     # Check calendar provider
     calendar = await db.calendar_providers.find_one({"user_id": user_id, "is_active": True})
     if calendar:
-        print(f"✅ Calendar provider: {calendar['provider_email']} (Type: {calendar['provider_type']})")
+        provider_email = calendar.get('provider_email') or calendar.get('email') or 'Unknown'
+        provider_type = calendar.get('provider_type') or calendar.get('type') or 'Unknown'
+        print(f"✅ Calendar provider: {provider_email} (Type: {provider_type})")
     else:
         print(f"⚠️  No calendar provider connected")
     
