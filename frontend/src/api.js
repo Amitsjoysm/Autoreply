@@ -341,6 +341,51 @@ class API {
     const response = await this.axios.get(`/campaign/campaigns/${id}/analytics`);
     return response.data;
   }
+
+  // Contact Lists
+  async getContactLists(params = {}) {
+    const response = await this.axios.get('/campaign/lists', { params });
+    return response.data;
+  }
+
+  async getContactList(id) {
+    const response = await this.axios.get(`/campaign/lists/${id}`);
+    return response.data;
+  }
+
+  async createContactList(data) {
+    const response = await this.axios.post('/campaign/lists', data);
+    return response.data;
+  }
+
+  async updateContactList(id, data) {
+    const response = await this.axios.put(`/campaign/lists/${id}`, data);
+    return response.data;
+  }
+
+  async deleteContactList(id) {
+    const response = await this.axios.delete(`/campaign/lists/${id}`);
+    return response.data;
+  }
+
+  async addContactsToList(id, contactIds) {
+    const response = await this.axios.post(`/campaign/lists/${id}/add-contacts`, {
+      contact_ids: contactIds
+    });
+    return response.data;
+  }
+
+  async removeContactsFromList(id, contactIds) {
+    const response = await this.axios.post(`/campaign/lists/${id}/remove-contacts`, {
+      contact_ids: contactIds
+    });
+    return response.data;
+  }
+
+  async getListContacts(id) {
+    const response = await this.axios.get(`/campaign/lists/${id}/contacts`);
+    return response.data;
+  }
 }
 
 export default new API();
