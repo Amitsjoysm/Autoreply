@@ -207,12 +207,120 @@ class EmailFormatter:
         # Create HTML version
         html_version = EmailFormatter.text_to_html(draft_text, signature)
         
-        # Create plain text version (just add signature if provided)
-        plain_version = draft_text
-        if signature:
-            plain_version += f"\n\n{'─' * 40}\n{signature}"
+        # Create well-formatted plain text version
+        plain_version = EmailFormatter.format_plain_text(draft_text, signature)
         
         return html_version, plain_version
+    
+    @staticmethod
+    def format_plain_text(draft_text: str, signature: Optional[str] = None) -> str:
+        """
+        Format plain text email with proper paragraphs, spacing, and line breaks
+        
+        Args:
+            draft_text: Plain text draft
+            signature: Optional signature
+            
+        Returns:
+            Well-formatted plain text email
+        """
+        lines = draft_text.split('\n')
+        formatted_lines = []
+        current_paragraph = []
+        
+        for line in lines:
+            stripped = line.strip()
+            
+            # Empty line indicates paragraph break
+            if not stripped:
+                if current_paragraph:
+                    # Join current paragraph and add it
+                    formatted_lines.append(' '.join(current_paragraph))
+                    current_paragraph = []
+                    # Add blank line for paragraph spacing
+                    formatted_lines.append('')
+            else:
+                # Check if it's a heading (all caps, or starts with special markers)
+                if EmailFormatter._is_plain_text_heading(stripped):
+                    # Flush current paragraph
+                    if current_paragraph:
+                        formatted_lines.append(' '.join(current_paragraph))
+                        current_paragraph = []
+                        formatted_lines.append('')
+                    
+                    # Add heading with spacing
+                    formatted_lines.append(stripped)
+                    formatted_lines.append('')
+                
+                # Check if it's a list item
+                elif EmailFormatter._is_plain_text_list_item(stripped):
+                    # Flush current paragraph
+                    if current_paragraph:
+                        formatted_lines.append(' '.join(current_paragraph))
+                        current_paragraph = []
+                        formatted_lines.append('')
+                    
+                    # Add list item as-is
+                    formatted_lines.append(stripped)
+                
+                # Check if it's a separator
+                elif re.match(r'^[=━\-]{3,}$', stripped):
+                    # Flush current paragraph
+                    if current_paragraph:
+                        formatted_lines.append(' '.join(current_paragraph))
+                        current_paragraph = []
+                        formatted_lines.append('')
+                    
+                    formatted_lines.append(stripped)
+                    formatted_lines.append('')
+                
+                # Check if line contains key-value pairs (like meeting details)
+                elif ':' in stripped and len(stripped) < 100:
+                    # Flush current paragraph
+                    if current_paragraph:
+                        formatted_lines.append(' '.join(current_paragraph))
+                        current_paragraph = []
+                        formatted_lines.append('')
+                    
+                    # Add key-value line as-is
+                    formatted_lines.append(stripped)
+                
+                # Regular text - add to current paragraph
+                else:
+                    current_paragraph.append(stripped)
+        
+        # Flush remaining paragraph
+        if current_paragraph:
+            formatted_lines.append(' '.join(current_paragraph))
+        
+        # Join all lines
+        plain_version = '\n'.join(formatted_lines)
+        
+        # Remove excessive blank lines (more than 2 consecutive)
+        plain_version = re.sub(r'\n{3,}', '\n\n', plain_version)
+        
+        # Add signature if provided
+        if signature:
+            plain_version += f"\n\n{'─' * 50}\n{signature}"
+        
+        return plain_version.strip()
+    
+    @staticmethod
+    def _is_plain_text_heading(text: str) -> bool:
+        """Check if text should be treated as a heading in plain text"""
+        # All caps and relatively short
+        if text.isupper() and len(text) < 60 and len(text) > 3:
+            return True
+        # Starts with heading keywords
+        if re.match(r'^(IMPORTANT|NOTE|ATTENTION|REMINDER|MEETING|EVENT|CALENDAR|DETAILS):', text, re.IGNORECASE):
+            return True
+        return False
+    
+    @staticmethod
+    def _is_plain_text_list_item(text: str) -> bool:
+        """Check if text is a list item in plain text"""
+        # Starts with common list markers
+        return bool(re.match(r'^\s*[-•*]\s+', text) or re.match(r'^\s*\d+[\.\)]\s+', text))
 
 
 # Convenience function
