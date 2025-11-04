@@ -67,12 +67,13 @@ class EmailFormatter:
         
         # Add signature if provided
         if signature:
-            html_parts.append('<hr style="border: none; border-top: 1px solid #e0e0e0; margin: 30px 0 15px 0;">')
+            html_parts.append('<div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e0e0e0;">')
             sig_lines = signature.split('\n')
-            sig_html = '<div style="color: #666; font-size: 14px; line-height: 1.4;">'
+            sig_html = '<div style="color: #666; font-size: 14px; line-height: 1.6;">'
             for line in sig_lines:
-                sig_html += f'{EmailFormatter._escape_html(line)}<br>'
-            sig_html += '</div>'
+                if line.strip():
+                    sig_html += f'{EmailFormatter._escape_html(line)}<br>'
+            sig_html += '</div></div>'
             html_parts.append(sig_html)
         
         # Wrap everything in a nice container with table-based layout for better email client compatibility
