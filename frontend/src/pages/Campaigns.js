@@ -93,6 +93,15 @@ const Campaigns = () => {
     }
   };
 
+  const loadContactLists = async () => {
+    try {
+      const data = await API.getContactLists();
+      setContactLists(data);
+    } catch (error) {
+      console.error('Failed to load contact lists:', error);
+    }
+  };
+
   const loadTemplates = async () => {
     try {
       const data = await API.getCampaignTemplates();
