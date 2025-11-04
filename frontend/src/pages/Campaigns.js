@@ -51,6 +51,7 @@ const Campaigns = () => {
   useEffect(() => {
     loadCampaigns();
     loadContacts();
+    loadContactLists();
     loadTemplates();
     loadEmailAccounts();
   }, []);
