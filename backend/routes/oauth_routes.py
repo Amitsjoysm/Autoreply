@@ -103,17 +103,25 @@ async def google_oauth_authorize(
 
 @router.get("/microsoft/url")
 async def get_microsoft_oauth_url(
+    request: Request,
+    account_type: str = Query('email', description='email or calendar'),
     user: User = Depends(get_current_user_from_token),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    """Get Microsoft OAuth URL"""
+    """Get Microsoft OAuth URL - dynamically detects frontend URL"""
     oauth_service = OAuthService(db)
     state = str(uuid.uuid4())
+    
+    # Get frontend URL from request origin
+    frontend_url = get_frontend_base_url(request)
     
     await db.oauth_states.insert_one({
         "state": state,
         "user_id": user.id,
-        "provider": "microsoft"
+        "provider": "microsoft",
+        "account_type": account_type,
+        "frontend_url": frontend_url,
+        "created_at": datetime.now(timezone.utc).isoformat()
     })
     
     url = oauth_service.get_microsoft_auth_url(state)
