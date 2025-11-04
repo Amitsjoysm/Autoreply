@@ -44,15 +44,29 @@ class CampaignService:
             if not account:
                 raise ValueError(f"Email account {account_id} not found")
         
-        # Calculate total contacts
+        # Calculate total contacts from all sources
         total_contacts = 0
-        if campaign_data.contact_ids:
-            total_contacts = len(campaign_data.contact_ids)
-        elif campaign_data.contact_tags:
-            total_contacts = await self.contact_service.count_contacts(
-                user_id, 
-                {"tags": {"$in": campaign_data.contact_tags}}
+        all_contact_ids = set(campaign_data.contact_ids)
+        
+        # Add contacts from lists
+        if campaign_data.list_ids:
+            from services.contact_list_service import ContactListService
+            list_service = ContactListService(self.db)
+            for list_id in campaign_data.list_ids:
+                contact_list = await list_service.get_list(user_id, list_id)
+                if contact_list:
+                    all_contact_ids.update(contact_list.contact_ids)
+        
+        # Add contacts from tags
+        if campaign_data.contact_tags:
+            tag_contacts = await self.contact_service.list_contacts(
+                user_id,
+                filters={"tags": {"$in": campaign_data.contact_tags}},
+                limit=10000
             )
+            all_contact_ids.update([c.id for c in tag_contacts])
+        
+        total_contacts = len(all_contact_ids)
         
         campaign = Campaign(
             user_id=user_id,
