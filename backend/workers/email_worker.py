@@ -148,6 +148,29 @@ async def process_email(email_id: str):
             "confidence": intent_confidence
         })
         
+        # Step 1.5: Detect time-based follow-up requests
+        time_references = await ai_service.detect_time_reference(email)
+        if time_references:
+            logger.info(f"Detected {len(time_references)} time references in email {email.id}")
+            await add_action(email_id, "time_references_detected", {
+                "count": len(time_references),
+                "references": [
+                    {
+                        "matched_text": ref['matched_text'],
+                        "target_date": ref['target_date'].isoformat(),
+                        "context": ref['context'][:100]
+                    } for ref in time_references
+                ]
+            })
+            
+            # Create automated follow-ups for each time reference
+            for ref in time_references:
+                await create_automated_followups(
+                    email=email,
+                    time_reference=ref,
+                    ai_service=ai_service
+                )
+        
         # Step 2: Detect meeting
         is_meeting, meeting_confidence, meeting_details = await ai_service.detect_meeting(email, thread_context)
         
