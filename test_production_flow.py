@@ -134,7 +134,8 @@ async def wait_for_processing(user_id: str, wait_seconds: int = 90):
         print(f"   From: {email.get('from_email', 'Unknown')}")
         print(f"   Status: {email.get('status', 'unknown')}")
         print(f"   Intent: {email.get('intent_name', 'No intent')}")
-        print(f"   Confidence: {email.get('intent_confidence', 0):.2f}")
+        confidence = email.get('intent_confidence') or 0
+        print(f"   Confidence: {confidence if isinstance(confidence, (int, float)) else 0:.2f}")
         print(f"   Auto-sent: {'Yes' if email.get('replied', False) else 'No'}")
         
         # Check for follow-ups
