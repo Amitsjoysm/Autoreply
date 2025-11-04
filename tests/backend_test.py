@@ -310,15 +310,15 @@ class ProductionFlowTester:
             intents = list(self.db.intents.find({"user_id": self.user_id}))
             self.log(f"Found {len(intents)} intents for user {self.user_id}")
             
-            if len(intents) != 8:
-                self.log(f"❌ Expected 8 intents (including default), found {len(intents)}")
+            if len(intents) != 9:
+                self.log(f"❌ Expected 9 intents (including default), found {len(intents)}")
                 return False
             
             auto_send_count = sum(1 for intent in intents if intent.get('auto_send', False))
             self.log(f"Found {auto_send_count} intents with auto_send=true")
             
-            if auto_send_count != 7:
-                self.log(f"❌ Expected 7 intents with auto_send=true (including default), found {auto_send_count}")
+            if auto_send_count != 8:
+                self.log(f"❌ Expected 8 intents with auto_send=true (including default), found {auto_send_count}")
                 return False
             
             # Check for default intent
