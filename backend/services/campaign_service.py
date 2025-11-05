@@ -236,11 +236,22 @@ class CampaignService:
         """Initialize campaign emails for all contacts"""
         # Get contacts
         contacts = []
+        
+        # Priority: contact_ids > list_ids > contact_tags
         if campaign.contact_ids:
             for contact_id in campaign.contact_ids:
                 contact = await self.contact_service.get_contact(campaign.user_id, contact_id)
                 if contact:
                     contacts.append(contact)
+        elif campaign.list_ids:
+            # Get contacts from lists
+            for list_id in campaign.list_ids:
+                contact_list = await self.db.contact_lists.find_one({"id": list_id, "user_id": campaign.user_id})
+                if contact_list and contact_list.get("contact_ids"):
+                    for contact_id in contact_list["contact_ids"]:
+                        contact = await self.contact_service.get_contact(campaign.user_id, contact_id)
+                        if contact and contact not in contacts:
+                            contacts.append(contact)
         elif campaign.contact_tags:
             contacts = await self.contact_service.list_contacts(
                 campaign.user_id,
