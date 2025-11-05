@@ -80,7 +80,8 @@ async def get_contact_list(
 async def update_contact_list(
     list_id: str,
     update_data: ContactListUpdate,
-    current_user: User = Depends(get_current_user_from_token)
+    current_user: User = Depends(get_current_user_from_token),
+    db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     """Update a contact list"""
     try:
