@@ -283,7 +283,8 @@ Your Email Assistant
             
             # Send reminder in same thread as original email if thread_id exists
             if account.account_type == 'oauth_gmail':
-                sent = await email_service.send_email_oauth_gmail(account, reminder_email, event.thread_id)
+                result = await email_service.send_email_oauth_gmail(account, reminder_email, event.thread_id)
+                sent = result.get("success", False)
             else:
                 sent = await email_service.send_email_smtp(account, reminder_email)
             
