@@ -480,7 +480,8 @@ async def process_email(email_id: str):
                     
                     sent = False
                     if account.account_type == 'oauth_gmail':
-                        sent = await email_service.send_email_oauth_gmail(account, reply, email.thread_id)
+                        result = await email_service.send_email_oauth_gmail(account, reply, email.thread_id)
+                        sent = result.get("success", False)
                     else:
                         sent = await email_service.send_email_smtp(account, reply)
                     
