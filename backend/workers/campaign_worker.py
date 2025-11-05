@@ -230,12 +230,20 @@ async def _process_campaign(campaign: Campaign, email_service, contact_service, 
                     }
                 )
                 
+                # Update campaign stats for failed email
+                update_query_failed = {
+                    "$inc": {"emails_failed": 1},
+                    "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
+                }
+                
+                # Only decrement pending if it's > 0
+                current_campaign_failed = await db.campaigns.find_one({"id": campaign.id})
+                if current_campaign_failed and current_campaign_failed.get("emails_pending", 0) > 0:
+                    update_query_failed["$inc"]["emails_pending"] = -1
+                
                 await db.campaigns.update_one(
                     {"id": campaign.id},
-                    {
-                        "$inc": {"emails_failed": 1, "emails_pending": -1},
-                        "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
-                    }
+                    update_query_failed
                 )
                 
     except Exception as e:
