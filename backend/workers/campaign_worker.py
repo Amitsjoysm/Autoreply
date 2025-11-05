@@ -177,13 +177,20 @@ async def _process_campaign(campaign: Campaign, email_service, contact_service, 
                     }}
                 )
                 
-                # Update campaign stats
+                # Update campaign stats - only decrement pending if it's > 0
+                update_query = {
+                    "$inc": {"emails_sent": 1},
+                    "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
+                }
+                
+                # Get current campaign state to check pending count
+                current_campaign = await db.campaigns.find_one({"id": campaign.id})
+                if current_campaign and current_campaign.get("emails_pending", 0) > 0:
+                    update_query["$inc"]["emails_pending"] = -1
+                
                 await db.campaigns.update_one(
                     {"id": campaign.id},
-                    {
-                        "$inc": {"emails_sent": 1, "emails_pending": -1},
-                        "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
-                    }
+                    update_query
                 )
                 
                 # Update contact stats
