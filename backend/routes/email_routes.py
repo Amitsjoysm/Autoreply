@@ -146,7 +146,8 @@ async def send_email(
     
     sent = False
     if account.account_type == 'oauth_gmail':
-        sent = await email_service.send_email_oauth_gmail(account, email_data)
+        result = await email_service.send_email_oauth_gmail(account, email_data)
+        sent = result.get("success", False)
     else:
         sent = await email_service.send_email_smtp(account, email_data)
     
@@ -200,7 +201,8 @@ async def approve_and_send_draft(
     
     sent = False
     if account.account_type == 'oauth_gmail':
-        sent = await email_service.send_email_oauth_gmail(account, email_data)
+        result = await email_service.send_email_oauth_gmail(account, email_data)
+        sent = result.get("success", False)
     else:
         sent = await email_service.send_email_smtp(account, email_data)
     
