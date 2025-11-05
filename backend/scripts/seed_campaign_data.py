@@ -15,7 +15,7 @@ import uuid
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from motor.motor_asyncio import AsyncIOMotorClient
-from config import MONGO_URL, DB_NAME
+from config import Config
 
 # Provided email addresses
 TEST_EMAILS = [
