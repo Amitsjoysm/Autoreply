@@ -38,7 +38,8 @@ async def list_contact_lists(
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
     search: Optional[str] = None,
-    current_user: User = Depends(get_current_user_from_token)
+    current_user: User = Depends(get_current_user_from_token),
+    db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     """List all contact lists for the current user"""
     try:
