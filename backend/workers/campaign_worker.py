@@ -106,8 +106,8 @@ async def _process_campaign(campaign: Campaign, email_service, contact_service, 
                 continue
             
             # Get email account
-            email_account = await db.email_accounts.find_one({"id": campaign_email.email_account_id})
-            if not email_account or not email_account.get("is_active"):
+            email_account_dict = await db.email_accounts.find_one({"id": campaign_email.email_account_id})
+            if not email_account_dict or not email_account_dict.get("is_active"):
                 logger.warning(f"Email account {campaign_email.email_account_id} not active")
                 await db.campaign_emails.update_one(
                     {"id": campaign_email.id},
@@ -128,6 +128,11 @@ async def _process_campaign(campaign: Campaign, email_service, contact_service, 
                 
                 # Send via appropriate method
                 from models.email import EmailSend
+                from models.email_account import EmailAccount
+                
+                # Convert dict to EmailAccount model
+                email_account = EmailAccount(**email_account_dict)
+                
                 email_data = EmailSend(
                     email_account_id=campaign_email.email_account_id,
                     to_email=[campaign_email.to_email],
@@ -135,7 +140,7 @@ async def _process_campaign(campaign: Campaign, email_service, contact_service, 
                     body=campaign_email.body
                 )
                 
-                if email_account["account_type"] == "oauth_gmail":
+                if email_account.account_type == "oauth_gmail":
                     result = await email_service.send_email_oauth_gmail(
                         email_account,
                         email_data,
