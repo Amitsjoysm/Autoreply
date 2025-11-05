@@ -482,10 +482,28 @@ const Campaigns = () => {
                       min="0"
                       max="10"
                       value={formData.follow_up_config.count}
-                      onChange={(e) => setFormData({
-                        ...formData,
-                        follow_up_config: { ...formData.follow_up_config, count: parseInt(e.target.value) }
-                      })}
+                      onChange={(e) => {
+                        const count = parseInt(e.target.value);
+                        const newTemplateIds = [...formData.follow_up_config.template_ids];
+                        // Adjust template_ids array to match count
+                        if (count > newTemplateIds.length) {
+                          // Add empty slots
+                          while (newTemplateIds.length < count) {
+                            newTemplateIds.push('');
+                          }
+                        } else if (count < newTemplateIds.length) {
+                          // Remove extra slots
+                          newTemplateIds.length = count;
+                        }
+                        setFormData({
+                          ...formData,
+                          follow_up_config: { 
+                            ...formData.follow_up_config, 
+                            count: count,
+                            template_ids: newTemplateIds
+                          }
+                        });
+                      }}
                     />
                   </div>
                   <div>
@@ -503,6 +521,47 @@ const Campaigns = () => {
                     />
                   </div>
                 </div>
+
+                {/* Follow-up Template Selection */}
+                {formData.follow_up_config.count > 0 && (
+                  <div className="space-y-3 mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <h4 className="text-sm font-medium text-gray-700">Select Templates for Each Follow-up</h4>
+                    {Array.from({ length: formData.follow_up_config.count }).map((_, index) => (
+                      <div key={index} className="space-y-2">
+                        <Label>Follow-up {index + 1} Template (after {formData.follow_up_config.intervals[index] || 0} days)</Label>
+                        <select
+                          className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                          value={formData.follow_up_config.template_ids[index] || ''}
+                          onChange={(e) => {
+                            const newTemplateIds = [...formData.follow_up_config.template_ids];
+                            newTemplateIds[index] = e.target.value;
+                            setFormData({
+                              ...formData,
+                              follow_up_config: {
+                                ...formData.follow_up_config,
+                                template_ids: newTemplateIds
+                              }
+                            });
+                          }}
+                        >
+                          <option value="">Select a template...</option>
+                          {templates
+                            .filter(t => t.template_type.includes('follow_up') || t.template_type === 'initial')
+                            .map((template) => (
+                              <option key={template.id} value={template.id}>
+                                {template.name} ({template.template_type})
+                              </option>
+                            ))}
+                        </select>
+                      </div>
+                    ))}
+                    {formData.follow_up_config.template_ids.some(id => !id) && (
+                      <p className="text-xs text-amber-600 mt-2">
+                        ⚠️ Please select templates for all follow-ups to enable automatic follow-up sending
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Email Accounts */}
