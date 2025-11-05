@@ -80,7 +80,7 @@ testuser3@example.com,Test,User3,AnotherCorp,Developer,https://linkedin.com/in/t
     headers = {"Authorization": f"Bearer {token}"}
     
     response = requests.post(
-        f"{BASE_URL}/contacts/bulk-upload",
+        f"{BASE_URL}/campaign/contacts/bulk-upload",
         files=files,
         headers=headers
     )
