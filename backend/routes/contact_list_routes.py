@@ -100,7 +100,8 @@ async def update_contact_list(
 @router.delete("/{list_id}")
 async def delete_contact_list(
     list_id: str,
-    current_user: User = Depends(get_current_user_from_token)
+    current_user: User = Depends(get_current_user_from_token),
+    db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     """Delete a contact list"""
     try:
