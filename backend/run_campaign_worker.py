@@ -7,7 +7,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 if __name__ == "__main__":
-    from workers.campaign_worker import process_campaign_emails, process_follow_ups, check_campaign_replies
+    from workers.campaign_worker import process_campaign_emails, process_campaign_follow_ups, check_campaign_replies
     import asyncio
     import logging
     
@@ -27,7 +27,7 @@ if __name__ == "__main__":
                 await process_campaign_emails()
                 
                 # Process follow-ups
-                await process_follow_ups()
+                await process_campaign_follow_ups()
                 
                 # Check for replies
                 await check_campaign_replies()
