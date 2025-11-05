@@ -269,10 +269,15 @@ async def process_campaign_follow_ups():
         
         # Get due follow-ups
         now = datetime.now(timezone.utc)
-        due_follow_ups = await db.campaign_follow_ups.find({
+        # Query scheduled_date - handle both string and datetime formats
+        due_follow_ups_cursor = db.campaign_follow_ups.find({
             "status": "scheduled",
-            "scheduled_date": {"$lte": now.isoformat()}
-        }).to_list(None)
+            "$or": [
+                {"scheduled_date": {"$lte": now.isoformat()}},  # String comparison
+                {"scheduled_date": {"$lte": now}}  # Datetime comparison
+            ]
+        })
+        due_follow_ups = await due_follow_ups_cursor.to_list(None)
         
         logger.info(f"Found {len(due_follow_ups)} campaign follow-ups to send")
         
