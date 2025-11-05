@@ -38,7 +38,7 @@ def test_download_template(token):
     
     headers = {"Authorization": f"Bearer {token}"}
     response = requests.get(
-        f"{BASE_URL}/contacts/template/download",
+        f"{BASE_URL}/campaign/contacts/template/download",
         headers=headers
     )
     
