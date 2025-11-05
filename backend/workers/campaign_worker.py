@@ -141,11 +141,21 @@ async def _process_campaign(campaign: Campaign, email_service, contact_service, 
                         email_data,
                         thread_id=campaign_email.thread_id
                     )
+                    # Gmail returns dict with email_id and thread_id
+                    if not result.get("success"):
+                        raise Exception("Failed to send email via Gmail")
+                    email_id = result.get("email_id")
+                    thread_id = result.get("thread_id")
                 else:
-                    result = await email_service.send_email_smtp(
+                    smtp_result = await email_service.send_email_smtp(
                         email_account,
                         email_data
                     )
+                    # SMTP returns bool
+                    if not smtp_result:
+                        raise Exception("Failed to send email via SMTP")
+                    email_id = None
+                    thread_id = None
                 
                 # Mark as sent
                 sent_at = datetime.now(timezone.utc).isoformat()
@@ -154,8 +164,8 @@ async def _process_campaign(campaign: Campaign, email_service, contact_service, 
                     {"$set": {
                         "status": "sent",
                         "sent_at": sent_at,
-                        "email_id": result.get("email_id"),
-                        "thread_id": result.get("thread_id")
+                        "email_id": email_id,
+                        "thread_id": thread_id
                     }}
                 )
                 
