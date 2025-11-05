@@ -10,9 +10,9 @@ from models.contact_list import (
 from models.user import User
 from services.contact_list_service import ContactListService
 from routes.auth_routes import get_current_user_from_token, get_db
+from motor.motor_asyncio import AsyncIOMotorDatabase
 
 logger = logging.getLogger(__name__)
-db = get_db()
 
 router = APIRouter(prefix="/api/campaign/lists", tags=["Contact Lists"])
 
