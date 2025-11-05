@@ -164,7 +164,7 @@ def verify_templates(token):
     
     headers = {"Authorization": f"Bearer {token}"}
     response = requests.get(
-        f"{BASE_URL}/templates",
+        f"{BASE_URL}/campaign/templates",
         headers=headers
     )
     
