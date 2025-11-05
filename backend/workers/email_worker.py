@@ -787,7 +787,8 @@ async def check_follow_ups():
             sent = False
             if account.account_type == 'oauth_gmail':
                 # Send in same thread if thread_id exists
-                sent = await email_service.send_email_oauth_gmail(account, follow_up_email, follow_up.thread_id)
+                result = await email_service.send_email_oauth_gmail(account, follow_up_email, follow_up.thread_id)
+                sent = result.get("success", False)
             else:
                 sent = await email_service.send_email_smtp(account, follow_up_email)
             
