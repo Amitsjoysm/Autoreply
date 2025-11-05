@@ -127,20 +127,24 @@ async def _process_campaign(campaign: Campaign, email_service, contact_service, 
                 )
                 
                 # Send via appropriate method
+                from models.email import EmailSend
+                email_data = EmailSend(
+                    email_account_id=campaign_email.email_account_id,
+                    to_email=[campaign_email.to_email],
+                    subject=campaign_email.subject,
+                    body=campaign_email.body
+                )
+                
                 if email_account["account_type"] == "oauth_gmail":
                     result = await email_service.send_email_oauth_gmail(
                         email_account,
-                        campaign_email.to_email,
-                        campaign_email.subject,
-                        campaign_email.body,
+                        email_data,
                         thread_id=campaign_email.thread_id
                     )
                 else:
                     result = await email_service.send_email_smtp(
                         email_account,
-                        campaign_email.to_email,
-                        campaign_email.subject,
-                        campaign_email.body
+                        email_data
                     )
                 
                 # Mark as sent
