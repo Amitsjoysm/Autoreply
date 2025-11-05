@@ -133,7 +133,7 @@ def verify_lists(token):
     
     headers = {"Authorization": f"Bearer {token}"}
     response = requests.get(
-        f"{BASE_URL}/contact-lists",
+        f"{BASE_URL}/campaign/lists",
         headers=headers
     )
     
