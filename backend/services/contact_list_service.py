@@ -4,7 +4,7 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from datetime import datetime, timezone
 
 from models.contact_list import ContactList, ContactListCreate, ContactListUpdate
-from repositories.base_repository import BaseRepository
+from repositories.base_repository import GenericRepository
 
 
 class ContactListService:
@@ -12,8 +12,8 @@ class ContactListService:
     
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
-        self.list_repo = BaseRepository(db, "contact_lists")
-        self.contact_repo = BaseRepository(db, "campaign_contacts")
+        self.list_repo = GenericRepository(db, "contact_lists")
+        self.contact_repo = GenericRepository(db, "campaign_contacts")
     
     async def create_list(self, user_id: str, list_data: ContactListCreate) -> ContactList:
         """Create a new contact list"""
