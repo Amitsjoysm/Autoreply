@@ -109,7 +109,7 @@ def verify_contacts(token):
     
     headers = {"Authorization": f"Bearer {token}"}
     response = requests.get(
-        f"{BASE_URL}/contacts",
+        f"{BASE_URL}/campaign/contacts",
         headers=headers
     )
     
