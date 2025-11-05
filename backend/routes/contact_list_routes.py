@@ -59,7 +59,8 @@ async def list_contact_lists(
 @router.get("/{list_id}", response_model=ContactListResponse)
 async def get_contact_list(
     list_id: str,
-    current_user: User = Depends(get_current_user_from_token)
+    current_user: User = Depends(get_current_user_from_token),
+    db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     """Get a specific contact list"""
     try:
