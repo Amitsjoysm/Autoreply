@@ -30,8 +30,8 @@ async def seed_campaign_data():
     print("🚀 Starting campaign data seeding...")
     
     # Connect to MongoDB
-    client = AsyncIOMotorClient(MONGO_URL)
-    db = client[DB_NAME]
+    client = AsyncIOMotorClient(Config.MONGO_URL)
+    db = client[Config.DB_NAME]
     
     # Find user by email (using amits.joys@gmail.com as mentioned in tests)
     user = await db.users.find_one({"email": "amits.joys@gmail.com"})
