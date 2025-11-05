@@ -170,7 +170,8 @@ async def remove_contacts_from_list(
 @router.get("/{list_id}/contacts")
 async def get_list_contacts(
     list_id: str,
-    current_user: User = Depends(get_current_user_from_token)
+    current_user: User = Depends(get_current_user_from_token),
+    db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     """Get all contacts in a list"""
     try:
