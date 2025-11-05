@@ -38,6 +38,9 @@ async def process_campaign_emails():
             # Check if campaign should be paused due to schedule
             if campaign.scheduled_end:
                 end_time = datetime.fromisoformat(campaign.scheduled_end)
+                # Make end_time timezone-aware if it's naive
+                if end_time.tzinfo is None:
+                    end_time = end_time.replace(tzinfo=timezone.utc)
                 if datetime.now(timezone.utc) > end_time:
                     await db.campaigns.update_one(
                         {"id": campaign.id},
