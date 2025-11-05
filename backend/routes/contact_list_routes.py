@@ -121,7 +121,8 @@ async def delete_contact_list(
 async def add_contacts_to_list(
     list_id: str,
     data: ContactListAddContacts,
-    current_user: User = Depends(get_current_user_from_token)
+    current_user: User = Depends(get_current_user_from_token),
+    db: AsyncIOMotorDatabase = Depends(get_db)
 ):
     """Add contacts to a list"""
     try:
