@@ -267,6 +267,8 @@ class CampaignService:
         
         # Create campaign emails
         email_account_index = 0
+        created_emails_count = 0
+        
         for contact in contacts:
             # Skip if contact is not active
             if contact.status != "active":
@@ -296,8 +298,16 @@ class CampaignService:
             )
             
             await self.campaign_email_repo.create(campaign_email.model_dump())
+            created_emails_count += 1
         
-        logger.info(f"Initialized {len(contacts)} campaign emails for campaign {campaign.id}")
+        # Update campaign with actual email count
+        await self.repository.update(campaign.id, {
+            "total_contacts": created_emails_count,
+            "emails_pending": created_emails_count,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        })
+        
+        logger.info(f"Initialized {created_emails_count} campaign emails for campaign {campaign.id}")
     
     async def _cancel_campaign_follow_ups(self, campaign_id: str, reason: str) -> None:
         """Cancel all pending follow-ups for a campaign"""
