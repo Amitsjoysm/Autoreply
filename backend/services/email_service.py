@@ -233,8 +233,12 @@ class EmailService:
             logger.error(f"IMAP sync error: {e}")
             return []
     
-    async def send_email_oauth_gmail(self, account: EmailAccount, email_data: EmailSend, thread_id: Optional[str] = None) -> bool:
-        """Send email using Gmail API with thread support"""
+    async def send_email_oauth_gmail(self, account: EmailAccount, email_data: EmailSend, thread_id: Optional[str] = None) -> dict:
+        """Send email using Gmail API with thread support
+        
+        Returns:
+            dict with keys: success (bool), email_id (str), thread_id (str)
+        """
         try:
             # Ensure token is valid
             account = await self.ensure_token_valid(account)
@@ -276,21 +280,30 @@ class EmailService:
                     message_body['threadId'] = thread_id
                 
                 try:
-                    service.users().messages().send(
+                    response = service.users().messages().send(
                         userId='me',
                         body=message_body
                     ).execute()
-                    return True
+                    # Return email_id and thread_id from Gmail response
+                    return {
+                        "success": True,
+                        "email_id": response.get('id'),
+                        "thread_id": response.get('threadId')
+                    }
                 except Exception as e:
                     # If thread_id error, try without thread_id
                     if 'Invalid thread_id' in str(e) and thread_id:
                         logger.info("Retrying without thread_id...")
                         message_body = {'raw': raw_message}
-                        service.users().messages().send(
+                        response = service.users().messages().send(
                             userId='me',
                             body=message_body
                         ).execute()
-                        return True
+                        return {
+                            "success": True,
+                            "email_id": response.get('id'),
+                            "thread_id": response.get('threadId')
+                        }
                     raise
             
             # Run synchronous Gmail API call in executor
@@ -298,7 +311,7 @@ class EmailService:
             return result
         except Exception as e:
             logger.error(f"Error sending Gmail OAuth email: {e}")
-            return False
+            return {"success": False, "email_id": None, "thread_id": None}
     
     async def send_email_smtp(self, account: EmailAccount, email_data: EmailSend) -> bool:
         """Send email using SMTP"""
