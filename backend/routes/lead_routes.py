@@ -43,7 +43,6 @@ async def list_leads(
     List all leads for the current user with filtering
     """
     try:
-        db = container.get_db()
         
         # Build query
         query = {"user_id": user_id}
