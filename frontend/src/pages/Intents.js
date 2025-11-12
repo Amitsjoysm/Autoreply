@@ -92,6 +92,8 @@ const Intents = () => {
       keywords: intent.keywords.join(', '),
       prompt: intent.prompt,
       priority: intent.priority,
+      auto_send: intent.auto_send || false,
+      is_inbound_lead: intent.is_inbound_lead || false,
       is_active: intent.is_active
     });
     setDialogOpen(true);
