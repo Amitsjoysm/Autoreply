@@ -327,18 +327,122 @@ async def google_oauth_callback(
         
         return {"success": True, "provider_id": provider.id, "email": email}
 
-@router.post("/microsoft/callback")
-async def microsoft_oauth_callback(
+@router.get("/microsoft/callback")
+async def microsoft_oauth_callback_get(
     code: str = Query(...),
     state: str = Query(...),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
-    """Handle Microsoft OAuth callback"""
+    """Handle Microsoft OAuth callback (GET redirect from Microsoft) - works in any environment"""
+    # Verify state
+    state_doc = await db.oauth_states.find_one({"state": state})
+    if not state_doc:
+        # Fallback URL if state not found
+        frontend_url = get_frontend_base_url()
+        return RedirectResponse(url=f"{frontend_url}?error=invalid_state")
+    
+    user_id = state_doc['user_id']
+    account_type = state_doc.get('account_type', 'email')
+    # Get stored frontend URL from OAuth initiation
+    frontend_url = state_doc.get('frontend_url', get_frontend_base_url())
+    
+    # Delete state
+    await db.oauth_states.delete_one({"state": state})
+    
+    oauth_service = OAuthService(db)
+    
+    # Exchange code for tokens
+    tokens = await oauth_service.exchange_microsoft_code(code)
+    if not tokens:
+        return RedirectResponse(url=f"{frontend_url}?error=token_exchange_failed")
+    
+    # Get user email
+    email = await oauth_service.get_microsoft_user_email(tokens['access_token'])
+    if not email:
+        return RedirectResponse(url=f"{frontend_url}?error=email_fetch_failed")
+    
+    if account_type == 'email':
+        # Check if account already exists
+        existing = await db.email_accounts.find_one({
+            "user_id": user_id,
+            "email": email
+        })
+        
+        if existing:
+            # Update existing account with new tokens
+            await db.email_accounts.update_one(
+                {"user_id": user_id, "email": email},
+                {"$set": {
+                    "access_token": tokens['access_token'],
+                    "refresh_token": tokens['refresh_token'],
+                    "token_expires_at": tokens['token_expires_at'],
+                    "is_active": True,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        else:
+            # Create new email account
+            account = EmailAccount(
+                user_id=user_id,
+                email=email,
+                account_type='oauth_outlook',
+                access_token=tokens['access_token'],
+                refresh_token=tokens['refresh_token'],
+                token_expires_at=tokens['token_expires_at']
+            )
+            
+            doc = account.model_dump()
+            await db.email_accounts.insert_one(doc)
+        
+        return RedirectResponse(url=f"{frontend_url}/outlook-email-accounts?success=true&email={email}")
+    else:
+        # Check if calendar provider already exists
+        existing = await db.calendar_providers.find_one({
+            "user_id": user_id,
+            "email": email
+        })
+        
+        if existing:
+            # Update existing provider with new tokens
+            await db.calendar_providers.update_one(
+                {"user_id": user_id, "email": email},
+                {"$set": {
+                    "access_token": tokens['access_token'],
+                    "refresh_token": tokens['refresh_token'],
+                    "token_expires_at": tokens['token_expires_at'],
+                    "is_active": True,
+                    "updated_at": datetime.now(timezone.utc).isoformat()
+                }}
+            )
+        else:
+            # Create new calendar provider
+            provider = CalendarProvider(
+                user_id=user_id,
+                provider='microsoft',
+                email=email,
+                access_token=tokens['access_token'],
+                refresh_token=tokens['refresh_token'],
+                token_expires_at=tokens['token_expires_at']
+            )
+            
+            doc = provider.model_dump()
+            await db.calendar_providers.insert_one(doc)
+        
+        return RedirectResponse(url=f"{frontend_url}/outlook-calendar-providers?success=true&email={email}")
+
+@router.post("/microsoft/callback")
+async def microsoft_oauth_callback(
+    code: str = Query(...),
+    state: str = Query(...),
+    account_type: str = Query('email', description='email or calendar'),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Handle Microsoft OAuth callback (POST)"""
     state_doc = await db.oauth_states.find_one({"state": state})
     if not state_doc:
         raise HTTPException(status_code=400, detail="Invalid state")
     
-    _ = state_doc['user_id']  # user_id for future use
+    user_id = state_doc['user_id']
     
     await db.oauth_states.delete_one({"state": state})
     
@@ -348,11 +452,38 @@ async def microsoft_oauth_callback(
     if not tokens:
         raise HTTPException(status_code=400, detail="Failed to exchange code")
     
-    # For now, we'll ask user to provide email separately
-    # In production, fetch from Microsoft Graph API
+    # Get user email from Microsoft Graph API
+    email = await oauth_service.get_microsoft_user_email(tokens['access_token'])
+    if not email:
+        raise HTTPException(status_code=400, detail="Failed to get user email")
     
-    return {
-        "success": True,
-        "message": "OAuth successful. Please provide your email to complete setup.",
-        "tokens": tokens
-    }
+    if account_type == 'email':
+        # Create email account
+        account = EmailAccount(
+            user_id=user_id,
+            email=email,
+            account_type='oauth_outlook',
+            access_token=tokens['access_token'],
+            refresh_token=tokens['refresh_token'],
+            token_expires_at=tokens['token_expires_at']
+        )
+        
+        doc = account.model_dump()
+        await db.email_accounts.insert_one(doc)
+        
+        return {"success": True, "account_id": account.id, "email": email}
+    else:
+        # Create calendar provider
+        provider = CalendarProvider(
+            user_id=user_id,
+            provider='microsoft',
+            email=email,
+            access_token=tokens['access_token'],
+            refresh_token=tokens['refresh_token'],
+            token_expires_at=tokens['token_expires_at']
+        )
+        
+        doc = provider.model_dump()
+        await db.calendar_providers.insert_one(doc)
+        
+        return {"success": True, "provider_id": provider.id, "email": email}
