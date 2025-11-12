@@ -24,6 +24,7 @@ async def poll_email_account(account_id: str):
     """Poll single email account for new emails"""
     try:
         email_service = EmailService(db)
+        outlook_email_service = OutlookEmailService(db)
         ai_service = AIAgentService(db)
         
         # Get account
@@ -43,6 +44,10 @@ async def poll_email_account(account_id: str):
         emails = []
         if account.account_type == 'oauth_gmail':
             emails = await email_service.fetch_emails_oauth_gmail(account)
+        elif account.account_type == 'oauth_outlook':
+            # Fetch emails from Outlook/Microsoft
+            account_dict = account.model_dump()
+            emails = await outlook_email_service.fetch_emails(account_dict)
         elif account.account_type in ['app_password_gmail', 'custom_smtp']:
             emails = await email_service.fetch_emails_imap(account)
         
