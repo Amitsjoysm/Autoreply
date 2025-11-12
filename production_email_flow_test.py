@@ -12,7 +12,7 @@ This test suite performs the complete production email flow test as requested:
 7. Verify system health
 
 USER UNDER TEST: amits.joys@gmail.com (ID: afab1f05-37bf-4c23-9c94-0e2365986ea1)
-BACKEND URL: https://sync-restart-workers.preview.emergentagent.com
+BACKEND URL: https://service-revival-4.preview.emergentagent.com
 """
 
 import requests
@@ -31,7 +31,7 @@ import logging
 from typing import List, Dict, Any
 
 # Configuration
-BACKEND_URL = "https://sync-restart-workers.preview.emergentagent.com"
+BACKEND_URL = "https://service-revival-4.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user credentials
