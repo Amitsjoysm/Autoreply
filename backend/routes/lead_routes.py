@@ -26,7 +26,7 @@ def get_current_user_id(authorization: str = Header(...)):
         # Extract token from "Bearer <token>"
         token = authorization.replace("Bearer ", "")
         payload = jwt.decode(token, config.JWT_SECRET, algorithms=["HS256"])
-        return payload.get("user_id")
+        return payload.get("sub")  # JWT standard uses 'sub' for subject/user_id
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
