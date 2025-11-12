@@ -339,7 +339,6 @@ async def get_lead_stats(
     Get lead statistics summary
     """
     try:
-        db = container.get_db()
         
         # Get all active leads
         leads = await db.inbound_leads.find({
