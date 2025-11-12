@@ -195,7 +195,21 @@ class OAuthService:
             
             if response.status_code == 200:
                 data = response.json()
-                return data.get('userPrincipalName') or data.get('mail')
+                # Prioritize 'mail' field as it contains the actual email
+                # For external users, userPrincipalName is in format: user_domain.com#EXT#@tenant.onmicrosoft.com
+                email = data.get('mail') or data.get('userPrincipalName')
+                
+                # If email is in external user format, try to extract actual email
+                if email and '#EXT#' in email:
+                    # Extract the part before #EXT#
+                    actual_email = email.split('#EXT#')[0]
+                    # Replace underscores with @ and dots appropriately
+                    # Format: amits.joys_outlook.com -> amits.joys@outlook.com
+                    parts = actual_email.rsplit('_', 1)
+                    if len(parts) == 2:
+                        email = f"{parts[0].replace('_', '.')}@{parts[1]}"
+                
+                return email
             return None
         except Exception as e:
             logger.error(f"Error getting Microsoft user email: {e}")
