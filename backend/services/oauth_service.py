@@ -152,3 +152,51 @@ class OAuthService:
         except Exception as e:
             logger.error(f"Error getting Google user email: {e}")
             return None
+    
+    async def refresh_microsoft_token(self, refresh_token: str) -> Optional[Dict]:
+        """Refresh Microsoft access token"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f'https://login.microsoftonline.com/{config.MICROSOFT_TENANT_ID}/oauth2/v2.0/token',
+                    data={
+                        'refresh_token': refresh_token,
+                        'client_id': config.MICROSOFT_CLIENT_ID,
+                        'client_secret': config.MICROSOFT_CLIENT_SECRET,
+                        'grant_type': 'refresh_token'
+                    }
+                )
+            
+            if response.status_code == 200:
+                data = response.json()
+                expires_in = data.get('expires_in', 3600)
+                expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
+                
+                return {
+                    'access_token': data['access_token'],
+                    'refresh_token': data.get('refresh_token', refresh_token),  # Microsoft may return new refresh token
+                    'token_expires_at': expires_at.isoformat()
+                }
+            else:
+                logger.error(f"Microsoft token refresh failed: {response.status_code}")
+                return None
+        except Exception as e:
+            logger.error(f"Error refreshing Microsoft token: {e}")
+            return None
+    
+    async def get_microsoft_user_email(self, access_token: str) -> Optional[str]:
+        """Get user's email from Microsoft Graph API"""
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    'https://graph.microsoft.com/v1.0/me',
+                    headers={'Authorization': f'Bearer {access_token}'}
+                )
+            
+            if response.status_code == 200:
+                data = response.json()
+                return data.get('userPrincipalName') or data.get('mail')
+            return None
+        except Exception as e:
+            logger.error(f"Error getting Microsoft user email: {e}")
+            return None
