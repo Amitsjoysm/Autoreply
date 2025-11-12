@@ -37,6 +37,7 @@ async def create_intent(
         keywords=intent.keywords,
         auto_send=intent.auto_send,
         priority=intent.priority,
+        is_inbound_lead=intent.is_inbound_lead,
         is_active=intent.is_active,
         created_at=intent.created_at
     )
