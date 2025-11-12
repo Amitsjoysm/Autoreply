@@ -41,11 +41,13 @@ async def create_full_seed_data():
             "id": user_id,
             "email": demo_email,
             "full_name": "Demo User",
-            "hashed_password": pwd_context.hash(demo_password),
+            "password_hash": pwd_context.hash(demo_password),
             "is_active": True,
             "email_verified": True,
             "persona": "You are a professional AI email assistant helping with business communications.",
             "signature": "Best regards,\nDemo User\nAI Email Assistant",
+            "quota": 100,
+            "quota_used": 0,
             "created_at": datetime.now(timezone.utc).isoformat(),
             "updated_at": datetime.now(timezone.utc).isoformat()
         }
