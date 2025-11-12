@@ -62,6 +62,8 @@ const Intents = () => {
       keywords: keywordsArray,
       prompt: formData.prompt,
       priority: parseInt(formData.priority),
+      auto_send: formData.auto_send,
+      is_inbound_lead: formData.is_inbound_lead,
       is_active: formData.is_active
     };
 
