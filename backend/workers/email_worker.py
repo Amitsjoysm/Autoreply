@@ -195,6 +195,57 @@ async def process_email(email_id: str):
             "confidence": intent_confidence
         })
         
+        # Step 1.25: Check for Inbound Lead (Parlant.io Architecture)
+        from services.lead_agent_service import LeadAgentService
+        lead_service = LeadAgentService(db)
+        
+        is_lead = await lead_service.is_inbound_lead(intent_id, email.user_id)
+        if is_lead:
+            logger.info(f"✓ Inbound lead detected for email {email.id}")
+            await add_action(email_id, "inbound_lead_detected", {
+                "intent_name": intent_name,
+                "lead_email": email.from_email
+            })
+            
+            # Extract lead data using AI
+            extracted_data = await lead_service.extract_lead_data(email)
+            
+            await add_action(email_id, "lead_data_extracted", {
+                "extraction_confidence": extracted_data.extraction_confidence,
+                "fields_extracted": {
+                    "name": extracted_data.name,
+                    "company": extracted_data.company_name,
+                    "phone": extracted_data.phone,
+                    "job_title": extracted_data.job_title
+                }
+            })
+            
+            # Create or update lead
+            try:
+                lead = await lead_service.create_lead(
+                    user_id=email.user_id,
+                    email=email,
+                    intent_id=intent_id,
+                    intent_name=intent_name,
+                    extracted_data=extracted_data
+                )
+                
+                logger.info(f"✓ Lead created/updated: {lead.id} ({lead.lead_email}) - Stage: {lead.stage}, Score: {lead.score}")
+                
+                await add_action(email_id, "lead_created", {
+                    "lead_id": lead.id,
+                    "stage": lead.stage,
+                    "score": lead.score,
+                    "lead_name": lead.lead_name,
+                    "company": lead.company_name
+                })
+                
+            except Exception as e:
+                logger.error(f"Error creating lead: {e}")
+                await add_action(email_id, "lead_creation_failed", {
+                    "error": str(e)
+                }, "failed")
+        
         # Step 1.5: Check if this is a simple acknowledgment (no follow-up needed)
         is_simple_ack = ai_service.is_simple_acknowledgment(email)
         automated_followups_created = False
