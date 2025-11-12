@@ -20,6 +20,7 @@ import CampaignTemplates from './pages/CampaignTemplates';
 import Campaigns from './pages/Campaigns';
 import CampaignAnalytics from './pages/CampaignAnalytics';
 import ContactLists from './pages/ContactLists';
+import InboundLeads from './pages/InboundLeads';
 import '@/App.css';
 import {
   Mail, BarChart3, User, Calendar, CalendarDays, Brain, Target, 
