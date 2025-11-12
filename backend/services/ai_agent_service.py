@@ -44,7 +44,13 @@ class AIAgentService:
     
     async def classify_intent(self, email: Email, user_id: str) -> Tuple[Optional[str], float, Optional[Dict]]:
         """
-        Classify email intent using keyword matching
+        Classify email intent using improved keyword matching
+        
+        IMPROVED ALGORITHM:
+        - Counts keyword matches for each intent
+        - Selects intent with most keyword matches
+        - Uses priority as tiebreaker
+        - Better accuracy for overlapping keywords
         
         Returns:
             Tuple of (intent_id, confidence, intent_dict)
@@ -66,18 +72,47 @@ class AIAgentService:
             # Prepare email text for matching
             email_text = f"{email.subject} {email.body}".lower()
             
-            # Try keyword matching first
+            # Count keyword matches for each intent
+            intent_scores = []
+            
             for intent_doc in intents:
+                # Skip default intent in keyword matching
+                if intent_doc.get('is_default', False):
+                    continue
+                
                 # Convert datetime fields to ISO strings for Pydantic compatibility
                 self._convert_datetime_fields(intent_doc)
                 
                 intent = Intent(**intent_doc)
                 
-                # Check if any keyword matches
+                # Count matching keywords
+                matched_keywords = []
                 for keyword in intent.keywords:
                     if keyword.lower() in email_text:
-                        logger.info(f"✓ Intent '{intent.name}' matched by keyword: '{keyword}'")
-                        return intent.id, 0.9, intent_doc
+                        matched_keywords.append(keyword)
+                
+                if matched_keywords:
+                    intent_scores.append({
+                        'intent_doc': intent_doc,
+                        'match_count': len(matched_keywords),
+                        'priority': intent.priority,
+                        'name': intent.name,
+                        'matched_keywords': matched_keywords
+                    })
+            
+            # If we have matches, select the best one
+            if intent_scores:
+                # Sort by: 1) match_count (desc), 2) priority (desc)
+                intent_scores.sort(key=lambda x: (x['match_count'], x['priority']), reverse=True)
+                
+                best_match = intent_scores[0]
+                logger.info(f"✓ Intent '{best_match['name']}' matched with {best_match['match_count']} keywords: {', '.join(best_match['matched_keywords'][:3])}")
+                
+                # If there's a tie in match count, log it for debugging
+                if len(intent_scores) > 1 and intent_scores[1]['match_count'] == best_match['match_count']:
+                    logger.info(f"  → Tiebreaker: Priority {best_match['priority']} > {intent_scores[1]['priority']} ({intent_scores[1]['name']})")
+                
+                return best_match['intent_doc']['id'], 0.9, best_match['intent_doc']
             
             # No keyword match - check for default intent
             default_intent = next(
