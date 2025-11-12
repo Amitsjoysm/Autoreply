@@ -567,6 +567,36 @@ async def process_email(email_id: str):
                         })
                         logger.info(f"Auto-sent reply for email {email.id}")
                         
+                        # Update lead stage if applicable (auto-transition)
+                        if is_lead:
+                            try:
+                                # Find lead
+                                lead_doc = await db.inbound_leads.find_one({
+                                    "user_id": email.user_id,
+                                    "lead_email": email.from_email,
+                                    "is_active": True
+                                })
+                                
+                                if lead_doc:
+                                    from models.inbound_lead import InboundLead
+                                    lead = InboundLead(**lead_doc)
+                                    
+                                    # Update lead with email sent
+                                    await lead_service.update_lead_from_email(lead.id, email)
+                                    
+                                    # Check for auto stage transition
+                                    new_stage = await lead_service.check_auto_stage_transition(lead)
+                                    if new_stage:
+                                        await lead_service.transition_stage(
+                                            lead.id,
+                                            new_stage,
+                                            "Auto-transition based on email sent",
+                                            "system"
+                                        )
+                                        logger.info(f"✓ Lead {lead.id} auto-transitioned: {lead.stage} → {new_stage}")
+                            except Exception as e:
+                                logger.error(f"Error updating lead after email sent: {e}")
+                        
                         # Create automatic follow-ups ONLY if:
                         # 1. Follow-ups are enabled for the account
                         # 2. Automated time-based follow-ups were NOT already created
