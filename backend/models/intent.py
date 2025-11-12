@@ -47,5 +47,6 @@ class IntentResponse(BaseModel):
     keywords: List[str]
     auto_send: bool
     priority: int
+    is_inbound_lead: bool
     is_active: bool
     created_at: str
