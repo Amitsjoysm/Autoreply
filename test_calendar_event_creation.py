@@ -50,7 +50,7 @@ async def get_user_info():
     })
     
     if calendar_provider:
-        print(f"✅ Calendar provider: {calendar_provider['provider_name']} (Email: {calendar_provider.get('email', 'N/A')})")
+        print(f"✅ Calendar provider: {calendar_provider.get('provider', 'google')} (Email: {calendar_provider.get('email', 'N/A')})")
     else:
         print("❌ No active calendar provider found")
     
