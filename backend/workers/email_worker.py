@@ -572,6 +572,17 @@ async def process_email(email_id: str):
                     if account.account_type == 'oauth_gmail':
                         result = await email_service.send_email_oauth_gmail(account, reply, email.thread_id)
                         sent = result.get("success", False)
+                    elif account.account_type == 'oauth_outlook':
+                        outlook_email_service = OutlookEmailService(db)
+                        account_dict = account.model_dump()
+                        sent = await outlook_email_service.send_email(
+                            account_dict,
+                            reply.to,
+                            reply.subject,
+                            reply.body,
+                            email.thread_id,
+                            email.message_id
+                        )
                     else:
                         sent = await email_service.send_email_smtp(account, reply)
                     
