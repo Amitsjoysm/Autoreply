@@ -25,7 +25,7 @@ def get_current_user_id(authorization: str = Header(...)):
     try:
         # Extract token from "Bearer <token>"
         token = authorization.replace("Bearer ", "")
-        payload = jwt.decode(token, config.SECRET_KEY, algorithms=["HS256"])
+        payload = jwt.decode(token, config.JWT_SECRET, algorithms=["HS256"])
         return payload.get("user_id")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
