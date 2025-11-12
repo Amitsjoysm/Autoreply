@@ -931,6 +931,17 @@ async def check_follow_ups():
                 # Send in same thread if thread_id exists
                 result = await email_service.send_email_oauth_gmail(account, follow_up_email, follow_up.thread_id)
                 sent = result.get("success", False)
+            elif account.account_type == 'oauth_outlook':
+                outlook_email_service = OutlookEmailService(db)
+                account_dict = account.model_dump()
+                sent = await outlook_email_service.send_email(
+                    account_dict,
+                    follow_up_email.to,
+                    follow_up_email.subject,
+                    follow_up_email.body,
+                    follow_up.thread_id,
+                    None  # in_reply_to not available for follow-ups
+                )
             else:
                 sent = await email_service.send_email_smtp(account, follow_up_email)
             
