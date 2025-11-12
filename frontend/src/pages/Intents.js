@@ -23,6 +23,8 @@ const Intents = () => {
     keywords: '',
     prompt: '',
     priority: 1,
+    auto_send: false,
+    is_inbound_lead: false,
     is_active: true
   });
 
