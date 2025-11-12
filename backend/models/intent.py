@@ -36,6 +36,7 @@ class IntentUpdate(BaseModel):
     keywords: Optional[List[str]] = None
     auto_send: Optional[bool] = None
     priority: Optional[int] = None
+    is_inbound_lead: Optional[bool] = None
     is_active: Optional[bool] = None
 
 class IntentResponse(BaseModel):
