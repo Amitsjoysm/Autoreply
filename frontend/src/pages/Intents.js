@@ -237,62 +237,61 @@ const Intents = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="priority">Priority (1-10)</Label>
-                  <Input
-                    id="priority"
-                    type="number"
-                    min="1"
-                    max="10"
-                    value={formData.priority}
-                    onChange={(e) => setFormData({...formData, priority: e.target.value})}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Higher priority intents are matched first
-                  </p>
-                </div>
+              <div>
+                <Label htmlFor="priority">Priority (1-10)</Label>
+                <Input
+                  id="priority"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={formData.priority}
+                  onChange={(e) => setFormData({...formData, priority: e.target.value})}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Higher priority intents are matched first
+                </p>
+              </div>
 
-                <div className="space-y-3 pt-6">
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="auto_send"
-                      checked={formData.auto_send}
-                      onChange={(e) => setFormData({...formData, auto_send: e.target.checked})}
-                      className="w-4 h-4"
-                    />
-                    <Label htmlFor="auto_send" className="cursor-pointer">
-                      Auto-send replies for this intent
-                    </Label>
-                  </div>
-                  
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id="is_inbound_lead"
-                      checked={formData.is_inbound_lead}
-                      onChange={(e) => setFormData({...formData, is_inbound_lead: e.target.checked})}
-                      className="w-4 h-4"
-                    />
-                    <Label htmlFor="is_inbound_lead" className="cursor-pointer">
-                      Mark as Inbound Lead intent
-                    </Label>
-                  </div>
-                  <p className="text-xs text-gray-500 ml-6">
-                    Emails matching this intent will be tracked as inbound leads with detailed information extraction
-                  </p>
-                  
-                  <div className="flex items-center gap-2 pt-2">
-                    <input
-                      type="checkbox"
-                      id="is_active"
-                      checked={formData.is_active}
-                      onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
-                      className="w-4 h-4"
-                    />
-                    <Label htmlFor="is_active" className="cursor-pointer">
-                      Intent is active
+              <div className="space-y-3 pt-6">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="auto_send"
+                    checked={formData.auto_send}
+                    onChange={(e) => setFormData({...formData, auto_send: e.target.checked})}
+                    className="w-4 h-4"
+                  />
+                  <Label htmlFor="auto_send" className="cursor-pointer">
+                    Auto-send replies for this intent
+                  </Label>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="is_inbound_lead"
+                    checked={formData.is_inbound_lead}
+                    onChange={(e) => setFormData({...formData, is_inbound_lead: e.target.checked})}
+                    className="w-4 h-4"
+                  />
+                  <Label htmlFor="is_inbound_lead" className="cursor-pointer">
+                    Mark as Inbound Lead intent
+                  </Label>
+                </div>
+                <p className="text-xs text-gray-500 ml-6">
+                  Emails matching this intent will be tracked as inbound leads with detailed information extraction
+                </p>
+                
+                <div className="flex items-center gap-2 pt-2">
+                  <input
+                    type="checkbox"
+                    id="is_active"
+                    checked={formData.is_active}
+                    onChange={(e) => setFormData({...formData, is_active: e.target.checked})}
+                    className="w-4 h-4"
+                  />
+                  <Label htmlFor="is_active" className="cursor-pointer">
+                    Intent is active
                   </Label>
                 </div>
               </div>
