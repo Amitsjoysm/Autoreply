@@ -243,6 +243,16 @@ function App() {
             }
           />
           <Route
+            path="/outlook-calendar-providers"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <OutlookCalendarProviders />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/calendar-events"
             element={
               <ProtectedRoute>
@@ -278,6 +288,16 @@ function App() {
               <ProtectedRoute>
                 <MainLayout>
                   <EmailAccounts />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/outlook-email-accounts"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <OutlookEmailAccounts />
                 </MainLayout>
               </ProtectedRoute>
             }
