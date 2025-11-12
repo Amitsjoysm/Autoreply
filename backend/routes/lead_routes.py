@@ -160,7 +160,6 @@ async def update_lead(
     Update lead information
     """
     try:
-        db = container.get_db()
         lead_service = LeadAgentService(db)
         
         # Verify lead exists and belongs to user
