@@ -413,11 +413,32 @@ async def process_email(email_id: str):
                     meeting_details['has_conflicts'] = True
                     meeting_details['conflicts'] = conflict_details
                 
-                # Create event even if there are conflicts (user can resolve)
-                event_result = await calendar_service.create_event_google(provider, meeting_details)
+                # Create event based on provider type
+                event_result = None
+                if provider.provider == 'google':
+                    event_result = await calendar_service.create_event_google(provider, meeting_details)
+                elif provider.provider == 'microsoft':
+                    # Use Outlook Calendar Service
+                    outlook_calendar_service = OutlookCalendarService(db)
+                    provider_dict = provider.model_dump()
+                    
+                    # Parse start and end times from meeting_details
+                    from dateutil import parser as date_parser
+                    start_time = date_parser.isoparse(meeting_details['start_time'])
+                    end_time = date_parser.isoparse(meeting_details['end_time'])
+                    
+                    event_result = await outlook_calendar_service.create_event(
+                        provider_dict,
+                        meeting_details['title'],
+                        start_time,
+                        end_time,
+                        meeting_details.get('attendees', []),
+                        meeting_details.get('description', ''),
+                        meeting_details.get('location', '')
+                    )
                 
                 if event_result and event_result.get('event_id'):
-                    # Update meeting details with Google Calendar info
+                    # Update meeting details with Calendar info (Google or Outlook)
                     meeting_details['event_id'] = event_result['event_id']
                     meeting_details['meet_link'] = event_result.get('meet_link')
                     meeting_details['html_link'] = event_result.get('html_link')
