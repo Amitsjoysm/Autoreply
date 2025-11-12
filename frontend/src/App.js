@@ -290,6 +290,16 @@ function App() {
             }
           />
           <Route
+            path="/inbound-leads"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <InboundLeads />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/email-processing"
             element={
               <ProtectedRoute>
