@@ -15,6 +15,7 @@ class Intent(BaseModel):
     auto_send: bool = False  # Auto-send replies for this intent
     priority: int = 0  # Higher priority intents checked first
     is_default: bool = False  # Default intent for unmatched emails
+    is_inbound_lead: bool = False  # Mark this intent as inbound lead
     
     is_active: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
