@@ -64,11 +64,11 @@ const EmailAccounts = () => {
   const handleOAuthConnect = async (provider) => {
     try {
       if (provider === 'gmail') {
-        const data = await API.getGoogleOAuthUrl();
+        const data = await API.getGoogleOAuthUrl('email');
         window.location.href = data.url;
       } else if (provider === 'outlook') {
-        // TODO: Add Microsoft OAuth URL endpoint
-        toast.error('Microsoft OAuth not yet implemented');
+        const data = await API.getMicrosoftOAuthUrl('email');
+        window.location.href = data.url;
       }
     } catch (error) {
       toast.error('Failed to initiate OAuth flow');
