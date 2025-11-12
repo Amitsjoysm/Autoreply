@@ -1,23 +1,34 @@
 """
 API routes for Inbound Lead Management
 """
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Header
 from typing import List, Optional
 from datetime import datetime
+from motor.motor_asyncio import AsyncIOMotorClient
+from jose import jwt, JWTError
 
 from models.inbound_lead import (
     InboundLead, LeadResponse, LeadDetailResponse, 
     LeadUpdate, LeadStageUpdate
 )
 from services.lead_agent_service import LeadAgentService
-from services.auth_service import AuthService
-from container import container
+from config import config
 
 router = APIRouter(prefix="/api/leads", tags=["leads"])
 
-def get_current_user_id(token: str = Depends(container.get_auth_service().verify_token)):
+# Database connection
+client = AsyncIOMotorClient(config.MONGO_URL)
+db = client[config.DB_NAME]
+
+def get_current_user_id(authorization: str = Header(...)):
     """Dependency to get current user ID from JWT token"""
-    return token.get("user_id")
+    try:
+        # Extract token from "Bearer <token>"
+        token = authorization.replace("Bearer ", "")
+        payload = jwt.decode(token, config.SECRET_KEY, algorithms=["HS256"])
+        return payload.get("user_id")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
 
 @router.get("", response_model=List[LeadResponse])
