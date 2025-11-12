@@ -105,7 +105,6 @@ async def get_lead(
     Get detailed information for a specific lead
     """
     try:
-        db = container.get_db()
         
         lead_doc = await db.inbound_leads.find_one({
             "id": lead_id,
