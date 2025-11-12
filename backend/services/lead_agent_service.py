@@ -9,7 +9,7 @@ Key Principles:
 5. Error Handling - Graceful degradation with fallbacks
 """
 import logging
-from typing import Optional, Dict, List, Tuple
+from typing import Optional, Dict, List, Tuple, Any
 from datetime import datetime, timezone
 import httpx
 from motor.motor_asyncio import AsyncIOMotorDatabase
