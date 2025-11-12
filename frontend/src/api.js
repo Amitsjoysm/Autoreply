@@ -386,6 +386,39 @@ class API {
     const response = await this.axios.get(`/campaign/lists/${id}/contacts`);
     return response.data;
   }
+
+  // ============ Inbound Leads API ============
+  
+  async getLeads(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const response = await this.axios.get(`/leads${queryString ? '?' + queryString : ''}`);
+    return response.data;
+  }
+
+  async getLeadDetail(leadId) {
+    const response = await this.axios.get(`/leads/${leadId}`);
+    return response.data;
+  }
+
+  async updateLead(leadId, data) {
+    const response = await this.axios.put(`/leads/${leadId}`, data);
+    return response.data;
+  }
+
+  async updateLeadStage(leadId, data) {
+    const response = await this.axios.post(`/leads/${leadId}/stage`, data);
+    return response.data;
+  }
+
+  async getLeadEmails(leadId) {
+    const response = await this.axios.get(`/leads/${leadId}/emails`);
+    return response.data;
+  }
+
+  async getLeadStats() {
+    const response = await this.axios.get('/leads/stats/summary');
+    return response.data;
+  }
 }
 
 export default new API();
