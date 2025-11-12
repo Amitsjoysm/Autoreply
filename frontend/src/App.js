@@ -46,6 +46,7 @@ const MainLayout = ({ children }) => {
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
     { path: '/profile', label: 'Profile', icon: User },
+    { path: '/inbound-leads', label: 'Inbound Leads', icon: Target },
     { path: '/calendar-providers', label: 'Calendar Providers', icon: Calendar },
     { path: '/calendar-events', label: 'Calendar Events', icon: CalendarDays },
     { path: '/meeting-detection', label: 'Meeting Detection', icon: Brain },
