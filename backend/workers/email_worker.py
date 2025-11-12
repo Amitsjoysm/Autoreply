@@ -7,8 +7,10 @@ from datetime import datetime, timezone, timedelta
 
 from config import config
 from services.email_service import EmailService
+from services.outlook_email_service import OutlookEmailService
 from services.ai_agent_service import AIAgentService
 from services.calendar_service import CalendarService
+from services.outlook_calendar_service import OutlookCalendarService
 from models.email_account import EmailAccount
 from models.email import Email
 
