@@ -426,6 +426,27 @@ async def process_email(email_id: str):
                     })
                     
                     logger.info(f"Created calendar event for email {email.id} with Meet link: {event_result.get('meet_link')}")
+                    
+                    # Update lead if this is from an inbound lead
+                    if is_lead:
+                        try:
+                            # Find lead by email
+                            lead_doc = await db.inbound_leads.find_one({
+                                "user_id": email.user_id,
+                                "lead_email": email.from_email,
+                                "is_active": True
+                            })
+                            
+                            if lead_doc:
+                                await lead_service.record_meeting_scheduled(
+                                    lead_doc['id'],
+                                    meeting_details.get('start_time'),
+                                    event_result['event_id']
+                                )
+                                logger.info(f"✓ Meeting recorded for lead {lead_doc['id']}")
+                        except Exception as e:
+                            logger.error(f"Error updating lead meeting: {e}")
+                    
                 else:
                     await add_action(email_id, "calendar_event_creation_failed", {
                         "message": "Failed to create event in Google Calendar"
