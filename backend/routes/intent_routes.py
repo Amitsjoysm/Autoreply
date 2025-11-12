@@ -122,6 +122,7 @@ async def update_intent(
         keywords=updated_doc['keywords'],
         auto_send=updated_doc['auto_send'],
         priority=updated_doc['priority'],
+        is_inbound_lead=updated_doc.get('is_inbound_lead', False),
         is_active=updated_doc['is_active'],
         created_at=updated_doc['created_at'].isoformat() if isinstance(updated_doc['created_at'], datetime) else updated_doc['created_at']
     )
