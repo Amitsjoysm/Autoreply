@@ -1,48 +1,63 @@
+#!/usr/bin/env python3
 """
-Reprocess failed/unprocessed emails
+Reprocess emails that failed or have no intent detected
 """
-import asyncio
-import sys
-from pathlib import Path
+from pymongo import MongoClient
+from datetime import datetime, timezone
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
+client = MongoClient("mongodb://localhost:27017")
+db = client["email_assistant_db"]
 
-from motor.motor_asyncio import AsyncIOMotorClient
-from config import config
-from workers.email_worker import process_email
+user = db.users.find_one({"email": "amits.joys@gmail.com"})
+if not user:
+    print("❌ User not found!")
+    exit(1)
 
+user_id = user.get('id')
+print(f"✅ Found user: {user['email']}\n")
 
-async def reprocess_unprocessed_emails():
-    """Find and reprocess all unprocessed emails"""
+# Find emails to reprocess
+query = {
+    "user_id": user_id,
+    "$or": [
+        {"status": "error"},
+        {"intent_id": None},
+        {"intent_id": {"$exists": False}}
+    ]
+}
+
+emails_to_reprocess = list(db.emails.find(query))
+print(f"📧 Found {len(emails_to_reprocess)} emails to reprocess\n")
+
+if not emails_to_reprocess:
+    print("✅ No emails need reprocessing!")
+    exit(0)
+
+# Reset emails to 'received' status
+count = 0
+for email in emails_to_reprocess:
+    print(f"  - {email.get('subject', 'No subject')[:60]}...")
     
-    client = AsyncIOMotorClient(config.MONGO_URL)
-    db = client[config.DB_NAME]
+    update = {
+        "$set": {
+            "status": "received",
+            "error_message": None,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        },
+        "$push": {
+            "action_history": {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "action": "reset_for_reprocessing",
+                "details": {"reason": "Intents added after initial processing"},
+                "status": "success"
+            }
+        }
+    }
     
-    try:
-        # Find all unprocessed emails
-        unprocessed = await db.emails.find({
-            "processed": False,
-            "status": {"$in": ["received", "error"]}
-        }).to_list(100)
-        
-        print(f"Found {len(unprocessed)} unprocessed emails")
-        
-        for email_doc in unprocessed:
-            email_id = email_doc['id']
-            subject = email_doc.get('subject', 'N/A')
-            print(f"\nReprocessing: {subject}")
-            
-            try:
-                await process_email(email_id)
-                print(f"  ✓ Processed successfully")
-            except Exception as e:
-                print(f"  ✗ Error: {e}")
-        
-        print(f"\n✅ Reprocessing complete")
-        
-    finally:
-        client.close()
+    db.emails.update_one({"id": email['id']}, update)
+    count += 1
 
+print(f"\n✅ Reset {count} emails to 'received' status")
+print("   Worker will reprocess them in next poll (~60 seconds)")
 
-if __name__ == "__main__":
-    asyncio.run(reprocess_unprocessed_emails())
+client.close()
