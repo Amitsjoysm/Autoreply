@@ -303,7 +303,6 @@ async def get_lead_emails(
     Get all emails associated with a lead
     """
     try:
-        db = container.get_db()
         
         # Verify lead exists and belongs to user
         lead_doc = await db.inbound_leads.find_one({
