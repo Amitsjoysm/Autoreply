@@ -102,6 +102,36 @@ class OutlookEmailService:
                     params=params
                 )
             
+            # Handle 401 Unauthorized - token may be expired despite timestamp
+            if response.status_code == 401:
+                logger.info(f"Got 401 error, forcing token refresh for account {account.get('email')}")
+                
+                # Force refresh the token
+                refresh_token = account.get('refresh_token')
+                if refresh_token:
+                    new_tokens = await self.oauth_service.refresh_microsoft_token(refresh_token)
+                    if new_tokens:
+                        # Update account in database
+                        await self.db.email_accounts.update_one(
+                            {"id": account['id']},
+                            {"$set": {
+                                "access_token": new_tokens['access_token'],
+                                "refresh_token": new_tokens['refresh_token'],
+                                "token_expires_at": new_tokens['token_expires_at'],
+                                "updated_at": datetime.now(timezone.utc).isoformat()
+                            }}
+                        )
+                        
+                        logger.info(f"Token refreshed successfully, retrying API call")
+                        
+                        # Retry the request with new token
+                        async with httpx.AsyncClient(timeout=30.0) as client:
+                            response = await client.get(
+                                f"{self.graph_base_url}/me/messages",
+                                headers={'Authorization': f'Bearer {new_tokens["access_token"]}'},
+                                params=params
+                            )
+            
             if response.status_code != 200:
                 logger.error(f"Failed to fetch Outlook emails: {response.status_code} - {response.text}")
                 return []
