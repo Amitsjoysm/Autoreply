@@ -192,13 +192,23 @@ class API {
   }
 
   // OAuth
-  async getGoogleOAuthUrl() {
-    const response = await this.axios.get('/oauth/google/url');
+  async getGoogleOAuthUrl(accountType = 'email') {
+    const response = await this.axios.get(`/oauth/google/url?account_type=${accountType}`);
     return response.data;
   }
 
   async handleGoogleCallback(code, state, accountType = 'email') {
     const response = await this.axios.post(`/oauth/google/callback?code=${code}&state=${state}&account_type=${accountType}`);
+    return response.data;
+  }
+
+  async getMicrosoftOAuthUrl(accountType = 'email') {
+    const response = await this.axios.get(`/oauth/microsoft/url?account_type=${accountType}`);
+    return response.data;
+  }
+
+  async handleMicrosoftCallback(code, state, accountType = 'email') {
+    const response = await this.axios.post(`/oauth/microsoft/callback?code=${code}&state=${state}&account_type=${accountType}`);
     return response.data;
   }
 
