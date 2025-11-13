@@ -47,6 +47,17 @@ const CalendarProviders = () => {
       const response = await API.axios.get('/oauth/google/url?account_type=calendar');
       window.location.href = response.data.url;
     } catch (error) {
+      console.error('Google OAuth error:', error);
+      toast.error('Failed to initiate OAuth flow');
+    }
+  };
+
+  const handleConnectMicrosoft = async () => {
+    try {
+      const data = await API.getMicrosoftOAuthUrl('calendar');
+      window.location.href = data.url;
+    } catch (error) {
+      console.error('Microsoft OAuth error:', error);
       toast.error('Failed to initiate OAuth flow');
     }
   };
