@@ -176,6 +176,176 @@ class CalendarService:
         except Exception as e:
             logger.error(f"Error updating Google Calendar event: {e}", exc_info=True)
             return False
+    
+    # ==================== MICROSOFT OUTLOOK CALENDAR METHODS ====================
+    
+    async def ensure_token_valid_outlook(self, provider: CalendarProvider) -> CalendarProvider:
+        """Check and refresh Microsoft OAuth token if expired"""
+        if not provider.token_expires_at or not provider.refresh_token:
+            return provider
+        
+        try:
+            from dateutil import parser
+            expires_at = parser.isoparse(provider.token_expires_at)
+            now = datetime.now(timezone.utc)
+            
+            if expires_at <= now:
+                logger.info(f"Microsoft calendar token expired for {provider.email}, refreshing...")
+                
+                new_tokens = await self.oauth_service.refresh_microsoft_token(provider.refresh_token)
+                if new_tokens:
+                    await self.db.calendar_providers.update_one(
+                        {"id": provider.id},
+                        {"$set": {
+                            "access_token": new_tokens['access_token'],
+                            "token_expires_at": new_tokens['token_expires_at'],
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    
+                    provider.access_token = new_tokens['access_token']
+                    provider.token_expires_at = new_tokens['token_expires_at']
+                    
+                    logger.info(f"Microsoft calendar token refreshed successfully for {provider.email}")
+                else:
+                    logger.error(f"Failed to refresh Microsoft calendar token for {provider.email}")
+                    raise Exception("Microsoft token refresh failed")
+        except Exception as e:
+            logger.error(f"Error checking/refreshing Microsoft calendar token: {e}")
+            raise
+        
+        return provider
+    
+    async def create_event_outlook(self, provider: CalendarProvider, event_data: Dict) -> Optional[Dict]:
+        """Create calendar event in Outlook Calendar"""
+        try:
+            # Ensure token is valid
+            provider = await self.ensure_token_valid_outlook(provider)
+            
+            import httpx
+            
+            headers = {
+                'Authorization': f'Bearer {provider.access_token}',
+                'Content-Type': 'application/json'
+            }
+            
+            # Build event data for Microsoft Graph API
+            event = {
+                'subject': event_data.get('title'),
+                'body': {
+                    'contentType': 'HTML',
+                    'content': event_data.get('description', '')
+                },
+                'start': {
+                    'dateTime': event_data.get('start_time'),
+                    'timeZone': event_data.get('timezone', 'UTC')
+                },
+                'end': {
+                    'dateTime': event_data.get('end_time'),
+                    'timeZone': event_data.get('timezone', 'UTC')
+                },
+                'location': {
+                    'displayName': event_data.get('location', '')
+                },
+                'attendees': [
+                    {
+                        'emailAddress': {
+                            'address': email,
+                            'name': email
+                        },
+                        'type': 'required'
+                    } for email in event_data.get('attendees', [])
+                ],
+                'isOnlineMeeting': True,
+                'onlineMeetingProvider': 'teamsForBusiness'
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    'https://graph.microsoft.com/v1.0/me/events',
+                    headers=headers,
+                    json=event
+                )
+            
+            if response.status_code in [200, 201]:
+                result = response.json()
+                
+                event_result = {
+                    'event_id': result.get('id'),
+                    'meet_link': result.get('onlineMeeting', {}).get('joinUrl'),
+                    'html_link': result.get('webLink'),
+                    'status': 'confirmed'
+                }
+                
+                logger.info(f"Successfully created Outlook calendar event: {event_result['event_id']}")
+                return event_result
+            else:
+                logger.error(f"Failed to create Outlook calendar event: {response.status_code} - {response.text}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error creating Outlook Calendar event: {e}", exc_info=True)
+            return None
+    
+    async def update_event_outlook(self, provider: CalendarProvider, event_id: str, event_data: Dict) -> bool:
+        """Update calendar event in Outlook Calendar"""
+        try:
+            # Ensure token is valid
+            provider = await self.ensure_token_valid_outlook(provider)
+            
+            import httpx
+            
+            headers = {
+                'Authorization': f'Bearer {provider.access_token}',
+                'Content-Type': 'application/json'
+            }
+            
+            # Build event data for Microsoft Graph API
+            event = {
+                'subject': event_data.get('title'),
+                'body': {
+                    'contentType': 'HTML',
+                    'content': event_data.get('description', '')
+                },
+                'start': {
+                    'dateTime': event_data.get('start_time'),
+                    'timeZone': event_data.get('timezone', 'UTC')
+                },
+                'end': {
+                    'dateTime': event_data.get('end_time'),
+                    'timeZone': event_data.get('timezone', 'UTC')
+                },
+                'location': {
+                    'displayName': event_data.get('location', '')
+                },
+                'attendees': [
+                    {
+                        'emailAddress': {
+                            'address': email,
+                            'name': email
+                        },
+                        'type': 'required'
+                    } for email in event_data.get('attendees', [])
+                ]
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.patch(
+                    f'https://graph.microsoft.com/v1.0/me/events/{event_id}',
+                    headers=headers,
+                    json=event
+                )
+            
+            if response.status_code in [200, 201]:
+                logger.info(f"Successfully updated Outlook calendar event: {event_id}")
+                return True
+            else:
+                logger.error(f"Failed to update Outlook calendar event: {response.status_code} - {response.text}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Error updating Outlook Calendar event: {e}", exc_info=True)
+            return False
 
     
     async def check_conflicts(self, provider_id: str, start_time: str, end_time: str) -> List[CalendarEvent]:
