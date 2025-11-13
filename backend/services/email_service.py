@@ -488,4 +488,239 @@ class EmailService:
         except Exception as e:
             logger.error(f"Error getting thread context: {e}")
             return []
+    
+    # ==================== MICROSOFT OUTLOOK METHODS ====================
+    
+    async def ensure_token_valid_outlook(self, account: EmailAccount) -> EmailAccount:
+        """Check and refresh Microsoft OAuth token if expired"""
+        if not account.token_expires_at or not account.refresh_token:
+            return account
+        
+        try:
+            from dateutil import parser
+            expires_at = parser.isoparse(account.token_expires_at)
+            now = datetime.now(timezone.utc)
+            
+            if expires_at <= now:
+                logger.info(f"Microsoft token expired for account {account.email}, refreshing...")
+                
+                new_tokens = await self.oauth_service.refresh_microsoft_token(account.refresh_token)
+                if new_tokens:
+                    await self.db.email_accounts.update_one(
+                        {"id": account.id},
+                        {"$set": {
+                            "access_token": new_tokens['access_token'],
+                            "token_expires_at": new_tokens['token_expires_at'],
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }}
+                    )
+                    
+                    account.access_token = new_tokens['access_token']
+                    account.token_expires_at = new_tokens['token_expires_at']
+                    
+                    logger.info(f"Microsoft token refreshed successfully for {account.email}")
+                else:
+                    logger.error(f"Failed to refresh Microsoft token for {account.email}")
+                    raise Exception("Microsoft token refresh failed")
+        except Exception as e:
+            logger.error(f"Error checking/refreshing Microsoft token: {e}")
+            raise
+        
+        return account
+    
+    async def fetch_emails_oauth_outlook(self, account: EmailAccount) -> List[Dict]:
+        """Fetch emails using Microsoft Graph API (OAuth)"""
+        try:
+            # Ensure token is valid
+            account = await self.ensure_token_valid_outlook(account)
+            
+            import httpx
+            
+            headers = {
+                'Authorization': f'Bearer {account.access_token}',
+                'Content-Type': 'application/json'
+            }
+            
+            # Fetch emails from inbox
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    'https://graph.microsoft.com/v1.0/me/mailFolders/inbox/messages',
+                    headers=headers,
+                    params={
+                        '$top': 50,
+                        '$orderby': 'receivedDateTime desc',
+                        '$select': 'id,subject,from,toRecipients,receivedDateTime,body,isRead,conversationId,internetMessageHeaders'
+                    }
+                )
+            
+            if response.status_code != 200:
+                logger.error(f"Failed to fetch Outlook emails: {response.status_code} - {response.text}")
+                return []
+            
+            data = response.json()
+            messages = data.get('value', [])
+            
+            emails = []
+            for msg in messages:
+                try:
+                    # Extract thread ID from conversation ID
+                    thread_id = msg.get('conversationId')
+                    
+                    # Get Message-ID and References from headers
+                    message_id = None
+                    in_reply_to = None
+                    references = None
+                    
+                    headers_list = msg.get('internetMessageHeaders', [])
+                    for header in headers_list:
+                        name = header.get('name', '').lower()
+                        value = header.get('value', '')
+                        if name == 'message-id':
+                            message_id = value
+                        elif name == 'in-reply-to':
+                            in_reply_to = value
+                        elif name == 'references':
+                            references = value
+                    
+                    # Parse email body
+                    body_content = msg.get('body', {})
+                    body_text = body_content.get('content', '')
+                    
+                    # Parse from email
+                    from_data = msg.get('from', {}).get('emailAddress', {})
+                    from_email = from_data.get('address', '')
+                    from_name = from_data.get('name', '')
+                    
+                    # Parse to email (first recipient)
+                    to_recipients = msg.get('toRecipients', [])
+                    to_email = account.email  # Recipient is the account owner
+                    
+                    # Parse received date
+                    received_dt = msg.get('receivedDateTime')
+                    
+                    email_data = {
+                        'provider_message_id': msg.get('id'),
+                        'subject': msg.get('subject', ''),
+                        'from_email': from_email,
+                        'from_name': from_name,
+                        'to_email': to_email,
+                        'body': body_text,
+                        'received_at': received_dt,
+                        'is_read': msg.get('isRead', False),
+                        'thread_id': thread_id,
+                        'message_id': message_id,
+                        'in_reply_to': in_reply_to,
+                        'references': references
+                    }
+                    
+                    emails.append(email_data)
+                    
+                except Exception as e:
+                    logger.error(f"Error parsing Outlook message: {e}")
+                    continue
+            
+            return emails
+            
+        except Exception as e:
+            logger.error(f"Error fetching Outlook emails: {e}")
+            return []
+    
+    async def send_email_oauth_outlook(self, account: EmailAccount, email_data: EmailSend, thread_id: Optional[str] = None) -> dict:
+        """Send email using Microsoft Graph API with thread support"""
+        try:
+            # Ensure token is valid
+            account = await self.ensure_token_valid_outlook(account)
+            
+            import httpx
+            
+            # Format email body
+            formatter = EmailFormatter(account.signature)
+            formatted_body = formatter.format_email(email_data.body)
+            
+            # Build message
+            message = {
+                'subject': email_data.subject,
+                'body': {
+                    'contentType': 'Text',
+                    'content': formatted_body
+                },
+                'toRecipients': [
+                    {
+                        'emailAddress': {
+                            'address': email_data.to_email
+                        }
+                    }
+                ]
+            }
+            
+            # Add thread support using conversationId
+            if thread_id:
+                # For replies, we use the replyAll endpoint
+                headers = {
+                    'Authorization': f'Bearer {account.access_token}',
+                    'Content-Type': 'application/json'
+                }
+                
+                # Need to find the original message first
+                async with httpx.AsyncClient() as client:
+                    # Search for messages in the conversation
+                    search_response = await client.get(
+                        f'https://graph.microsoft.com/v1.0/me/messages',
+                        headers=headers,
+                        params={
+                            '$filter': f"conversationId eq '{thread_id}'",
+                            '$top': 1
+                        }
+                    )
+                    
+                    if search_response.status_code == 200:
+                        search_data = search_response.json()
+                        messages = search_data.get('value', [])
+                        if messages:
+                            original_msg_id = messages[0]['id']
+                            
+                            # Send reply
+                            reply_payload = {
+                                'message': message,
+                                'comment': formatted_body
+                            }
+                            
+                            response = await client.post(
+                                f'https://graph.microsoft.com/v1.0/me/messages/{original_msg_id}/reply',
+                                headers=headers,
+                                json=reply_payload
+                            )
+                            
+                            if response.status_code in [200, 201, 202]:
+                                logger.info(f"Email reply sent successfully via Outlook to {email_data.to_email}")
+                                return {'success': True, 'thread_id': thread_id}
+            
+            # Send new email (not a reply)
+            headers = {
+                'Authorization': f'Bearer {account.access_token}',
+                'Content-Type': 'application/json'
+            }
+            
+            payload = {
+                'message': message,
+                'saveToSentItems': 'true'
+            }
+            
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    'https://graph.microsoft.com/v1.0/me/sendMail',
+                    headers=headers,
+                    json=payload
+                )
+            
+            if response.status_code in [200, 201, 202]:
+                logger.info(f"Email sent successfully via Outlook to {email_data.to_email}")
+                return {'success': True}
+            else:
+                logger.error(f"Failed to send Outlook email: {response.status_code} - {response.text}")
+                return {'success': False, 'error': response.text}
+                
+        except Exception as e:
+            logger.error(f"Error sending Outlook email: {e}")
+            return {'success': False, 'error': str(e)}
 
