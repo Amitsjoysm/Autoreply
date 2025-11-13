@@ -89,13 +89,22 @@ const CalendarProviders = () => {
           <h1 className="text-3xl font-bold text-gray-900">Calendar Providers</h1>
           <p className="text-gray-600 mt-1">Connect your calendar for AI-powered meeting management</p>
         </div>
-        <Button 
-          onClick={handleConnectGoogle}
-          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Connect Google Calendar
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleConnectGoogle}
+            className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Connect Google Calendar
+          </Button>
+          <Button 
+            onClick={handleConnectMicrosoft}
+            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Connect Outlook Calendar
+          </Button>
+        </div>
       </div>
 
       {/* Providers List */}
