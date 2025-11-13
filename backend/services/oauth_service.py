@@ -34,8 +34,9 @@ class OAuthService:
             'client_id': config.MICROSOFT_CLIENT_ID,
             'redirect_uri': config.MICROSOFT_REDIRECT_URI,
             'response_type': 'code',
-            'scope': 'https://graph.microsoft.com/Mail.Read https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/Calendars.ReadWrite offline_access',
-            'state': state
+            'scope': 'openid email https://graph.microsoft.com/User.Read https://graph.microsoft.com/Mail.Read https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/Calendars.ReadWrite offline_access',
+            'state': state,
+            'prompt': 'consent'
         }
         return f"https://login.microsoftonline.com/{config.MICROSOFT_TENANT_ID}/oauth2/v2.0/authorize?{urlencode(params)}"
     
