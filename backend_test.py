@@ -13,7 +13,7 @@ TESTING COMPONENTS:
 5. Backend Health Check - all services running without errors
 
 USER UNDER TEST: amits.joys@gmail.com
-BACKEND URL: https://service-revival-4.preview.emergentagent.com
+BACKEND URL: https://ms-auth-connect.preview.emergentagent.com
 """
 
 import requests
@@ -29,7 +29,7 @@ import logging
 from typing import List, Dict, Any
 
 # Configuration
-BACKEND_URL = "https://service-revival-4.preview.emergentagent.com"
+BACKEND_URL = "https://ms-auth-connect.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user credentials

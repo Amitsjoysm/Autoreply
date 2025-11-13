@@ -25,7 +25,7 @@ import redis
 import os
 
 # Configuration - Use the correct backend URL from review request
-BACKEND_URL = "https://service-revival-4.preview.emergentagent.com"
+BACKEND_URL = "https://ms-auth-connect.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user credentials from review request
