@@ -76,7 +76,7 @@ async def create_calendar_event(
             detail=f"Conflict with {len(conflicts)} existing event(s)"
         )
     
-    # Create event in Google Calendar
+    # Create event in calendar provider (Google or Microsoft)
     event_dict = {
         'title': event_data.title,
         'description': event_data.description,
@@ -87,9 +87,15 @@ async def create_calendar_event(
         'attendees': event_data.attendees
     }
     
-    event_id = await calendar_service.create_event_google(provider, event_dict)
+    # Create event based on provider type
+    if provider.provider == 'google':
+        event_result = await calendar_service.create_event_google(provider, event_dict)
+    elif provider.provider == 'microsoft':
+        event_result = await calendar_service.create_event_outlook(provider, event_dict)
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported calendar provider: {provider.provider}")
     
-    if not event_id:
+    if not event_result:
         raise HTTPException(status_code=500, detail="Failed to create event")
     
     # Save to DB
