@@ -99,7 +99,7 @@ async def create_calendar_event(
         raise HTTPException(status_code=500, detail="Failed to create event")
     
     # Save to DB
-    event_dict['event_id'] = event_id
+    event_dict.update(event_result)  # Add event_id, meet_link, html_link from provider
     event = await calendar_service.save_event(user.id, provider.id, event_dict)
     
     return CalendarEventResponse(
