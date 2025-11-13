@@ -135,8 +135,12 @@ const CalendarProviders = () => {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                      <Calendar className="w-6 h-6 text-red-600" />
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                      provider.provider === 'google' ? 'bg-red-100' : 'bg-blue-100'
+                    }`}>
+                      <Calendar className={`w-6 h-6 ${
+                        provider.provider === 'google' ? 'text-red-600' : 'text-blue-600'
+                      }`} />
                     </div>
                     <div>
                       <CardTitle className="text-lg">{provider.email}</CardTitle>
@@ -145,7 +149,9 @@ const CalendarProviders = () => {
                           <CheckCircle2 className="w-3 h-3 mr-1" />
                           Connected
                         </Badge>
-                        <Badge variant="secondary">Google Calendar</Badge>
+                        <Badge variant="secondary">
+                          {provider.provider === 'google' ? 'Google Calendar' : 'Outlook Calendar'}
+                        </Badge>
                       </CardDescription>
                     </div>
                   </div>
