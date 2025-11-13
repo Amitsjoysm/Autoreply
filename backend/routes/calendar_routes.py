@@ -217,7 +217,13 @@ async def update_calendar_event(
         'attendees': event_data.attendees
     }
     
-    success = await calendar_service.update_event_google(provider, event_doc['event_id'], event_dict)
+    # Update event based on provider type
+    if provider.provider == 'google':
+        success = await calendar_service.update_event_google(provider, event_doc['event_id'], event_dict)
+    elif provider.provider == 'microsoft':
+        success = await calendar_service.update_event_outlook(provider, event_doc['event_id'], event_dict)
+    else:
+        raise HTTPException(status_code=400, detail=f"Unsupported calendar provider: {provider.provider}")
     
     if not success:
         raise HTTPException(status_code=500, detail="Failed to update event in calendar")
