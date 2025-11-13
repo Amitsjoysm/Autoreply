@@ -753,6 +753,9 @@ Your AI Email Assistant"""
         if account.account_type == 'oauth_gmail':
             result = await email_service.send_email_oauth_gmail(account, notification, email.thread_id)
             sent = result.get("success", False)
+        elif account.account_type == 'oauth_outlook':
+            result = await email_service.send_email_oauth_outlook(account, notification, email.thread_id)
+            sent = result.get("success", False)
         else:
             sent = await email_service.send_email_smtp(account, notification)
         
