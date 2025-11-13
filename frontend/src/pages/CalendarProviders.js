@@ -116,10 +116,16 @@ const CalendarProviders = () => {
             <p className="text-gray-600 text-center mb-4">
               Connect your calendar to enable AI-powered meeting detection and scheduling
             </p>
-            <Button onClick={handleConnectGoogle}>
-              <Plus className="w-4 h-4 mr-2" />
-              Connect Google Calendar
-            </Button>
+            <div className="flex gap-3">
+              <Button onClick={handleConnectGoogle} className="bg-red-600 hover:bg-red-700">
+                <Plus className="w-4 h-4 mr-2" />
+                Connect Google Calendar
+              </Button>
+              <Button onClick={handleConnectMicrosoft} className="bg-blue-600 hover:bg-blue-700">
+                <Plus className="w-4 h-4 mr-2" />
+                Connect Outlook Calendar
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ) : (
