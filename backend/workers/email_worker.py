@@ -401,7 +401,14 @@ async def process_email(email_id: str):
                     meeting_details['conflicts'] = conflict_details
                 
                 # Create event even if there are conflicts (user can resolve)
-                event_result = await calendar_service.create_event_google(provider, meeting_details)
+                # Create event based on provider type
+                if provider.provider == 'google':
+                    event_result = await calendar_service.create_event_google(provider, meeting_details)
+                elif provider.provider == 'microsoft':
+                    event_result = await calendar_service.create_event_outlook(provider, meeting_details)
+                else:
+                    logger.error(f"Unsupported calendar provider: {provider.provider}")
+                    event_result = None
                 
                 if event_result and event_result.get('event_id'):
                     # Update meeting details with Google Calendar info
