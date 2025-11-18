@@ -111,6 +111,48 @@ All intents have `auto_send: true` enabled:
    - Access control
    - Data retention policies
 
+### Inbound Leads (6 leads)
+
+Comprehensive lead pipeline with various stages and priorities:
+
+1. **Sarah Johnson** - TechCorp Solutions (QUALIFIED, High Priority)
+   - VP of Engineering, 200-500 employees
+   - Budget: $5000-10000/month for 50+ engineers
+   - Meeting scheduled ✅
+   - Score: 85/100
+
+2. **Michael Chen** - StartupXYZ (NEW, Urgent Priority)
+   - Founder & CEO, 10-50 employees
+   - Needs immediate solution, 2-week timeline
+   - Score: 70/100
+
+3. **Emily Rodriguez** - Marketing Pros Agency (CONTACTED, Medium Priority)
+   - Director of Operations, 50-200 employees
+   - Interested in HubSpot integration
+   - Score: 65/100
+
+4. **David Park** - Finance Group LLC (LOST)
+   - IT Manager, enterprise (500-1000 employees)
+   - Lost to competitor with existing contract
+   - Score: 45/100
+
+5. **Lisa Anderson** - Anderson Consulting (CONVERTED ✅)
+   - Managing Partner, 50-200 employees
+   - Contract signed: Business Plan, 40 users
+   - Score: 95/100
+
+6. **James Wilson** - Small Business Inc (NEW, Low Priority)
+   - Owner, 1-10 employees
+   - Budget-conscious, recommended Free Plan
+   - Score: 40/100
+
+**Lead Statistics**:
+- Stages: 2 New, 1 Contacted, 1 Qualified, 1 Converted, 1 Lost
+- Priorities: 1 Urgent, 2 High, 1 Medium, 2 Low
+- Meetings Scheduled: 2
+- Total Activities: 20 tracked actions
+- Conversion Rate: 1 out of 5 active leads (20%)
+
 ## ✅ Configuration Files
 
 ### Backend Environment (.env)
