@@ -248,6 +248,7 @@ All database collections verified:
 - ✅ Users: 1 record
 - ✅ Intents: 8 records
 - ✅ Knowledge Base: 7 records
+- ✅ Inbound Leads: 6 records
 - ✅ Collections properly indexed
 - ✅ All required fields present
 - ✅ Datetime fields in ISO string format (Pydantic compatible)
