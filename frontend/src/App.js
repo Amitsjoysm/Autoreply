@@ -37,6 +37,7 @@ const MainLayout = ({ children }) => {
   const [campaignExpanded, setCampaignExpanded] = useState(
     window.location.pathname.startsWith('/campaign')
   );
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
     setCurrentPath(window.location.pathname);
@@ -45,18 +46,13 @@ const MainLayout = ({ children }) => {
     }
   }, [window.location.pathname]);
 
+  // Main sidebar menu items - reorganized as per requirements
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
-    { path: '/profile', label: 'Profile', icon: User },
-    { path: '/settings', label: 'Settings', icon: SettingsIcon },
     { path: '/inbound-leads', label: 'Inbound Leads', icon: Target },
-    { path: '/calendar-providers', label: 'Calendar Providers', icon: Calendar },
+    { path: '/email-processing', label: 'Email Processing', icon: FileText },
     { path: '/calendar-events', label: 'Calendar Events', icon: CalendarDays },
     { path: '/meeting-detection', label: 'Meeting Detection', icon: Brain },
-    { path: '/intents', label: 'Intents', icon: Target },
-    { path: '/email-accounts', label: 'Email Accounts', icon: Mail },
-    { path: '/knowledge-base', label: 'Knowledge Base', icon: Database },
-    { path: '/email-processing', label: 'Email Processing', icon: FileText },
     { path: '/follow-ups', label: 'Follow-ups', icon: UserPlus },
     { path: '/live-monitoring', label: 'Live Monitoring', icon: Activity },
     { path: '/test-email', label: 'Test Email', icon: Zap },
@@ -67,6 +63,14 @@ const MainLayout = ({ children }) => {
     { path: '/campaign/contacts', label: 'Contacts', icon: Users },
     { path: '/campaign/lists', label: 'Contact Lists', icon: List },
     { path: '/campaign/templates', label: 'Templates', icon: FileText },
+  ];
+
+  // Profile dropdown menu items
+  const profileMenuItems = [
+    { path: '/email-accounts', label: 'Email Accounts', icon: Mail },
+    { path: '/calendar-providers', label: 'Calendar Providers', icon: Calendar },
+    { path: '/knowledge-base', label: 'Knowledge Base', icon: Database },
+    { path: '/intents', label: 'Intents', icon: Target },
   ];
 
   return (
