@@ -22,6 +22,22 @@ class API {
       },
       (error) => Promise.reject(error)
     );
+
+    // Handle 401 errors by clearing invalid tokens
+    this.axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          // Clear invalid token
+          localStorage.removeItem('token');
+          // Only redirect to login if not already on auth page
+          if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
+            window.location.href = '/';
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
   }
 
   // Auth
