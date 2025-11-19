@@ -15,6 +15,19 @@ class User(BaseModel):
     quota_reset_date: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    
+    # Role and permissions
+    role: str = "user"  # "user", "admin", "super_admin"
+    is_active: bool = True
+    
+    # HubSpot integration fields
+    hubspot_enabled: bool = False  # Admin grants access to use HubSpot
+    hubspot_connected: bool = False  # User has connected their HubSpot account
+    hubspot_access_token: Optional[str] = None
+    hubspot_refresh_token: Optional[str] = None
+    hubspot_token_expires_at: Optional[str] = None
+    hubspot_portal_id: Optional[str] = None  # HubSpot account ID
+    hubspot_auto_sync: bool = False  # Auto-sync leads to HubSpot
 
 class UserCreate(BaseModel):
     email: EmailStr
