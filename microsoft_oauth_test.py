@@ -12,7 +12,7 @@ TESTING COMPONENTS:
 4. Service Availability
 
 USER UNDER TEST: amits.joys@gmail.com / pass: ij@123
-BACKEND URL: https://campaign-autoflow.preview.emergentagent.com
+BACKEND URL: https://data-pusher.preview.emergentagent.com
 
 NOTE: This test does NOT test the actual OAuth callback flow or email fetching
 as those require browser interaction and valid Outlook account connection.
@@ -32,7 +32,7 @@ from typing import List, Dict, Any
 from urllib.parse import urlparse, parse_qs
 
 # Configuration
-BACKEND_URL = "https://campaign-autoflow.preview.emergentagent.com"
+BACKEND_URL = "https://data-pusher.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user credentials
