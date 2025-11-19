@@ -74,34 +74,102 @@ const MainLayout = ({ children }) => {
   ];
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gradient-to-b from-purple-900 to-purple-800 text-white flex flex-col">
-        {/* Logo */}
-        <div className="p-6 border-b border-purple-700">
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Top Navigation Bar */}
+      <header className="bg-white border-b border-gray-200 shadow-sm z-50">
+        <div className="flex items-center justify-between px-6 py-3">
+          {/* Logo and App Name */}
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg flex items-center justify-center">
-              <Mail className="w-6 h-6" />
+              <Mail className="w-6 h-6 text-white" />
             </div>
-            <span className="text-lg font-bold">Email Assistant</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+              Email Assistant
+            </span>
           </div>
-        </div>
 
-        {/* User Info */}
-        <div className="p-6 border-b border-purple-700">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-700 rounded-full flex items-center justify-center">
-              <User className="w-5 h-5" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium truncate">{user?.full_name || user?.email}</p>
-              <p className="text-xs text-purple-300 truncate">{user?.email}</p>
-            </div>
-          </div>
-          <div className="mt-3 text-xs text-purple-300">
-            Quota: {user?.quota_used || 0}/{user?.quota || 0}
+          {/* User Profile Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+              className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full flex items-center justify-center">
+                <User className="w-5 h-5 text-white" />
+              </div>
+              <div className="hidden md:block text-left">
+                <p className="text-sm font-medium text-gray-900">{user?.full_name || user?.email}</p>
+                <p className="text-xs text-gray-500">Quota: {user?.quota_used || 0}/{user?.quota || 0}</p>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${profileDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {/* Profile Dropdown Menu */}
+            {profileDropdownOpen && (
+              <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                <div className="px-4 py-2 border-b border-gray-200">
+                  <p className="text-sm font-medium text-gray-900">Settings</p>
+                </div>
+                {profileMenuItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        setCurrentPath(item.path);
+                      }}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  );
+                })}
+                <div className="border-t border-gray-200 mt-2 pt-2">
+                  <Link
+                    to="/profile"
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      setCurrentPath('/profile');
+                    }}
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Profile</span>
+                  </Link>
+                  <Link
+                    to="/settings"
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      setCurrentPath('/settings');
+                    }}
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                  >
+                    <SettingsIcon className="w-4 h-4" />
+                    <span>Settings</span>
+                  </Link>
+                  <button
+                    onClick={() => {
+                      setProfileDropdownOpen(false);
+                      logout();
+                    }}
+                    className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>Logout</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside className="w-64 bg-gradient-to-b from-purple-900 to-purple-800 text-white flex flex-col overflow-y-auto">
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-4">
