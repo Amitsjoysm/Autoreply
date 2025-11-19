@@ -63,7 +63,7 @@ async def create_super_admin():
     print(f"📧 Email: {admin_email}")
     print(f"🔑 Password: {admin_password}")
     print(f"👤 Role: super_admin")
-    print(f"🆔 User ID: {admin_data.get('id', 'generated')}")
+    print(f"🆔 User ID: {admin_id}")
     print("=" * 60)
     print("\n⚠️  IMPORTANT: Save these credentials securely!")
     print("   These are the only credentials with admin privileges.\n")
