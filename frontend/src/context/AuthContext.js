@@ -30,7 +30,10 @@ export const AuthProvider = ({ children }) => {
       setUser(profile);
     } catch (error) {
       console.error('Failed to load user:', error);
-      logout();
+      // Clear invalid token silently
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
     } finally {
       setLoading(false);
     }
