@@ -129,5 +129,11 @@ class AuthService:
             quota=user.quota,
             quota_used=user.quota_used,
             quota_reset_date=user.quota_reset_date,
-            created_at=user.created_at
+            created_at=user.created_at,
+            role=user.role,
+            is_active=user.is_active,
+            hubspot_enabled=user.hubspot_enabled,
+            hubspot_connected=user.hubspot_connected,
+            hubspot_portal_id=user.hubspot_portal_id,
+            hubspot_auto_sync=user.hubspot_auto_sync
         )
