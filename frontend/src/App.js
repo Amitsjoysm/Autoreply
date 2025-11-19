@@ -47,13 +47,15 @@ const MainLayout = ({ children }) => {
   }, [window.location.pathname]);
 
   // Main sidebar menu items - reorganized as per requirements
+  // Order: Dashboard, Campaigns (separate), Inbound Leads, Email Processing, etc.
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
+    // Campaigns section is rendered separately below with expandable submenu
     { path: '/inbound-leads', label: 'Inbound Leads', icon: Target },
     { path: '/email-processing', label: 'Email Processing', icon: FileText },
+    { path: '/follow-ups', label: 'Follow-ups', icon: UserPlus },
     { path: '/calendar-events', label: 'Calendar Events', icon: CalendarDays },
     { path: '/meeting-detection', label: 'Meeting Detection', icon: Brain },
-    { path: '/follow-ups', label: 'Follow-ups', icon: UserPlus },
     { path: '/live-monitoring', label: 'Live Monitoring', icon: Activity },
     { path: '/test-email', label: 'Test Email', icon: Zap },
   ];
