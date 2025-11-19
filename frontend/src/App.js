@@ -26,7 +26,8 @@ import '@/App.css';
 import {
   Mail, BarChart3, User, Calendar, CalendarDays, Brain, Target, 
   Database, FileText, UserPlus, Activity, Zap, LogOut, MessageSquare,
-  Users, Send, ChevronDown, ChevronRight, List, Settings as SettingsIcon
+  Users, Send, ChevronDown, ChevronRight, List, Settings as SettingsIcon,
+  Menu
 } from 'lucide-react';
 
 const MainLayout = ({ children }) => {
