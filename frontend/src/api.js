@@ -429,6 +429,75 @@ class API {
     const response = await this.axios.get('/leads/stats/summary');
     return response.data;
   }
+
+  // ============ HubSpot Integration API ============
+  
+  async startHubSpotOAuth() {
+    const token = localStorage.getItem('token');
+    const response = await this.axios.get('/hubspot/start-oauth', {
+      params: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  }
+
+  async getHubSpotStatus() {
+    const token = localStorage.getItem('token');
+    const response = await this.axios.get('/hubspot/status', {
+      params: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  }
+
+  async disconnectHubSpot() {
+    const token = localStorage.getItem('token');
+    const response = await this.axios.post('/hubspot/disconnect', {}, {
+      params: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  }
+
+  async syncLeadsToHubSpot(leadIds = null) {
+    const token = localStorage.getItem('token');
+    const response = await this.axios.post('/hubspot/sync-leads', { lead_ids: leadIds }, {
+      params: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
+  }
+
+  // Admin HubSpot APIs
+  async adminEnableHubSpotForUser(userId, reason = null) {
+    const token = localStorage.getItem('token');
+    const response = await this.axios.post(`/hubspot/admin/enable-for-user`, { reason }, {
+      params: { 
+        Authorization: `Bearer ${token}`,
+        target_user_id: userId 
+      }
+    });
+    return response.data;
+  }
+
+  async adminDisableHubSpotForUser(userId, reason) {
+    const token = localStorage.getItem('token');
+    const response = await this.axios.post(`/hubspot/admin/disable-for-user`, { reason }, {
+      params: { 
+        Authorization: `Bearer ${token}`,
+        target_user_id: userId 
+      }
+    });
+    return response.data;
+  }
+
+  async adminGetHubSpotConnections(skip = 0, limit = 100) {
+    const token = localStorage.getItem('token');
+    const response = await this.axios.get('/hubspot/admin/connections', {
+      params: { 
+        Authorization: `Bearer ${token}`,
+        skip,
+        limit 
+      }
+    });
+    return response.data;
+  }
 }
 
 export default new API();
