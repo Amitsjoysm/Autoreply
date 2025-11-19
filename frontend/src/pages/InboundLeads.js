@@ -180,6 +180,40 @@ const InboundLeads = () => {
             Track and manage your inbound sales leads
           </p>
         </div>
+        <div className="flex items-center gap-3">
+          {user?.hubspot_enabled && (
+            <>
+              {hubspotStatus?.connected ? (
+                <Button
+                  onClick={() => handleSyncToHubSpot()}
+                  disabled={syncing}
+                  className="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white flex items-center gap-2"
+                >
+                  {syncing ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      Syncing...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4" />
+                      Sync to HubSpot
+                    </>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={() => window.location.href = '/settings'}
+                  className="flex items-center gap-2"
+                >
+                  <LinkIcon className="w-4 h-4" />
+                  Connect HubSpot
+                </Button>
+              )}
+            </>
+          )}
+        </div>
       </div>
 
       {/* Stats Cards */}
