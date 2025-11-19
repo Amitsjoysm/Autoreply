@@ -38,7 +38,9 @@ async def create_super_admin():
     password_hash = bcrypt.hashpw(admin_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
     
     # Create super admin user
+    admin_id = str(uuid.uuid4())
     admin_data = {
+        "id": admin_id,  # UUID for JWT token
         "email": admin_email,
         "password_hash": password_hash,
         "full_name": "Super Admin",
