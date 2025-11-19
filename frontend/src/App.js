@@ -175,29 +175,31 @@ const MainLayout = ({ children }) => {
 
           {/* Navigation */}
           <nav className="flex-1 py-4">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = currentPath === item.path;
+            {/* Dashboard - First Item */}
+            {(() => {
+              const dashboardItem = menuItems[0];
+              const Icon = dashboardItem.icon;
+              const isActive = currentPath === dashboardItem.path;
               return (
                 <Link
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setCurrentPath(item.path)}
+                  key={dashboardItem.path}
+                  to={dashboardItem.path}
+                  onClick={() => setCurrentPath(dashboardItem.path)}
                   className={`flex items-center gap-3 px-6 py-3 transition-colors ${
                     isActive
                       ? 'bg-gradient-to-r from-pink-500 to-purple-500 border-l-4 border-white'
                       : 'hover:bg-purple-800/50'
                   }`}
-                  data-testid={`nav-${item.label.toLowerCase().replace(/ /g, '-')}`}
+                  data-testid={`nav-${dashboardItem.label.toLowerCase().replace(/ /g, '-')}`}
                 >
                   <Icon className="w-5 h-5" />
-                  <span className="text-sm">{item.label}</span>
+                  <span className="text-sm">{dashboardItem.label}</span>
                 </Link>
               );
-            })}
+            })()}
             
-            {/* Campaign Section */}
-            <div className="mt-2">
+            {/* Campaign Section - Second Item */}
+            <div>
               <button
                 onClick={() => setCampaignExpanded(!campaignExpanded)}
                 className="flex items-center justify-between w-full px-6 py-3 hover:bg-purple-800/50 transition-colors"
@@ -237,6 +239,28 @@ const MainLayout = ({ children }) => {
                 </div>
               )}
             </div>
+
+            {/* Rest of Menu Items */}
+            {menuItems.slice(1).map((item) => {
+              const Icon = item.icon;
+              const isActive = currentPath === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setCurrentPath(item.path)}
+                  className={`flex items-center gap-3 px-6 py-3 transition-colors ${
+                    isActive
+                      ? 'bg-gradient-to-r from-pink-500 to-purple-500 border-l-4 border-white'
+                      : 'hover:bg-purple-800/50'
+                  }`}
+                  data-testid={`nav-${item.label.toLowerCase().replace(/ /g, '-')}`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="text-sm">{item.label}</span>
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Footer */}
