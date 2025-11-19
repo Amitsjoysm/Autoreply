@@ -317,6 +317,9 @@ async def process_email(email_id: str):
                             await db.emails.update_one(
                                 {"id": email_id},
                                 {"$set": {
+                                    "intent_detected": intent_id,
+                                    "intent_name": intent_name,
+                                    "intent_confidence": intent_confidence,
                                     "status": "sent",
                                     "replied": True,
                                     "reply_sent_at": datetime.now(timezone.utc).isoformat(),
