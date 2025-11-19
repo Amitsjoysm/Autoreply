@@ -7,7 +7,7 @@ Successfully integrated Microsoft Outlook OAuth for both email and calendar func
 - **Client ID**: cee0150b-b839-4e47-b584-56a120cf7be7
 - **Client Secret**: eiq8Q~HbfgTim.YbpIEDkA1as9.v8edcfQvb0bXk
 - **Tenant ID**: cf93f5c7-89b8-4808-b550-b61a85422828
-- **Redirect URI**: https://codebase-sync-46.preview.emergentagent.com/api/oauth/microsoft/callback
+- **Redirect URI**: https://admin-login-portal-6.preview.emergentagent.com/api/oauth/microsoft/callback
 
 ## Implementation Details
 
@@ -266,7 +266,7 @@ For the Microsoft App Registration, ensure these permissions are configured:
 - `offline_access` - Maintain access to data
 
 **Redirect URIs:**
-- `https://codebase-sync-46.preview.emergentagent.com/api/oauth/microsoft/callback`
+- `https://admin-login-portal-6.preview.emergentagent.com/api/oauth/microsoft/callback`
 
 ## Success Metrics
 
