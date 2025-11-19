@@ -46,6 +46,18 @@ const MainLayout = ({ children }) => {
     }
   }, [window.location.pathname]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileDropdownOpen && !event.target.closest('.profile-dropdown-container')) {
+        setProfileDropdownOpen(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [profileDropdownOpen]);
+
   // Main sidebar menu items - reorganized as per requirements
   // Order: Dashboard, Campaigns (separate), Inbound Leads, Email Processing, etc.
   const menuItems = [
