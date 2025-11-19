@@ -71,6 +71,7 @@ from routes.campaign_template_routes import router as campaign_template_router
 from routes.campaign_routes import router as campaign_router
 from routes.contact_list_routes import router as contact_list_router
 from routes.lead_routes import router as lead_router
+from routes.hubspot_routes import router as hubspot_router
 
 # Include routers under /api prefix
 app.include_router(auth_router, prefix="/api")
