@@ -165,7 +165,7 @@ Comprehensive lead pipeline with various stages and priorities:
 - Emergent LLM key: Configured
 
 ### Frontend Environment (.env)
-- Backend URL: https://data-pusher.preview.emergentagent.com
+- Backend URL: https://codebase-sync-46.preview.emergentagent.com
 - WebSocket Port: 443
 
 ## ✅ Key Features Implemented
