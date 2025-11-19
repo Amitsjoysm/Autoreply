@@ -9,6 +9,7 @@ import Intents from './pages/Intents';
 import KnowledgeBase from './pages/KnowledgeBase';
 import EmailProcessing from './pages/EmailProcessing';
 import Profile from './pages/Profile';
+import Settings from './pages/Settings';
 import CalendarProviders from './pages/CalendarProviders';
 import CalendarEvents from './pages/CalendarEvents';
 import MeetingDetection from './pages/MeetingDetection';
