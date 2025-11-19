@@ -46,6 +46,12 @@ class UserResponse(BaseModel):
     quota_used: int
     quota_reset_date: str
     created_at: str
+    role: str
+    is_active: bool
+    hubspot_enabled: bool
+    hubspot_connected: bool
+    hubspot_portal_id: Optional[str]
+    hubspot_auto_sync: bool
 
 class TokenResponse(BaseModel):
     access_token: str
