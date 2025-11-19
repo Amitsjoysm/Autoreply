@@ -10,6 +10,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from models.user import User
 from datetime import datetime, timezone
 import bcrypt
+import uuid
 
 async def create_super_admin():
     """Create a super admin user"""
