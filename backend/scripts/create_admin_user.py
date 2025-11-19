@@ -19,7 +19,7 @@ async def create_admin_user():
     
     # Connect to MongoDB
     client = AsyncIOMotorClient(config.MONGO_URL)
-    db = client[config.MONGO_DB_NAME]
+    db = client[config.DB_NAME]
     
     # Admin credentials
     admin_email = "admin@emailassistant.com"
