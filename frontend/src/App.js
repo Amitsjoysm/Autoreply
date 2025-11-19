@@ -171,96 +171,85 @@ const MainLayout = ({ children }) => {
         {/* Sidebar */}
         <aside className="w-64 bg-gradient-to-b from-purple-900 to-purple-800 text-white flex flex-col overflow-y-auto">
 
-        {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentPath === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                onClick={() => setCurrentPath(item.path)}
-                className={`flex items-center gap-3 px-6 py-3 transition-colors ${
-                  isActive
-                    ? 'bg-gradient-to-r from-pink-500 to-purple-500 border-l-4 border-white'
-                    : 'hover:bg-purple-800/50'
-                }`}
-                data-testid={`nav-${item.label.toLowerCase().replace(/ /g, '-')}`}
+          {/* Navigation */}
+          <nav className="flex-1 py-4">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentPath === item.path;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setCurrentPath(item.path)}
+                  className={`flex items-center gap-3 px-6 py-3 transition-colors ${
+                    isActive
+                      ? 'bg-gradient-to-r from-pink-500 to-purple-500 border-l-4 border-white'
+                      : 'hover:bg-purple-800/50'
+                  }`}
+                  data-testid={`nav-${item.label.toLowerCase().replace(/ /g, '-')}`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="text-sm">{item.label}</span>
+                </Link>
+              );
+            })}
+            
+            {/* Campaign Section */}
+            <div className="mt-2">
+              <button
+                onClick={() => setCampaignExpanded(!campaignExpanded)}
+                className="flex items-center justify-between w-full px-6 py-3 hover:bg-purple-800/50 transition-colors"
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-sm">{item.label}</span>
-              </Link>
-            );
-          })}
-          
-          {/* Campaign Section */}
-          <div className="mt-2">
-            <button
-              onClick={() => setCampaignExpanded(!campaignExpanded)}
-              className="flex items-center justify-between w-full px-6 py-3 hover:bg-purple-800/50 transition-colors"
-            >
-              <div className="flex items-center gap-3">
-                <Send className="w-5 h-5" />
-                <span className="text-sm font-semibold">Campaigns</span>
-              </div>
-              {campaignExpanded ? (
-                <ChevronDown className="w-4 h-4" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
+                <div className="flex items-center gap-3">
+                  <Send className="w-5 h-5" />
+                  <span className="text-sm font-semibold">Campaigns</span>
+                </div>
+                {campaignExpanded ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </button>
+              {campaignExpanded && (
+                <div className="bg-purple-900/30">
+                  {campaignMenuItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = currentPath === item.path;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setCurrentPath(item.path)}
+                        className={`flex items-center gap-3 pl-12 pr-6 py-2.5 transition-colors text-sm ${
+                          isActive
+                            ? 'bg-gradient-to-r from-pink-500 to-purple-500 border-l-4 border-white'
+                            : 'hover:bg-purple-800/50'
+                        }`}
+                        data-testid={`nav-campaign-${item.label.toLowerCase()}`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
               )}
-            </button>
-            {campaignExpanded && (
-              <div className="bg-purple-900/30">
-                {campaignMenuItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = currentPath === item.path;
-                  return (
-                    <Link
-                      key={item.path}
-                      to={item.path}
-                      onClick={() => setCurrentPath(item.path)}
-                      className={`flex items-center gap-3 pl-12 pr-6 py-2.5 transition-colors text-sm ${
-                        isActive
-                          ? 'bg-gradient-to-r from-pink-500 to-purple-500 border-l-4 border-white'
-                          : 'hover:bg-purple-800/50'
-                      }`}
-                      data-testid={`nav-campaign-${item.label.toLowerCase()}`}
-                    >
-                      <Icon className="w-4 h-4" />
-                      <span>{item.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
+            </div>
+          </nav>
+
+          {/* Footer */}
+          <div className="p-4 text-xs text-purple-300 text-center border-t border-purple-700">
+            Made by DevDay
           </div>
-        </nav>
+        </aside>
 
-        {/* Logout */}
-        <div className="p-4 border-t border-purple-700">
-          <button
-            onClick={logout}
-            data-testid="logout-btn"
-            className="flex items-center gap-3 w-full px-4 py-3 rounded-lg hover:bg-purple-800/50 transition-colors text-sm"
-          >
-            <LogOut className="w-5 h-5" />
-            <span>Logout</span>
-          </button>
-        </div>
-
-        {/* Footer */}
-        <div className="p-4 text-xs text-purple-300 text-center border-t border-purple-700">
-          Made by DevDay
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
-          {children}
-        </div>
-      </main>
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto">
+          <div className="p-8">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
 };
