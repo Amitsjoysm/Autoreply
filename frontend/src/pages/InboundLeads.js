@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 import API from '../api';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
@@ -9,16 +10,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { toast } from 'sonner';
 import { 
   UserPlus, Building2, Mail, Phone, Briefcase, ChevronRight,
-  Filter, Search, TrendingUp, Calendar, Activity, Target
+  Filter, Search, TrendingUp, Calendar, Activity, Target, RefreshCw, Link as LinkIcon
 } from 'lucide-react';
 
 const InboundLeads = () => {
+  const { user } = useAuth();
   const [leads, setLeads] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedLead, setSelectedLead] = useState(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [hubspotStatus, setHubspotStatus] = useState(null);
   
   // Filters
   const [filters, setFilters] = useState({
