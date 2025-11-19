@@ -103,7 +103,7 @@ const MainLayout = ({ children }) => {
           </div>
 
           {/* User Profile Dropdown */}
-          <div className="relative">
+          <div className="relative profile-dropdown-container">
             <button
               onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
               className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors"
