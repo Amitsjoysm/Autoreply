@@ -34,7 +34,39 @@ const InboundLeads = () => {
   useEffect(() => {
     loadLeads();
     loadStats();
+    loadHubSpotStatus();
   }, [filters]);
+
+  const loadHubSpotStatus = async () => {
+    try {
+      const status = await API.getHubSpotStatus();
+      setHubspotStatus(status);
+    } catch (error) {
+      console.error('Failed to load HubSpot status:', error);
+    }
+  };
+
+  const handleSyncToHubSpot = async (leadIds = null) => {
+    if (!user.hubspot_connected) {
+      toast.error('Please connect your HubSpot account in Settings first');
+      return;
+    }
+
+    setSyncing(true);
+    try {
+      const response = await API.syncLeadsToHubSpot(leadIds);
+      toast.success(response.message || 'Sync started successfully');
+      
+      // Reload leads after a few seconds to show updated sync status
+      setTimeout(() => {
+        loadLeads();
+      }, 3000);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to sync leads to HubSpot');
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const loadLeads = async () => {
     try {
