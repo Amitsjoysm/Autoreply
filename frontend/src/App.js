@@ -232,6 +232,16 @@ function App() {
             }
           />
           <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <Settings />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/calendar-providers"
             element={
               <ProtectedRoute>
