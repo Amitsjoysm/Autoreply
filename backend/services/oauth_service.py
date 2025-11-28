@@ -41,7 +41,7 @@ class OAuthService:
         return f"https://login.microsoftonline.com/{config.MICROSOFT_TENANT_ID}/oauth2/v2.0/authorize?{urlencode(params)}"
     
     async def exchange_google_code(self, code: str) -> Optional[Dict]:
-        """Exchange Google authorization code for tokens"""
+        """Exchange Google authorization code for tokens - uses dynamic redirect URI"""
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
@@ -50,7 +50,7 @@ class OAuthService:
                         'code': code,
                         'client_id': config.GOOGLE_CLIENT_ID,
                         'client_secret': config.GOOGLE_CLIENT_SECRET,
-                        'redirect_uri': config.GOOGLE_REDIRECT_URI,
+                        'redirect_uri': config.get_dynamic_redirect_uri('google'),
                         'grant_type': 'authorization_code'
                     }
                 )
