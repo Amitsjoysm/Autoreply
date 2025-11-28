@@ -75,7 +75,7 @@ class OAuthService:
             return None
     
     async def exchange_microsoft_code(self, code: str) -> Optional[Dict]:
-        """Exchange Microsoft authorization code for tokens"""
+        """Exchange Microsoft authorization code for tokens - uses dynamic redirect URI"""
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
@@ -84,7 +84,7 @@ class OAuthService:
                         'code': code,
                         'client_id': config.MICROSOFT_CLIENT_ID,
                         'client_secret': config.MICROSOFT_CLIENT_SECRET,
-                        'redirect_uri': config.MICROSOFT_REDIRECT_URI,
+                        'redirect_uri': config.get_dynamic_redirect_uri('microsoft'),
                         'grant_type': 'authorization_code'
                     }
                 )
