@@ -29,10 +29,10 @@ class OAuthService:
         return f"https://accounts.google.com/o/oauth2/v2/auth?{urlencode(params)}"
     
     def get_microsoft_auth_url(self, state: str) -> str:
-        """Get Microsoft OAuth authorization URL"""
+        """Get Microsoft OAuth authorization URL - uses dynamic redirect URI"""
         params = {
             'client_id': config.MICROSOFT_CLIENT_ID,
-            'redirect_uri': config.MICROSOFT_REDIRECT_URI,
+            'redirect_uri': config.get_dynamic_redirect_uri('microsoft'),
             'response_type': 'code',
             'scope': 'openid email https://graph.microsoft.com/User.Read https://graph.microsoft.com/Mail.Read https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/Calendars.ReadWrite offline_access',
             'state': state,
