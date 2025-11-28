@@ -214,18 +214,18 @@ class EmailFormatter:
         return html_version, plain_version
     
     @staticmethod
-    def format_plain_text(draft_text: str, signature: Optional[str] = None, max_line_width: int = 72) -> str:
+    def format_plain_text(draft_text: str, signature: Optional[str] = None, max_line_width: int = 998) -> str:
         """
         Format plain text email with proper paragraphs, spacing, and line breaks
-        Uses text wrapping to prevent text appearing to one side in email clients
+        Uses wider line width (998 chars) per RFC 5322 for better display in modern email clients
         
         Args:
             draft_text: Plain text draft
             signature: Optional signature
-            max_line_width: Maximum characters per line (default 72 for email compatibility)
+            max_line_width: Maximum characters per line (default 998 per RFC 5322)
             
         Returns:
-            Well-formatted plain text email
+            Well-formatted plain text email with proper paragraph breaks
         """
         import textwrap
         
