@@ -165,7 +165,7 @@ Comprehensive lead pipeline with various stages and priorities:
 - Emergent LLM key: Configured
 
 ### Frontend Environment (.env)
-- Backend URL: https://admin-login-portal-6.preview.emergentagent.com
+- Backend URL: https://oauth-debug-setup.preview.emergentagent.com
 - WebSocket Port: 443
 
 ## ✅ Key Features Implemented
