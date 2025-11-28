@@ -19,9 +19,13 @@ class Config:
     JWT_ALGORITHM = 'HS256'
     JWT_EXPIRATION_HOURS = 24 * 7  # 7 days
     
+    # Dynamic APP_URL (for Codespaces or other environments)
+    APP_URL = os.environ.get('APP_URL', '')
+    
     # Google OAuth
     GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
     GOOGLE_CLIENT_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET', '')
+    # Use APP_URL if available, otherwise use GOOGLE_REDIRECT_URI from .env
     GOOGLE_REDIRECT_URI = os.environ.get('GOOGLE_REDIRECT_URI', 'http://localhost:3000/oauth/google/callback')
     
     # Microsoft OAuth
@@ -29,6 +33,19 @@ class Config:
     MICROSOFT_CLIENT_SECRET = os.environ.get('MICROSOFT_CLIENT_SECRET', '')
     MICROSOFT_TENANT_ID = os.environ.get('MICROSOFT_TENANT_ID', 'common')
     MICROSOFT_REDIRECT_URI = os.environ.get('MICROSOFT_REDIRECT_URI', 'http://localhost:3000/oauth/microsoft/callback')
+    
+    @staticmethod
+    def get_dynamic_redirect_uri(provider: str = 'google') -> str:
+        """Get dynamic redirect URI based on APP_URL if available"""
+        # If APP_URL is set, use it for OAuth redirects (for Codespaces)
+        if Config.APP_URL:
+            return f"{Config.APP_URL}/api/oauth/{provider}/callback"
+        # Otherwise use the configured redirect URI
+        if provider == 'google':
+            return Config.GOOGLE_REDIRECT_URI
+        elif provider == 'microsoft':
+            return Config.MICROSOFT_REDIRECT_URI
+        return ''
     
     # AI APIs
     GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
