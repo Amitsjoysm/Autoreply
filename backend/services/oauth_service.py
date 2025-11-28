@@ -16,10 +16,10 @@ class OAuthService:
         self.db = db
     
     def get_google_auth_url(self, state: str) -> str:
-        """Get Google OAuth authorization URL"""
+        """Get Google OAuth authorization URL - uses dynamic redirect URI"""
         params = {
             'client_id': config.GOOGLE_CLIENT_ID,
-            'redirect_uri': config.GOOGLE_REDIRECT_URI,
+            'redirect_uri': config.get_dynamic_redirect_uri('google'),
             'response_type': 'code',
             'scope': 'openid email https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/gmail.send https://www.googleapis.com/auth/calendar',
             'access_type': 'offline',
