@@ -262,10 +262,20 @@ class EmailService:
                 
                 service = build('gmail', 'v1', credentials=creds)
                 
-                # Create multipart message - PLAIN TEXT ONLY
+                # Create multipart message with proper threading headers
                 message = MIMEMultipart('alternative')
                 message['to'] = ', '.join(email_data.to_email)
                 message['subject'] = email_data.subject
+                
+                # Add threading headers for proper conversation grouping
+                if reply_to_message_id:
+                    message['In-Reply-To'] = reply_to_message_id
+                    logger.info(f"Setting In-Reply-To header: {reply_to_message_id}")
+                
+                if references:
+                    # References should include all previous message IDs in the thread
+                    message['References'] = ' '.join(references)
+                    logger.info(f"Setting References header with {len(references)} message IDs")
                 
                 if email_data.cc:
                     message['cc'] = ', '.join(email_data.cc)
