@@ -164,6 +164,7 @@ class CampaignContactService:
                     await self.repository.create(contact.model_dump())
                     result["success_count"] += 1
                     result["contact_ids"].append(contact.id)
+                    result["imported_ids"].append(contact.id)  # Alias for frontend
                     
                 except Exception as e:
                     logger.error(f"Error processing row {row_num}: {e}")
