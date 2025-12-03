@@ -76,7 +76,7 @@ class EmailFormatter:
             sig_html += '</div></div>'
             html_parts.append(sig_html)
         
-        # Wrap everything in a nice container with table-based layout for better email client compatibility
+        # Wrap everything in a responsive container that works in all email clients
         html = f"""
 <!DOCTYPE html>
 <html>
@@ -84,20 +84,12 @@ class EmailFormatter:
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0; padding: 20px 0; background-color: #f5f5f5;">
-        <tr>
-            <td align="center">
-                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; padding: 30px; border-radius: 8px; max-width: 600px;">
-                    <tr>
-                        <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
-                            {''.join(html_parts)}
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+    <div style="max-width: 100%; padding: 20px; margin: 0; box-sizing: border-box;">
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.6; color: #333;">
+            {''.join(html_parts)}
+        </div>
+    </div>
 </body>
 </html>
 """
