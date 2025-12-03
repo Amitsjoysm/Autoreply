@@ -188,9 +188,9 @@ RESPONSE FORMAT:
             keywords=intent_data["keywords"],
             priority=intent_data["priority"],
             auto_send=intent_data["auto_send"],
-            is_lead=intent_data["is_lead"],
+            is_inbound_lead=intent_data["is_lead"],
             is_default=intent_data["is_default"],
-            ai_prompt=intent_data["ai_prompt"],
+            prompt=intent_data["ai_prompt"],
             is_active=True,
             created_at=datetime.now(timezone.utc).isoformat()
         )
