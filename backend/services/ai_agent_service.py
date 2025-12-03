@@ -374,7 +374,8 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
         thread_context: List[Dict] = None,
         validation_issues: List[str] = None,
         calendar_event = None,
-        follow_up_context: Optional[Dict] = None
+        follow_up_context: Optional[Dict] = None,
+        meeting_info: Optional[Dict] = None
     ) -> Tuple[str, int]:
         """
         Generate email draft using Groq LLM with full context
