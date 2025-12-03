@@ -136,11 +136,13 @@ class EmailService:
                 
                 # Extract thread information
                 thread_id = message.get('threadId')
+                message_id_header = headers.get('Message-ID') or headers.get('Message-Id')  # RFC Message-ID header
                 in_reply_to = headers.get('In-Reply-To')
                 references = headers.get('References', '').split() if headers.get('References') else []
                 
                 emails.append({
-                    'message_id': message['id'],
+                    'provider_message_id': message['id'],  # Gmail's internal ID
+                    'message_id': message_id_header or message['id'],  # RFC Message-ID or fallback to Gmail ID
                     'thread_id': thread_id,
                     'in_reply_to': in_reply_to,
                     'references': references,
