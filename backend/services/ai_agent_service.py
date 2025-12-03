@@ -538,20 +538,59 @@ Generate a follow-up message based on the conversation history above.
 Reference the original request and provide a helpful check-in or update.
 """
         else:
+            # Check if this is a meeting confirmation (simple yes/confirmation in thread with meeting discussion)
+            is_meeting_confirmation = False
+            if thread_context and len(thread_context) > 0:
+                # Check if previous messages discussed meetings
+                prev_discussed_meeting = any('meeting' in str(msg.get('body', '')).lower() or 
+                                            'call' in str(msg.get('body', '')).lower() or
+                                            'schedule' in str(msg.get('body', '')).lower()
+                                            for msg in thread_context)
+                # Check if current email is short confirmation
+                email_body_lower = email.body.lower().strip()
+                is_confirmation = any(phrase in email_body_lower for phrase in [
+                    'yes', 'works for me', 'sounds good', 'perfect', 'confirmed', 
+                    'that works', 'ok', 'okay', 'sure', 'great'
+                ])
+                is_meeting_confirmation = prev_discussed_meeting and is_confirmation and len(email.body.strip()) < 150
+            
             prompt += f"""CURRENT EMAIL TO RESPOND TO:
 From: {email.from_email}
 To: {', '.join(email.to_email)}
 Subject: {email.subject}
 Body:
 {email.body}
+"""
+            
+            if is_meeting_confirmation and calendar_event:
+                prompt += """
+🎯 SPECIAL CASE: MEETING TIME CONFIRMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The user has confirmed the meeting time. Calendar event has been created.
 
+YOUR RESPONSE MUST:
+1. Start with personalized greeting
+2. Thank them for confirming
+3. Confirm the meeting details (date, time, location/Meet link)
+4. Mention calendar invite has been sent
+5. Express enthusiasm about the meeting
+6. Keep it warm but brief (100-150 words)
+
+Example response structure:
+"Hi [Name],
+
+Perfect! I've confirmed our meeting for [date] at [time]. I've sent you a calendar invite with the Google Meet link.
+
+Looking forward to our discussion!"""
+                
+            prompt += """
 Generate a professional, helpful email response.
 
 CRITICAL REQUIREMENTS:
 1. ALWAYS start with a personalized greeting using the sender's name (e.g., "Hi John," or "Hello Sarah,")
    - Extract name from email address if full name not available
    - Use first name only for informal/friendly tone
-2. Keep response SHORT and CONCISE: 150-200 words MAXIMUM
+2. Keep response SHORT and CONCISE: 100-200 words MAXIMUM
    - Get straight to the point
    - One main paragraph for the core message
    - Optional second paragraph only if absolutely necessary
