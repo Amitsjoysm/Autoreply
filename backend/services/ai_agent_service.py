@@ -543,15 +543,22 @@ CRITICAL REQUIREMENTS:
 1. ALWAYS start with a personalized greeting using the sender's name (e.g., "Hi John," or "Hello Sarah,")
    - Extract name from email address if full name not available
    - Use first name only for informal/friendly tone
-2. Be natural, warm, and professional
-3. Use knowledge base information for accurate responses
-4. Reference conversation context when replying to threads
-5. DO NOT include:
+2. Keep response SHORT and CONCISE: 150-200 words MAXIMUM
+   - Get straight to the point
+   - One main paragraph for the core message
+   - Optional second paragraph only if absolutely necessary
+3. Be natural, warm, and professional
+4. Use knowledge base information for accurate responses
+5. Reference conversation context when replying to threads
+6. DO NOT include:
    - Subject lines
    - Email signatures (handled separately)
    - Closing phrases like "Best regards" or "Sincerely" (handled by signature)
+   - Excessive explanations or details
 
-Focus on helpful, contextual body content with proper personalized greeting."""
+WORD COUNT: Aim for 100-150 words. Never exceed 200 words.
+
+Focus on helpful, concise, contextual response with proper personalized greeting."""
         
         return prompt
     
