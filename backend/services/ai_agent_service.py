@@ -415,7 +415,7 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
                 system_message=system_message,
                 user_message=prompt,
                 temperature=0.7,
-                max_tokens=800
+                max_tokens=300  # Reduced from 800 to enforce 150-200 word limit
             )
             
             draft = result.strip()
