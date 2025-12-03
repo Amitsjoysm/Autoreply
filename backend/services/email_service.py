@@ -287,8 +287,13 @@ class EmailService:
                 signature = account.signature if hasattr(account, 'signature') and account.signature else None
                 html_body, plain_body = EmailFormatter.create_html_and_plain(email_data.body, signature)
                 
-                # Attach ONLY plain text (as requested by user)
-                message.attach(MIMEText(plain_body, 'plain'))
+                # Attach both HTML and plain text for better client compatibility
+                # Plain text first (for simple email clients)
+                message.attach(MIMEText(plain_body, 'plain', 'utf-8'))
+                # HTML second (modern email clients will prefer this)
+                message.attach(MIMEText(html_body, 'html', 'utf-8'))
+                
+                logger.info(f"Email prepared: plain_text={len(plain_body)} chars, html={len(html_body)} chars")
                 
                 raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode('utf-8')
                 
