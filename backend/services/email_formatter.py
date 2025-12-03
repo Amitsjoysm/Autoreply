@@ -214,133 +214,37 @@ class EmailFormatter:
         return html_version, plain_version
     
     @staticmethod
-    def format_plain_text(draft_text: str, signature: Optional[str] = None, max_line_width: int = 72) -> str:
+    def format_plain_text(draft_text: str, signature: Optional[str] = None) -> str:
         """
-        Format plain text email with proper paragraphs, spacing, and line breaks
-        Uses standard 72 character line width for optimal display across all email clients
+        Format plain text email - NO LINE WRAPPING
+        Let email client handle natural text flow for proper display
         
         Args:
             draft_text: Plain text draft
             signature: Optional signature
-            max_line_width: Maximum characters per line (default 72 for universal compatibility)
             
         Returns:
-            Well-formatted plain text email with proper paragraph breaks
+            Plain text email with paragraph breaks, no forced line wrapping
         """
-        import textwrap
-        
-        lines = draft_text.split('\n')
+        # Simply preserve paragraphs, no wrapping
+        lines = draft_text.strip().split('\n')
         formatted_lines = []
-        current_paragraph = []
         
         for line in lines:
-            stripped = line.strip()
-            
-            # Empty line indicates paragraph break
-            if not stripped:
-                if current_paragraph:
-                    # Join current paragraph and wrap it
-                    paragraph_text = ' '.join(current_paragraph)
-                    wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
-                    formatted_lines.append(wrapped)
-                    current_paragraph = []
-                    # Add blank line for paragraph spacing
-                    formatted_lines.append('')
-            else:
-                # Check if it's a heading (all caps, or starts with special markers)
-                if EmailFormatter._is_plain_text_heading(stripped):
-                    # Flush current paragraph
-                    if current_paragraph:
-                        paragraph_text = ' '.join(current_paragraph)
-                        wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
-                        formatted_lines.append(wrapped)
-                        current_paragraph = []
-                        formatted_lines.append('')
-                    
-                    # Add heading with spacing
-                    formatted_lines.append(stripped)
-                    formatted_lines.append('')
-                
-                # Check if it's a list item
-                elif EmailFormatter._is_plain_text_list_item(stripped):
-                    # Flush current paragraph
-                    if current_paragraph:
-                        paragraph_text = ' '.join(current_paragraph)
-                        wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
-                        formatted_lines.append(wrapped)
-                        current_paragraph = []
-                        formatted_lines.append('')
-                    
-                    # Wrap list item with hanging indent
-                    wrapped = textwrap.fill(stripped, width=max_line_width, subsequent_indent='  ', break_long_words=False, break_on_hyphens=False)
-                    formatted_lines.append(wrapped)
-                
-                # Check if it's a separator
-                elif re.match(r'^[=━\-]{3,}$', stripped):
-                    # Flush current paragraph
-                    if current_paragraph:
-                        paragraph_text = ' '.join(current_paragraph)
-                        wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
-                        formatted_lines.append(wrapped)
-                        current_paragraph = []
-                        formatted_lines.append('')
-                    
-                    formatted_lines.append('-' * min(len(stripped), max_line_width))
-                    formatted_lines.append('')
-                
-                # Check if line contains key-value pairs (like meeting details)
-                elif ':' in stripped and len(stripped) < 100:
-                    # Flush current paragraph
-                    if current_paragraph:
-                        paragraph_text = ' '.join(current_paragraph)
-                        wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
-                        formatted_lines.append(wrapped)
-                        current_paragraph = []
-                        formatted_lines.append('')
-                    
-                    # Wrap key-value line with hanging indent for long values
-                    if len(stripped) > max_line_width:
-                        parts = stripped.split(':', 1)
-                        if len(parts) == 2:
-                            key, value = parts
-                            wrapped = textwrap.fill(stripped, width=max_line_width, subsequent_indent=' ' * (len(key) + 2), break_long_words=False, break_on_hyphens=False)
-                            formatted_lines.append(wrapped)
-                        else:
-                            formatted_lines.append(stripped[:max_line_width])
-                    else:
-                        formatted_lines.append(stripped)
-                
-                # Regular text - add to current paragraph
-                else:
-                    current_paragraph.append(stripped)
-        
-        # Flush remaining paragraph
-        if current_paragraph:
-            paragraph_text = ' '.join(current_paragraph)
-            wrapped = textwrap.fill(paragraph_text, width=max_line_width, break_long_words=False, break_on_hyphens=False)
-            formatted_lines.append(wrapped)
+            # Keep the line as-is, just trim excessive whitespace
+            formatted_lines.append(line.rstrip())
         
         # Join all lines
         plain_version = '\n'.join(formatted_lines)
         
-        # Remove excessive blank lines (more than 2 consecutive)
+        # Clean up excessive blank lines (more than 2 consecutive)
+        import re
         plain_version = re.sub(r'\n{3,}', '\n\n', plain_version)
         
         # Add signature if provided
         if signature:
-            # Ensure clean separation before signature
             plain_version = plain_version.rstrip()
-            # Wrap signature lines too
-            sig_lines = signature.split('\n')
-            wrapped_sig_lines = []
-            for sig_line in sig_lines:
-                if sig_line.strip():
-                    if len(sig_line) > max_line_width:
-                        wrapped = textwrap.fill(sig_line, width=max_line_width, break_long_words=False, break_on_hyphens=False)
-                        wrapped_sig_lines.append(wrapped)
-                    else:
-                        wrapped_sig_lines.append(sig_line)
-            plain_version += f"\n\n{chr(10).join(wrapped_sig_lines)}"
+            plain_version += f"\n\n{signature.strip()}"
         
         return plain_version.strip()
     
