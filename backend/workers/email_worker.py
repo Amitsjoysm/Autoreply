@@ -359,12 +359,16 @@ async def process_email(email_id: str):
             "updated_at": datetime.now(timezone.utc).isoformat()
         }
         
-        # Step 3: If meeting detected, create calendar event and send notification
+        # Step 3: If meeting detected with HIGH confidence (>= 0.8), create calendar event
+        # Lower confidence means time needs confirmation - draft will ask for it
         event_created = None
         has_conflict = False
         conflict_details = []
         
-        if is_meeting and meeting_confidence >= config.MEETING_CONFIDENCE_THRESHOLD and meeting_details:
+        if is_meeting and meeting_confidence >= 0.8 and meeting_details:
+            # High confidence means time is confirmed - create event
+            logger.info(f"Meeting confirmed with high confidence ({meeting_confidence}), creating calendar event")
+            
             provider_doc = await db.calendar_providers.find_one({
                 "user_id": email.user_id,
                 "is_active": True
