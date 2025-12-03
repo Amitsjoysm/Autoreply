@@ -157,6 +157,64 @@ const ContactLists = () => {
     }
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'text/csv') {
+      setCsvFile(file);
+    } else {
+      toast.error('Please select a valid CSV file');
+      e.target.value = null;
+    }
+  };
+
+  const handleBulkUploadToList = async () => {
+    if (!csvFile) {
+      toast.error('Please select a CSV file');
+      return;
+    }
+
+    if (!currentList) {
+      toast.error('No list selected');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      // First upload contacts
+      const result = await API.bulkUploadCampaignContacts(csvFile);
+      toast.success(`Successfully imported ${result.success_count} contacts`);
+      
+      if (result.error_count > 0) {
+        toast.warning(`${result.error_count} contacts failed to import`);
+      }
+
+      // Then add all new contacts to the list
+      if (result.imported_ids && result.imported_ids.length > 0) {
+        await API.addContactsToList(currentList.id, result.imported_ids);
+        toast.success(`Added ${result.imported_ids.length} contacts to list`);
+      }
+
+      setBulkUploadDialogOpen(false);
+      setCsvFile(null);
+      await loadListContacts(currentList.id);
+      loadContacts();
+      loadLists();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to upload contacts');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      await API.downloadCampaignContactTemplate();
+      toast.success('Template downloaded successfully');
+    } catch (error) {
+      toast.error('Failed to download template');
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
