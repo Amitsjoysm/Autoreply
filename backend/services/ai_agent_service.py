@@ -495,6 +495,33 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
         # Add calendar event info
         if calendar_event:
             prompt += self._format_calendar_event(calendar_event)
+        # Add meeting detection info (when meeting detected but event not yet created)
+        elif meeting_info and meeting_info.get('detected') and not meeting_info.get('event_created'):
+            confidence = meeting_info.get('confidence', 0.0)
+            details = meeting_info.get('details', {})
+            
+            if confidence >= 0.5:
+                # Meeting detected but needs confirmation
+                prompt += f"""
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📅 MEETING REQUEST DETECTED - TIME CONFIRMATION NEEDED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Confidence: {confidence:.1f} (Medium - needs explicit confirmation)
+Suggested Time: {details.get('start_time', 'Not specified')}
+Title: {details.get('title', 'Meeting')}
+
+IMPORTANT: DO NOT create calendar event yet!
+Your response should:
+1. Acknowledge the meeting request warmly
+2. If time was suggested: Ask "Would [time] work for you? Please confirm."
+3. If time not clear: Ask "What date and time would work best for you?"
+4. Let them know calendar invite will be sent once they confirm
+5. Mention you'll check for any scheduling conflicts
+
+Once user explicitly confirms the time, the system will automatically create the calendar event.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+"""
         
         # Add current email
         if follow_up_context and follow_up_context.get('is_automated_followup'):
