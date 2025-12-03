@@ -83,13 +83,13 @@ campaign_worker  RUNNING   pid 1027
 
 **Example:**
 ```
-Current Codespace: https://0f56d502-bf7d-462d-a011-a19d46bcab75.preview.emergentagent.com
-Dynamic Redirect URI: https://0f56d502-bf7d-462d-a011-a19d46bcab75.preview.emergentagent.com/api/oauth/google/callback
+Current Codespace: https://sync-redis-fix.preview.emergentagent.com
+Dynamic Redirect URI: https://sync-redis-fix.preview.emergentagent.com/api/oauth/google/callback
 ```
 
 **Important Note for Google Console:**
 You need to add the following redirect URIs to your Google OAuth app:
-- `https://*.preview.emergentagent.com/api/oauth/google/callback` (wildcard for all Codespaces)
+- `https://sync-redis-fix.preview.emergentagent.com/api/oauth/google/callback` (wildcard for all Codespaces)
 - OR add each specific Codespace URL when testing
 
 ---
@@ -283,7 +283,7 @@ tail -f /var/log/supervisor/campaign_worker.out.log
 1. **For Google OAuth to work in Codespaces**, add this to Google Console:
    - Go to Google Cloud Console → APIs & Services → Credentials
    - Edit your OAuth 2.0 Client ID
-   - Add redirect URI: `https://*.preview.emergentagent.com/api/oauth/google/callback`
+   - Add redirect URI: `https://sync-redis-fix.preview.emergentagent.com/api/oauth/google/callback`
    - OR add the specific Codespace URL shown in `APP_URL`
 
 ### Using the System

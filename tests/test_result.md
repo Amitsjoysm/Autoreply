@@ -542,7 +542,7 @@ backend:
              - JWT authentication: ✅ Properly validates Bearer token
              - OAuth URL validation: ✅ Contains all required components:
                * Google OAuth endpoint: accounts.google.com
-               * Correct redirect_uri: https://oauth-debug-setup.preview.emergentagent.com/api/oauth/google/callback
+               * Correct redirect_uri: https://sync-redis-fix.preview.emergentagent.com/api/oauth/google/callback
                * Required Gmail scopes: gmail.readonly, gmail.send, calendar
                * State parameter: ✅ Generated and returned
                * Access type: offline (for refresh tokens)
