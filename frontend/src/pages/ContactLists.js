@@ -8,7 +8,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '../components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Trash2, Edit, Users, List, Search, UserPlus, UserMinus } from 'lucide-react';
+import { Plus, Trash2, Edit, Users, List, Search, UserPlus, UserMinus, Upload, Download } from 'lucide-react';
 
 const ContactLists = () => {
   const [lists, setLists] = useState([]);
