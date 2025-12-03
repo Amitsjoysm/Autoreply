@@ -233,8 +233,15 @@ class EmailService:
             logger.error(f"IMAP sync error: {e}")
             return []
     
-    async def send_email_oauth_gmail(self, account: EmailAccount, email_data: EmailSend, thread_id: Optional[str] = None) -> dict:
-        """Send email using Gmail API with thread support
+    async def send_email_oauth_gmail(self, account: EmailAccount, email_data: EmailSend, thread_id: Optional[str] = None, reply_to_message_id: Optional[str] = None, references: Optional[List[str]] = None) -> dict:
+        """Send email using Gmail API with proper thread support
+        
+        Args:
+            account: Email account to send from
+            email_data: Email data to send
+            thread_id: Gmail thread ID to continue conversation
+            reply_to_message_id: Message-ID header from original email (for In-Reply-To)
+            references: List of Message-IDs from conversation (for References header)
         
         Returns:
             dict with keys: success (bool), email_id (str), thread_id (str)
