@@ -501,7 +501,21 @@ Subject: {email.subject}
 Body:
 {email.body}
 
-Generate a professional email response. Only include the body text - no subject line, no greetings like "Dear [Name]" unless it's a formal business context. Be natural, helpful, and use the knowledge base to provide accurate information."""
+Generate a professional, helpful email response.
+
+CRITICAL REQUIREMENTS:
+1. ALWAYS start with a personalized greeting using the sender's name (e.g., "Hi John," or "Hello Sarah,")
+   - Extract name from email address if full name not available
+   - Use first name only for informal/friendly tone
+2. Be natural, warm, and professional
+3. Use knowledge base information for accurate responses
+4. Reference conversation context when replying to threads
+5. DO NOT include:
+   - Subject lines
+   - Email signatures (handled separately)
+   - Closing phrases like "Best regards" or "Sincerely" (handled by signature)
+
+Focus on helpful, contextual body content with proper personalized greeting."""
         
         return prompt
     
