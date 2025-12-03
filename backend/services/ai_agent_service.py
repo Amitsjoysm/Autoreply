@@ -404,7 +404,8 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
                 validation_issues=validation_issues,
                 calendar_event=calendar_event,
                 current_time=current_time,
-                follow_up_context=follow_up_context
+                follow_up_context=follow_up_context,
+                meeting_info=meeting_info
             )
             
             system_message = self._get_draft_system_message(context)
