@@ -344,10 +344,20 @@ async def process_email(email_id: str):
         # Step 2: Detect meeting
         is_meeting, meeting_confidence, meeting_details = await ai_service.detect_meeting(email, thread_context)
         
+        # Log meeting detection result
+        if is_meeting:
+            if meeting_confidence >= 0.8:
+                logger.info(f"Meeting detected with HIGH confidence ({meeting_confidence}) - will create calendar event")
+            elif meeting_confidence >= 0.5:
+                logger.info(f"Meeting detected with MEDIUM confidence ({meeting_confidence}) - draft will ask for time confirmation")
+            else:
+                logger.info(f"Meeting detected with LOW confidence ({meeting_confidence}) - draft will ask for meeting details")
+        
         await add_action(email_id, "meeting_detection", {
             "detected": is_meeting,
             "confidence": meeting_confidence,
-            "details": meeting_details if is_meeting else None
+            "details": meeting_details if is_meeting else None,
+            "will_create_event": is_meeting and meeting_confidence >= 0.8
         })
         
         update_data = {
