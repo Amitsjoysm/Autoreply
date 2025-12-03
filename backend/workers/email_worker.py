@@ -500,7 +500,13 @@ async def process_email(email_id: str):
                 intent_id,
                 thread_context,
                 validation_issues=update_data.get('validation_issues') if attempt > 0 else None,
-                calendar_event=update_data.get('calendar_event')
+                calendar_event=update_data.get('calendar_event'),
+                meeting_info={
+                    "detected": is_meeting,
+                    "confidence": meeting_confidence,
+                    "details": meeting_details,
+                    "event_created": event_created is not None
+                } if is_meeting else None
             )
             total_tokens += tokens
             
