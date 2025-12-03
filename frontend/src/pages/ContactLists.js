@@ -16,11 +16,14 @@ const ContactLists = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [manageContactsDialogOpen, setManageContactsDialogOpen] = useState(false);
+  const [bulkUploadDialogOpen, setBulkUploadDialogOpen] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [currentList, setCurrentList] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [contacts, setContacts] = useState([]);
   const [listContacts, setListContacts] = useState([]);
+  const [csvFile, setCsvFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
