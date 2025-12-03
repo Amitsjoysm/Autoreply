@@ -410,12 +410,20 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
             
             system_message = self._get_draft_system_message(context)
             
+            # Adjust max_tokens based on content type
+            # Meeting confirmations need more tokens for event details
+            max_tokens = 300  # Default for concise responses
+            if calendar_event:
+                max_tokens = 400  # More space for meeting details
+            elif meeting_info and meeting_info.get('detected'):
+                max_tokens = 350  # Medium space for meeting discussions
+            
             # Call Groq API
             result = await self._call_groq_api(
                 system_message=system_message,
                 user_message=prompt,
                 temperature=0.7,
-                max_tokens=300  # Reduced from 800 to enforce 150-200 word limit
+                max_tokens=max_tokens
             )
             
             draft = result.strip()
