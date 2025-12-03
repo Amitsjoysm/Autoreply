@@ -315,10 +315,16 @@ Email Body: {email.body}
 
 MEETING DETECTION RULES:
 1. Look for explicit meeting requests or invitations
-2. Look for date/time mentions with context of scheduling
+2. Look for date/time mentions with context of scheduling  
 3. Check for meeting-related keywords: meeting, call, zoom, teams, schedule, discuss, sync, catch up
 4. Ignore casual mentions like "let's meet sometime" without specific details
 5. Use thread context to avoid duplicates - if meeting already discussed, confidence should be lower
+
+IMPORTANT - TIME CONFIRMATION PROTOCOL:
+- If user proposes a time but hasn't explicitly confirmed: confidence should be 0.5-0.7 (ASK FOR CONFIRMATION)
+- If user confirms a previously proposed time: confidence should be 0.8-1.0 (CREATE EVENT)
+- Look for confirmation phrases: "works for me", "sounds good", "confirmed", "that time is perfect", "yes to [time]"
+- If time is vague or missing: confidence should be 0.3-0.5 (ASK FOR TIME)
 
 If a meeting is detected, extract:
 1. Meeting date and time:
