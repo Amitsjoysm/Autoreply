@@ -100,7 +100,8 @@ class CampaignContactService:
             "success_count": 0,
             "error_count": 0,
             "errors": [],
-            "contact_ids": []
+            "contact_ids": [],
+            "imported_ids": []  # Alias for frontend compatibility
         }
         
         try:
