@@ -421,6 +421,89 @@ const ContactLists = () => {
               Add or remove contacts from this list
             </DialogDescription>
           </DialogHeader>
+          
+          {/* Bulk Upload Button */}
+          <div className="flex items-center justify-between pb-4 border-b">
+            <p className="text-sm text-gray-600">Bulk upload contacts to this list via CSV file</p>
+            <Dialog open={bulkUploadDialogOpen} onOpenChange={setBulkUploadDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Upload className="w-4 h-4" />
+                  Bulk Upload
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Bulk Upload Contacts to List</DialogTitle>
+                  <DialogDescription>
+                    Upload a CSV file to add multiple contacts to "{currentList?.name}" at once
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <p className="text-sm text-blue-800 font-medium mb-2">CSV Format Required:</p>
+                    <p className="text-xs text-blue-700">
+                      email, first_name, last_name, title, company_name, linkedin_url, company_domain
+                    </p>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      onClick={handleDownloadTemplate}
+                      className="text-blue-600 px-0 mt-2"
+                    >
+                      <Download className="w-4 h-4 mr-1" />
+                      Download CSV Template
+                    </Button>
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="csv-file">Select CSV File</Label>
+                    <Input
+                      id="csv-file"
+                      type="file"
+                      accept=".csv"
+                      onChange={handleFileChange}
+                      className="cursor-pointer"
+                    />
+                    {csvFile && (
+                      <p className="text-sm text-green-600 mt-2">
+                        ✓ Selected: {csvFile.name}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-4 border-t">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setBulkUploadDialogOpen(false);
+                        setCsvFile(null);
+                      }}
+                      disabled={uploading}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleBulkUploadToList}
+                      disabled={!csvFile || uploading}
+                      className="flex items-center gap-2"
+                    >
+                      {uploading ? (
+                        <>Processing...</>
+                      ) : (
+                        <>
+                          <Upload className="w-4 h-4" />
+                          Upload & Add to List
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
           <div className="space-y-6">
             {/* Contacts in List */}
             <div>
