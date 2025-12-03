@@ -578,6 +578,35 @@ async def process_email(email_id: str):
                 if account:
                     from models.email import EmailSend
                     
+                    # Prepare threading headers for proper conversation continuity
+                    # Get original email's Message-ID for In-Reply-To header
+                    reply_to_message_id = None
+                    references_list = []
+                    
+                    # Get Message-ID from email headers (Gmail stores it as message_id in our DB)
+                    # But we need the actual RFC Message-ID header, not Gmail's internal ID
+                    # For Gmail, we'll use the message_id we stored
+                    original_email_doc = await db.emails.find_one({"id": email_id})
+                    if original_email_doc:
+                        # Try to get Message-ID header if we stored it
+                        # Otherwise use Gmail message_id
+                        reply_to_message_id = original_email_doc.get('message_id')
+                        
+                        # Build references list from thread
+                        if original_email_doc.get('references'):
+                            references_list = original_email_doc['references']
+                        
+                        # Add the in_reply_to to references if present
+                        if original_email_doc.get('in_reply_to'):
+                            if original_email_doc['in_reply_to'] not in references_list:
+                                references_list.append(original_email_doc['in_reply_to'])
+                        
+                        # Add current message to references
+                        if reply_to_message_id and reply_to_message_id not in references_list:
+                            references_list.append(reply_to_message_id)
+                    
+                    logger.info(f"Sending reply with threading: thread_id={email.thread_id}, reply_to={reply_to_message_id}, refs={len(references_list)}")
+                    
                     reply = EmailSend(
                         email_account_id=email.email_account_id,
                         to_email=[email.from_email],
@@ -587,7 +616,13 @@ async def process_email(email_id: str):
                     
                     sent = False
                     if account.account_type == 'oauth_gmail':
-                        result = await email_service.send_email_oauth_gmail(account, reply, email.thread_id)
+                        result = await email_service.send_email_oauth_gmail(
+                            account, 
+                            reply, 
+                            email.thread_id,
+                            reply_to_message_id,
+                            references_list
+                        )
                         sent = result.get("success", False)
                     elif account.account_type == 'oauth_outlook':
                         result = await email_service.send_email_oauth_outlook(account, reply, email.thread_id)
