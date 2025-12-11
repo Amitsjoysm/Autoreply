@@ -283,15 +283,15 @@ async def process_email(email_id: str):
                             "lead_id": lead.id,
                             "stage": lead.stage,
                             "score": lead.score,
-                    "lead_name": lead.lead_name,
-                    "company": lead.company_name
-                })
+                            "lead_name": lead.lead_name,
+                            "company": lead.company_name
+                        })
                 
-            except Exception as e:
-                logger.error(f"Error creating lead: {e}")
-                await add_action(email_id, "lead_creation_failed", {
-                    "error": str(e)
-                }, "failed")
+                except Exception as e:
+                    logger.error(f"Error creating lead: {e}")
+                    await add_action(email_id, "lead_creation_failed", {
+                        "error": str(e)
+                    }, "failed")
         
         # Step 1.5: Check if this is a simple acknowledgment (no follow-up needed)
         is_simple_ack = ai_service.is_simple_acknowledgment(email)
