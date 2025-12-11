@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 import uuid
 
 # Lead Stage State Machine
-LeadStage = Literal['new', 'contacted', 'qualified', 'converted', 'lost']
+LeadStage = Literal['awaiting_info', 'new', 'contacted', 'qualified', 'converted', 'unqualified', 'lost']
 
 class LeadActivity(BaseModel):
     """Track activities on a lead"""
@@ -75,15 +75,17 @@ class InboundLead(BaseModel):
     
     # Lead Qualification (New Feature)
     qualification_checked: bool = False  # Has qualification been performed
-    qualification_score: float = 0.0  # Calculated qualification score (0.0-1.0)
+    qualification_score: int = 0  # Calculated qualification score (0-100)
     qualification_reasons: List[str] = []  # Reasons for qualification/disqualification
     qualification_criteria_id: Optional[str] = None  # Criteria used for qualification
+    qualification_attempt: int = 0  # Number of qualification attempts (max 3)
     
     # Lead Nurturing (New Feature)
     nurturing_enabled: bool = False  # Is nurturing active for this lead
     nurturing_exchanges_count: int = 0  # Number of nurturing exchanges completed
     nurturing_questions_asked: List[Dict[str, Any]] = []  # Questions asked with responses
     nurturing_config_id: Optional[str] = None  # Nurturing config used
+    last_questions_asked: List[Dict[str, Any]] = []  # Track last questions for rephrasing
     
     # Meeting/Calendar
     meeting_scheduled: bool = False
@@ -181,8 +183,9 @@ class LeadDetailResponse(BaseModel):
     notes: Optional[str]
     is_active: bool
     qualification_checked: bool
-    qualification_score: float
+    qualification_score: int
     qualification_reasons: List[str]
+    qualification_attempt: int
     nurturing_enabled: bool
     nurturing_exchanges_count: int
     nurturing_questions_asked: List[Dict[str, Any]]
