@@ -43,7 +43,8 @@ const MainLayout = ({ children }) => {
     window.location.pathname.includes('/calendar-providers') ||
     window.location.pathname.includes('/knowledge-base') ||
     window.location.pathname.includes('/intents') ||
-    window.location.pathname.includes('/meeting-detection')
+    window.location.pathname.includes('/meeting-detection') ||
+    window.location.pathname.includes('/lead-qualification')
   );
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
@@ -56,7 +57,8 @@ const MainLayout = ({ children }) => {
         window.location.pathname.includes('/calendar-providers') ||
         window.location.pathname.includes('/knowledge-base') ||
         window.location.pathname.includes('/intents') ||
-        window.location.pathname.includes('/meeting-detection')) {
+        window.location.pathname.includes('/meeting-detection') ||
+        window.location.pathname.includes('/lead-qualification')) {
       setInitialSetupExpanded(true);
     }
   }, [window.location.pathname]);
