@@ -248,3 +248,202 @@ Tested the complete email automation flow through the `/api/test/complete-flow` 
    - Verify qualification criteria evaluation logic
    - Test with explicit answer formats
 3. **READY**: System ready for production use - all critical features working
+
+---
+
+## NEW: Interactive Test Session API Testing
+
+### Test Date: 2025-12-11 (Latest)
+
+### Test Overview
+Tested the NEW Interactive Test Session API (`/api/test-session/send-message`) that allows multi-turn conversation testing with full visibility into agent actions, lead processing, and follow-up management.
+
+### Test Scenario
+Complete 5-step multi-turn conversation flow:
+1. **Step 1**: Initial pricing inquiry (lead detection)
+2. **Step 2**: Reply with qualification answers
+3. **Step 3**: Meeting request
+4. **Step 4**: Session retrieval
+5. **Step 5**: Session deletion
+
+---
+
+### Backend Tasks (Interactive Session API)
+
+#### 11. Interactive Test Session API - Send Message
+- **task**: "Multi-turn test session API endpoint"
+- **implemented**: true
+- **working**: true
+- **file**: "backend/routes/test_session_routes.py"
+- **stuck_count**: 0
+- **priority**: "high"
+- **needs_retesting**: false
+- **status_history**:
+  - **working**: false
+    **agent**: "testing"
+    **comment**: "❌ CRITICAL: API returning 500 error 'too many values to unpack (expected 2)'. Issue in line 283 of test_session_routes.py - validate_draft returns 3 values (is_valid, issues, tokens) but code only unpacks 2. Also found KeyError: 'from' in thread_context building for generate_draft."
+  - **working**: true
+    **agent**: "testing"
+    **comment**: "✅ Fixed unpacking error and thread_context format. API now working correctly. All 60 verification checks passed across 5 steps. Session management, conversation tracking, follow-up creation/cancellation, lead processing, and calendar events all functioning correctly."
+
+#### 12. Session Conversation Tracking
+- **task**: "Track multi-turn conversation history"
+- **implemented**: true
+- **working**: true
+- **file**: "backend/routes/test_session_routes.py"
+- **stuck_count**: 0
+- **priority**: "high"
+- **needs_retesting**: false
+- **status_history**:
+  - **working**: true
+    **agent**: "testing"
+    **comment**: "✅ Conversation history tracking working perfectly. Step 1: 2 entries (inbound + outbound). Step 2: 4 entries (previous 2 + new inbound + outbound). Step 3: 6 entries. All messages properly tracked with direction, from, to, subject, body, and timestamp."
+
+#### 13. Follow-up Management in Sessions
+- **task**: "Create and cancel follow-ups in test sessions"
+- **implemented**: true
+- **working**: true
+- **file**: "backend/routes/test_session_routes.py"
+- **stuck_count**: 0
+- **priority**: "high"
+- **needs_retesting**: false
+- **status_history**:
+  - **working**: false
+    **agent**: "testing"
+    **comment**: "❌ Follow-ups being created even when lead is qualified (score=100). Should only create follow-ups for 'awaiting_info' stage, not for 'qualified' or 'unqualified' stages."
+  - **working**: true
+    **agent**: "testing"
+    **comment**: "✅ Fixed follow-up creation logic. Now correctly creates 3 follow-ups (Day 2, 4, 6) only when: (1) draft is valid AND (2) lead is in 'awaiting_info' stage OR no lead processing. When lead is qualified/unqualified, no new follow-ups created. Cancellation working correctly when reply received (3 old follow-ups cancelled with reason 'Reply received in thread')."
+
+#### 14. Lead Processing in Sessions
+- **task**: "Process leads through test session API"
+- **implemented**: true
+- **working**: true
+- **file**: "backend/routes/test_session_routes.py, backend/services/lead_nurturing_integration_service.py"
+- **stuck_count**: 0
+- **priority**: "high"
+- **needs_retesting**: false
+- **status_history**:
+  - **working**: false
+    **agent**: "testing"
+    **comment**: "❌ Lead processing not happening - lead_info is None. Issue: User needs global_lead_nurturing_enabled and global_lead_qualification_enabled set to true, and intents need enable_lead_nurturing and enable_lead_qualification flags."
+  - **working**: true
+    **agent**: "testing"
+    **comment**: "✅ Lead processing now working after enabling global settings. Step 1: Lead created with stage='awaiting_info', score=0, attempt=1. Step 2: Lead updated to stage='qualified', score=100 after answering questions (company size: 75, budget: $10k/month, industry: Technology). Lead qualification logic working correctly with proper scoring."
+
+#### 15. Agent Actions Tracking
+- **task**: "Track all agent actions in test sessions"
+- **implemented**: true
+- **working**: true
+- **file**: "backend/routes/test_session_routes.py"
+- **stuck_count**: 0
+- **priority**: "high"
+- **needs_retesting**: false
+- **status_history**:
+  - **working**: true
+    **agent**: "testing"
+    **comment**: "✅ Agent actions tracking working perfectly. All actions recorded with timestamps and details: intent_classified (with confidence), lead_processed (with score, stage, questions_to_ask), draft_generated (with draft content, tokens), draft_validated (with validation result), followups_created (with followup_ids), followups_cancelled (with count and reason), meeting_detected (with confidence and details). Provides complete visibility into agent decision-making."
+
+#### 16. Calendar Event Creation in Sessions
+- **task**: "Create calendar events from meeting requests"
+- **implemented**: true
+- **working**: true
+- **file**: "backend/routes/test_session_routes.py"
+- **stuck_count**: 0
+- **priority**: "high"
+- **needs_retesting**: false
+- **status_history**:
+  - **working**: true
+    **agent**: "testing"
+    **comment**: "✅ Calendar event creation working correctly. Meeting detected with 60% confidence from 'Can we schedule a call next Tuesday at 2 PM?'. Event created with: event_id (UUID), title ('Pricing Discussion'), start_time (2025-12-17T14:00:00), duration (60 min), attendees (john@techcompany.com, test@example.com), meet_link (Google Meet URL), reminder_time ('1 hour before'). All required fields present."
+
+#### 17. Session Retrieval API
+- **task**: "Retrieve existing test session"
+- **implemented**: true
+- **working**: true
+- **file**: "backend/routes/test_session_routes.py"
+- **stuck_count**: 0
+- **priority**: "medium"
+- **needs_retesting**: false
+- **status_history**:
+  - **working**: true
+    **agent**: "testing"
+    **comment**: "✅ Session retrieval working correctly. GET /api/test-session/session/{session_id} returns complete session with: conversation_history (6 messages), follow_ups (with status), lead_info (stage, score, attempt), calendar_events, agent_actions, and summary. All data persisted correctly across API calls."
+
+#### 18. Session Deletion API
+- **task**: "Delete test session and cleanup"
+- **implemented**: true
+- **working**: true
+- **file**: "backend/routes/test_session_routes.py"
+- **stuck_count**: 0
+- **priority**: "medium"
+- **needs_retesting**: false
+- **status_history**:
+  - **working**: true
+    **agent**: "testing"
+    **comment**: "✅ Session deletion working correctly. DELETE /api/test-session/session/{session_id} successfully deletes session and cleanup test data (emails, leads). Verified with 404 response on subsequent GET request. Proper cleanup prevents test data pollution."
+
+---
+
+### Test Results Summary (Interactive Session API)
+
+#### ✅ All Tests Passed (60/60 checks)
+
+**Step 1: Initial Email (29 checks)**
+- ✅ Session ID returned
+- ✅ Conversation history (2 entries: inbound + outbound)
+- ✅ Follow-ups created (3 pending with unique IDs, scheduled dates, days_from_now)
+- ✅ Lead info (stage='awaiting_info', score=0, attempt=1)
+- ✅ Agent actions (intent_classified, lead_processed, draft_generated, draft_validated, followups_created)
+- ✅ Draft includes nurturing questions naturally
+- ✅ All follow-up IDs are unique UUIDs
+
+**Step 2: Reply with Answers (10 checks)**
+- ✅ Same session_id continued
+- ✅ Conversation history (4 entries total)
+- ✅ Old follow-ups cancelled (3 with reason "Reply received in thread")
+- ✅ No new follow-ups for qualified stage (correct behavior)
+- ✅ Lead info updated (stage='qualified', score=100)
+- ✅ Agent actions (followups_cancelled with count and IDs)
+
+**Step 3: Meeting Request (13 checks)**
+- ✅ Calendar event created with all required fields
+- ✅ Event has: event_id, title, start_time, duration, attendees, meet_link, reminder_time
+- ✅ Meeting detected with confidence score
+- ✅ Draft includes meeting confirmation and calendar details
+
+**Step 4: Session Retrieval (6 checks)**
+- ✅ Complete session retrieved with all data
+- ✅ Conversation history, follow-ups, lead_info, calendar_events, agent_actions all present
+
+**Step 5: Session Deletion (2 checks)**
+- ✅ Session deleted successfully
+- ✅ Verified deletion with 404 response
+
+---
+
+### Critical Fixes Applied
+
+1. **Fixed validate_draft unpacking error**
+   - Issue: Function returns 3 values but code unpacked only 2
+   - Fix: Updated line 283 to unpack all 3 values: `is_valid, validation_issues, validation_tokens`
+
+2. **Fixed thread_context format mismatch**
+   - Issue: Lead processing uses role/content format, but generate_draft expects from/subject/body format
+   - Fix: Created separate thread_context builders for each use case
+
+3. **Fixed follow-up creation logic**
+   - Issue: Follow-ups created even when lead is qualified
+   - Fix: Added check to only create follow-ups when lead stage is 'awaiting_info' or no lead
+
+4. **Enabled lead processing for test user**
+   - Issue: global_lead_nurturing_enabled and global_lead_qualification_enabled were false
+   - Fix: Updated user settings and created proper intents with enable_lead_nurturing=true
+
+---
+
+### Agent Communication
+
+#### Message 3
+- **agent**: "testing"
+- **message**: "✅ INTERACTIVE TEST SESSION API FULLY WORKING. All 60 verification checks passed across 5-step multi-turn conversation flow. Fixed 4 critical issues: (1) validate_draft unpacking error, (2) thread_context format mismatch, (3) follow-up creation logic for qualified leads, (4) enabled lead processing for test user. API provides complete visibility into: conversation history, follow-up management (create/cancel), lead processing (scoring, stage transitions), agent actions (with timestamps and details), calendar event creation. Session persistence and cleanup working correctly. Ready for production use."
