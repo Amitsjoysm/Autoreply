@@ -22,6 +22,7 @@ import Campaigns from './pages/Campaigns';
 import CampaignAnalytics from './pages/CampaignAnalytics';
 import ContactLists from './pages/ContactLists';
 import InboundLeads from './pages/InboundLeads';
+import LeadQualification from './pages/LeadQualification';
 import '@/App.css';
 import {
   Mail, BarChart3, User, Calendar, CalendarDays, Brain, Target, 
@@ -90,6 +91,7 @@ const MainLayout = ({ children }) => {
     { path: '/knowledge-base', label: 'Knowledge Base', icon: Database },
     { path: '/intents', label: 'Intents', icon: Target },
     { path: '/meeting-detection', label: 'Meeting Detection', icon: Brain },
+    { path: '/lead-qualification', label: 'Lead Qualification', icon: Target },
   ];
 
   const campaignMenuItems = [
