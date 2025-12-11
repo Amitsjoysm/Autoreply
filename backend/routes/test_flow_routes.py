@@ -53,7 +53,7 @@ async def test_complete_flow(
     steps = []
     warnings = []
     errors = []
-    user_id = current_user['id']
+    user_id = current_user.id
     
     try:
         # Step 1: Create test email
