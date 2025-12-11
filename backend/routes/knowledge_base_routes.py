@@ -51,7 +51,7 @@ async def list_knowledge_base(
             title=kb['title'],
             content=kb['content'],
             category=kb.get('category'),
-            tags=kb['tags'],
+            tags=kb.get('tags', []),  # Default to empty list if not present
             is_active=kb['is_active'],
             created_at=kb['created_at'].isoformat() if isinstance(kb['created_at'], datetime) else kb['created_at']
         )
