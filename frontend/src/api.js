@@ -514,6 +514,64 @@ class API {
     });
     return response.data;
   }
+
+  // Lead Qualification Criteria
+  async getQualificationCriteria() {
+    const response = await this.axios.get('/lead-qualification-criteria');
+    return response.data;
+  }
+
+  async getQualificationCriteriaById(id) {
+    const response = await this.axios.get(`/lead-qualification-criteria/${id}`);
+    return response.data;
+  }
+
+  async createQualificationCriteria(data) {
+    const response = await this.axios.post('/lead-qualification-criteria', data);
+    return response.data;
+  }
+
+  async updateQualificationCriteria(id, data) {
+    const response = await this.axios.put(`/lead-qualification-criteria/${id}`, data);
+    return response.data;
+  }
+
+  async deleteQualificationCriteria(id) {
+    const response = await this.axios.delete(`/lead-qualification-criteria/${id}`);
+    return response.data;
+  }
+
+  // Lead Nurturing Config
+  async getNurturingConfigs() {
+    const response = await this.axios.get('/lead-nurturing-config');
+    return response.data;
+  }
+
+  async getNurturingConfigById(id) {
+    const response = await this.axios.get(`/lead-nurturing-config/${id}`);
+    return response.data;
+  }
+
+  async createNurturingConfig(data) {
+    const response = await this.axios.post('/lead-nurturing-config', data);
+    return response.data;
+  }
+
+  async updateNurturingConfig(id, data) {
+    const response = await this.axios.put(`/lead-nurturing-config/${id}`, data);
+    return response.data;
+  }
+
+  async deleteNurturingConfig(id) {
+    const response = await this.axios.delete(`/lead-nurturing-config/${id}`);
+    return response.data;
+  }
+
+  // User Settings (for global toggles)
+  async updateUserSettings(data) {
+    const response = await this.axios.put('/auth/settings', data);
+    return response.data;
+  }
 }
 
 export default new API();
