@@ -153,10 +153,10 @@ async def send_test_message(
         if intent_doc and intent_doc.get('is_inbound_lead'):
             integration_service = LeadNurturingIntegrationService(db)
             
-            # Build thread context from conversation history
-            thread_context = []
+            # Build thread context for lead processing (role/content format)
+            lead_thread_context = []
             for msg in session_data.get('conversation', []):
-                thread_context.append({
+                lead_thread_context.append({
                     "role": "user" if msg['direction'] == "inbound" else "assistant",
                     "content": msg['body']
                 })
@@ -167,7 +167,7 @@ async def send_test_message(
                 email_content=request.body,
                 from_email=request.from_email,
                 intent_doc=intent_doc,
-                thread_context=thread_context
+                thread_context=lead_thread_context
             )
             
             # Update lead_id in session
