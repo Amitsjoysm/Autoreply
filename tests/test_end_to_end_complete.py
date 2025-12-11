@@ -190,10 +190,12 @@ CEO, Tech Startup Inc."""
         logger.info(f"    - Tokens Used: {tokens}")
         logger.info(f"\n  📄 Draft Content:")
         logger.info("  " + "-" * 96)
-        for line in draft.split('\n')[:15]:  # Show first 15 lines
+        draft_lines = draft.split('\n')
+        for line in draft_lines[:15]:  # Show first 15 lines
             logger.info(f"  {line}")
-        if len(draft.split('\n')) > 15:
-            logger.info(f"  ... ({len(draft.split('\n')) - 15} more lines)")
+        if len(draft_lines) > 15:
+            remaining = len(draft_lines) - 15
+            logger.info(f"  ... ({remaining} more lines)")
         logger.info("  " + "-" * 96)
         
         # Verify questions are in draft
