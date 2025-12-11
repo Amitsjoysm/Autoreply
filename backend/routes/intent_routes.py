@@ -62,8 +62,6 @@ async def list_intents(
             is_inbound_lead=intent.get('is_inbound_lead', False),
             enable_lead_qualification=intent.get('enable_lead_qualification', False),
             enable_lead_nurturing=intent.get('enable_lead_nurturing', False),
-            enable_lead_qualification=intent.get('enable_lead_qualification', False),
-            enable_lead_nurturing=intent.get('enable_lead_nurturing', False),
             is_active=intent['is_active'],
             created_at=intent['created_at'].isoformat() if isinstance(intent['created_at'], datetime) else intent['created_at']
         )
