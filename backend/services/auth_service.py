@@ -135,5 +135,9 @@ class AuthService:
             hubspot_enabled=user.hubspot_enabled,
             hubspot_connected=user.hubspot_connected,
             hubspot_portal_id=user.hubspot_portal_id,
-            hubspot_auto_sync=user.hubspot_auto_sync
+            hubspot_auto_sync=user.hubspot_auto_sync,
+            global_lead_qualification_enabled=user.global_lead_qualification_enabled,
+            global_lead_nurturing_enabled=user.global_lead_nurturing_enabled,
+            default_qualification_criteria_id=user.default_qualification_criteria_id,
+            default_nurturing_config_id=user.default_nurturing_config_id
         )
