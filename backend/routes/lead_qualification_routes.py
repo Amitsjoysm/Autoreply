@@ -12,13 +12,14 @@ from models.lead_qualification_criteria import (
     QualificationCriteriaUpdate,
     QualificationCriteriaResponse
 )
+from models.user import User
 from routes.auth_routes import get_current_user_from_token, get_db
 
 router = APIRouter(prefix="/api/lead-qualification-criteria", tags=["Lead Qualification"])
 
 @router.get("", response_model=List[QualificationCriteriaResponse])
 async def list_qualification_criteria(
-    current_user: dict = Depends(get_current_user_from_token),
+    user: User = Depends(get_current_user_from_token),
     db = Depends(get_db)
 ):
     """List all qualification criteria for current user"""
@@ -26,7 +27,7 @@ async def list_qualification_criteria(
         criteria_collection = db['lead_qualification_criteria']
         
         criteria_list = await criteria_collection.find({
-            "user_id": current_user['id'],
+            "user_id": user.id,
             "is_active": True
         }).to_list(length=100)
         
@@ -45,7 +46,7 @@ async def list_qualification_criteria(
 @router.get("/{criteria_id}", response_model=QualificationCriteriaResponse)
 async def get_qualification_criteria(
     criteria_id: str,
-    current_user: dict = Depends(get_current_user_from_token),
+    user: User = Depends(get_current_user_from_token),
     db = Depends(get_db)
 ):
     """Get specific qualification criteria"""
@@ -54,7 +55,7 @@ async def get_qualification_criteria(
         
         criteria = await criteria_collection.find_one({
             "id": criteria_id,
-            "user_id": current_user['id']
+            "user_id": user.id
         })
         
         if not criteria:
@@ -76,7 +77,7 @@ async def get_qualification_criteria(
 @router.post("", response_model=QualificationCriteriaResponse)
 async def create_qualification_criteria(
     criteria_data: QualificationCriteriaCreate,
-    current_user: dict = Depends(get_current_user_from_token),
+    user: User = Depends(get_current_user_from_token),
     db = Depends(get_db)
 ):
     """Create new qualification criteria"""
@@ -85,7 +86,7 @@ async def create_qualification_criteria(
         
         # Create criteria document
         criteria = LeadQualificationCriteria(
-            user_id=current_user['id'],
+            user_id=user.id,
             **criteria_data.model_dump()
         )
         
@@ -101,7 +102,7 @@ async def create_qualification_criteria(
 async def update_qualification_criteria(
     criteria_id: str,
     criteria_update: QualificationCriteriaUpdate,
-    current_user: dict = Depends(get_current_user_from_token),
+    user: User = Depends(get_current_user_from_token),
     db = Depends(get_db)
 ):
     """Update qualification criteria"""
@@ -111,7 +112,7 @@ async def update_qualification_criteria(
         # Check if criteria exists
         existing = await criteria_collection.find_one({
             "id": criteria_id,
-            "user_id": current_user['id']
+            "user_id": user.id
         })
         
         if not existing:
@@ -127,14 +128,14 @@ async def update_qualification_criteria(
             update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
             
             await criteria_collection.update_one(
-                {"id": criteria_id, "user_id": current_user['id']},
+                {"id": criteria_id, "user_id": user.id},
                 {"$set": update_data}
             )
         
         # Get updated criteria
         updated_criteria = await criteria_collection.find_one({
             "id": criteria_id,
-            "user_id": current_user['id']
+            "user_id": user.id
         })
         
         # Convert datetime to string
@@ -153,7 +154,7 @@ async def update_qualification_criteria(
 @router.delete("/{criteria_id}")
 async def delete_qualification_criteria(
     criteria_id: str,
-    current_user: dict = Depends(get_current_user_from_token),
+    user: User = Depends(get_current_user_from_token),
     db = Depends(get_db)
 ):
     """Delete (soft delete) qualification criteria"""
@@ -162,7 +163,7 @@ async def delete_qualification_criteria(
         
         # Soft delete by setting is_active to False
         result = await criteria_collection.update_one(
-            {"id": criteria_id, "user_id": current_user['id']},
+            {"id": criteria_id, "user_id": user.id},
             {"$set": {
                 "is_active": False,
                 "updated_at": datetime.now(timezone.utc).isoformat()

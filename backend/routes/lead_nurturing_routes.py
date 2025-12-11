@@ -17,13 +17,13 @@ from routes.auth_routes import get_current_user_from_token, get_db
 router = APIRouter(prefix="/api/lead-nurturing-config", tags=["Lead Nurturing"])
 
 @router.get("", response_model=List[NurturingConfigResponse])
-async def list_nurturing_configs(current_user: dict = Depends(get_current_user_from_token), db = Depends(get_db)):
+async def list_nurturing_configs(user: User = Depends(get_current_user_from_token), db = Depends(get_db)):
     """List all nurturing configurations for current user"""
     try:
         config_collection = db['lead_nurturing_config']
         
         configs = await config_collection.find({
-            "user_id": current_user['id'],
+            "user_id": user.id,
             "is_active": True
         }).to_list(length=100)
         
@@ -42,7 +42,7 @@ async def list_nurturing_configs(current_user: dict = Depends(get_current_user_f
 @router.get("/{config_id}", response_model=NurturingConfigResponse)
 async def get_nurturing_config(
     config_id: str,
-    current_user: dict = Depends(get_current_user_from_token), db = Depends(get_db)
+    user: User = Depends(get_current_user_from_token), db = Depends(get_db)
 ):
     """Get specific nurturing configuration"""
     try:
@@ -51,7 +51,7 @@ async def get_nurturing_config(
         
         config = await config_collection.find_one({
             "id": config_id,
-            "user_id": current_user['id']
+            "user_id": user.id
         })
         
         if not config:
@@ -73,7 +73,7 @@ async def get_nurturing_config(
 @router.post("", response_model=NurturingConfigResponse)
 async def create_nurturing_config(
     config_data: NurturingConfigCreate,
-    current_user: dict = Depends(get_current_user_from_token), db = Depends(get_db)
+    user: User = Depends(get_current_user_from_token), db = Depends(get_db)
 ):
     """Create new nurturing configuration"""
     try:
@@ -82,7 +82,7 @@ async def create_nurturing_config(
         
         # Create config document
         config = LeadNurturingConfig(
-            user_id=current_user['id'],
+            user_id=user.id,
             **config_data.model_dump()
         )
         
@@ -98,7 +98,7 @@ async def create_nurturing_config(
 async def update_nurturing_config(
     config_id: str,
     config_update: NurturingConfigUpdate,
-    current_user: dict = Depends(get_current_user_from_token), db = Depends(get_db)
+    user: User = Depends(get_current_user_from_token), db = Depends(get_db)
 ):
     """Update nurturing configuration"""
     try:
@@ -108,7 +108,7 @@ async def update_nurturing_config(
         # Check if config exists
         existing = await config_collection.find_one({
             "id": config_id,
-            "user_id": current_user['id']
+            "user_id": user.id
         })
         
         if not existing:
@@ -124,14 +124,14 @@ async def update_nurturing_config(
             update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
             
             await config_collection.update_one(
-                {"id": config_id, "user_id": current_user['id']},
+                {"id": config_id, "user_id": user.id},
                 {"$set": update_data}
             )
         
         # Get updated config
         updated_config = await config_collection.find_one({
             "id": config_id,
-            "user_id": current_user['id']
+            "user_id": user.id
         })
         
         # Convert datetime to string
@@ -150,7 +150,7 @@ async def update_nurturing_config(
 @router.delete("/{config_id}")
 async def delete_nurturing_config(
     config_id: str,
-    current_user: dict = Depends(get_current_user_from_token), db = Depends(get_db)
+    user: User = Depends(get_current_user_from_token), db = Depends(get_db)
 ):
     """Delete (soft delete) nurturing configuration"""
     try:
@@ -159,7 +159,7 @@ async def delete_nurturing_config(
         
         # Soft delete by setting is_active to False
         result = await config_collection.update_one(
-            {"id": config_id, "user_id": current_user['id']},
+            {"id": config_id, "user_id": user.id},
             {"$set": {
                 "is_active": False,
                 "updated_at": datetime.now(timezone.utc).isoformat()
