@@ -35,7 +35,7 @@ class TestFlowResponse(BaseModel):
 @router.post("/complete-flow", response_model=TestFlowResponse)
 async def test_complete_flow(
     request: TestEmailRequest,
-    current_user: dict = Depends(get_current_user_from_token),
+    user: User = Depends(get_current_user_from_token),
     db = Depends(get_db)
 ):
     """
@@ -53,7 +53,7 @@ async def test_complete_flow(
     steps = []
     warnings = []
     errors = []
-    user_id = current_user.id
+    user_id = user.id
     
     try:
         # Step 1: Create test email
@@ -358,12 +358,12 @@ async def test_complete_flow(
 
 @router.get("/system-status")
 async def get_system_status(
-    current_user: dict = Depends(get_current_user_from_token),
+    user: User = Depends(get_current_user_from_token),
     db = Depends(get_db)
 ):
     """Get system configuration status for testing"""
     
-    user_id = current_user.id
+    user_id = user.id
     
     # Check configuration
     intents_count = await db.intents.count_documents({"user_id": user_id, "is_active": True})

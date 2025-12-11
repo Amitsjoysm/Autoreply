@@ -36,7 +36,7 @@ class TestSessionResponse(BaseModel):
 @router.post("/send-message", response_model=TestSessionResponse)
 async def send_test_message(
     request: SendMessageRequest,
-    current_user: dict = Depends(get_current_user_from_token),
+    user: User = Depends(get_current_user_from_token),
     db = Depends(get_db)
 ):
     """
@@ -52,7 +52,7 @@ async def send_test_message(
     7. Calendar event creation (if meeting)
     """
     
-    user_id = current_user.id
+    user_id = user.id
     
     try:
         # Get or create session
@@ -443,12 +443,12 @@ async def send_test_message(
 @router.delete("/session/{session_id}")
 async def delete_test_session(
     session_id: str,
-    current_user: dict = Depends(get_current_user_from_token),
+    user: User = Depends(get_current_user_from_token),
     db = Depends(get_db)
 ):
     """Delete test session and cleanup all test data"""
     
-    user_id = current_user.id
+    user_id = user.id
     
     try:
         # Get session
@@ -480,12 +480,12 @@ async def delete_test_session(
 @router.get("/session/{session_id}", response_model=TestSessionResponse)
 async def get_test_session(
     session_id: str,
-    current_user: dict = Depends(get_current_user_from_token),
+    user: User = Depends(get_current_user_from_token),
     db = Depends(get_db)
 ):
     """Get existing test session"""
     
-    user_id = current_user.id
+    user_id = user.id
     
     try:
         test_sessions = db['test_sessions']
