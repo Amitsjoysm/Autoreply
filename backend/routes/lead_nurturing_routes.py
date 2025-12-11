@@ -12,8 +12,7 @@ from models.lead_nurturing_config import (
     NurturingConfigUpdate,
     NurturingConfigResponse
 )
-from services.auth_service import get_current_user
-from container import container
+from routes.auth_routes import get_current_user_from_token, get_db
 
 router = APIRouter(prefix="/api/lead-nurturing-config", tags=["Lead Nurturing"])
 
