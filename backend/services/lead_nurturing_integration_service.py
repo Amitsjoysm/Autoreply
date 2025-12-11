@@ -404,3 +404,216 @@ class LeadNurturingIntegrationService:
         except Exception as e:
             logger.error(f"Error checking qualification status: {e}")
             return False
+    
+    # ========================================================================
+    # HELPER METHODS FOR AUTONOMOUS PROCESSING
+    # ========================================================================
+    
+    async def _find_existing_lead(self, user_id: str, from_email: str) -> Optional[Dict]:
+        """Find existing lead by email"""
+        try:
+            leads_collection = self.db['inbound_leads']
+            lead = await leads_collection.find_one({
+                "user_id": user_id,
+                "lead_email": from_email,
+                "stage": {"$in": ["awaiting_info", "new", "contacted"]}
+            })
+            return lead
+        except Exception as e:
+            logger.error(f"Error finding lead: {e}")
+            return None
+    
+    async def _create_awaiting_lead(
+        self,
+        user_id: str,
+        from_email: str,
+        email_id: str,
+        intent_doc: Optional[Dict]
+    ) -> str:
+        """Create new lead in awaiting_info status"""
+        try:
+            from models.inbound_lead import InboundLead
+            import uuid
+            
+            lead = InboundLead(
+                id=str(uuid.uuid4()),
+                user_id=user_id,
+                lead_email=from_email,
+                initial_email_id=email_id,
+                intent_id=intent_doc.get('id') if intent_doc else None,
+                intent_name=intent_doc.get('name') if intent_doc else None,
+                stage='awaiting_info',
+                qualification_attempt=0,
+                nurturing_enabled=True,
+                email_ids=[email_id]
+            )
+            
+            leads_collection = self.db['inbound_leads']
+            await leads_collection.insert_one(lead.model_dump())
+            
+            logger.info(f"Created awaiting lead: {lead.id}")
+            return lead.id
+            
+        except Exception as e:
+            logger.error(f"Error creating awaiting lead: {e}")
+            return None
+    
+    async def _get_questions_for_attempt(
+        self,
+        user_id: str,
+        email_content: str,
+        thread_context: List[Dict],
+        previous_questions: List[Dict],
+        attempt: int
+    ) -> List[Dict]:
+        """Get questions for specific attempt (with AI rephrasing)"""
+        try:
+            # Get base questions from config
+            users_collection = self.db['users']
+            user = await users_collection.find_one({"id": user_id})
+            config_id = user.get('default_nurturing_config_id') if user else None
+            
+            questions = await self.nurturing_service.generate_nurturing_questions(
+                user_id,
+                email_content,
+                thread_context,
+                previous_questions,
+                config_id
+            )
+            
+            if not questions or attempt == 1:
+                return questions
+            
+            # For attempts 2 and 3, rephrase questions using AI
+            previous_versions = [q.get('question_text', '') for q in previous_questions]
+            rephrased = await self.ai_service.rephrase_questions(
+                questions,
+                previous_versions,
+                attempt
+            )
+            
+            return rephrased
+            
+        except Exception as e:
+            logger.error(f"Error getting questions for attempt: {e}")
+            return []
+    
+    async def _store_answers(
+        self,
+        lead_id: str,
+        answers: Dict[str, str],
+        questions_asked: List[Dict]
+    ) -> bool:
+        """Store extracted answers"""
+        try:
+            leads_collection = self.db['inbound_leads']
+            
+            # Create answer records
+            answer_records = []
+            for question in questions_asked:
+                question_key = question.get('question_key')
+                answer = answers.get(question_key)
+                
+                if answer:
+                    answer_records.append({
+                        "question_key": question_key,
+                        "question_text": question.get('question_text'),
+                        "response": answer,
+                        "answered_at": datetime.now(timezone.utc).isoformat()
+                    })
+            
+            if answer_records:
+                await leads_collection.update_one(
+                    {"id": lead_id},
+                    {
+                        "$push": {
+                            "nurturing_questions_asked": {"$each": answer_records}
+                        },
+                        "$set": {
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        }
+                    }
+                )
+                logger.info(f"Stored {len(answer_records)} answers for lead {lead_id}")
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error storing answers: {e}")
+            return False
+    
+    async def _update_lead_status(
+        self,
+        lead_id: str,
+        stage: str,
+        score: int,
+        reasons: List[str]
+    ) -> bool:
+        """Update lead status after qualification"""
+        try:
+            leads_collection = self.db['inbound_leads']
+            
+            await leads_collection.update_one(
+                {"id": lead_id},
+                {
+                    "$set": {
+                        "stage": stage,
+                        "qualification_checked": True,
+                        "qualification_score": score,
+                        "qualification_reasons": reasons,
+                        "stage_changed_at": datetime.now(timezone.utc).isoformat(),
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    },
+                    "$push": {
+                        "stage_history": {
+                            "from_stage": "awaiting_info",
+                            "to_stage": stage,
+                            "changed_at": datetime.now(timezone.utc).isoformat(),
+                            "reason": f"Qualification score: {score}",
+                            "performed_by": "system"
+                        },
+                        "activities": {
+                            "timestamp": datetime.now(timezone.utc).isoformat(),
+                            "activity_type": "qualification_completed",
+                            "description": f"Lead {stage} with score {score}",
+                            "details": {"score": score, "reasons": reasons},
+                            "performed_by": "system"
+                        }
+                    }
+                }
+            )
+            
+            logger.info(f"Updated lead {lead_id} to {stage} (score: {score})")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error updating lead status: {e}")
+            return False
+    
+    async def _increment_attempt(
+        self,
+        lead_id: str,
+        new_attempt: int,
+        questions: List[Dict]
+    ) -> bool:
+        """Increment qualification attempt"""
+        try:
+            leads_collection = self.db['inbound_leads']
+            
+            await leads_collection.update_one(
+                {"id": lead_id},
+                {
+                    "$set": {
+                        "qualification_attempt": new_attempt,
+                        "last_questions_asked": questions,
+                        "updated_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            )
+            
+            logger.info(f"Incremented lead {lead_id} to attempt {new_attempt}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error incrementing attempt: {e}")
+            return False
