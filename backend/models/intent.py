@@ -17,6 +17,10 @@ class Intent(BaseModel):
     is_default: bool = False  # Default intent for unmatched emails
     is_inbound_lead: bool = False  # Mark this intent as inbound lead
     
+    # Lead Qualification & Nurturing (New Feature)
+    enable_lead_qualification: bool = False  # Enable qualification for this intent
+    enable_lead_nurturing: bool = False  # Enable nurturing for this intent
+    
     is_active: bool = True
     created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
@@ -37,6 +41,8 @@ class IntentUpdate(BaseModel):
     auto_send: Optional[bool] = None
     priority: Optional[int] = None
     is_inbound_lead: Optional[bool] = None
+    enable_lead_qualification: Optional[bool] = None
+    enable_lead_nurturing: Optional[bool] = None
     is_active: Optional[bool] = None
 
 class IntentResponse(BaseModel):
@@ -48,5 +54,7 @@ class IntentResponse(BaseModel):
     auto_send: bool
     priority: int
     is_inbound_lead: bool
+    enable_lead_qualification: bool
+    enable_lead_nurturing: bool
     is_active: bool
     created_at: str
