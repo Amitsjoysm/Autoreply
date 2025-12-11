@@ -34,6 +34,12 @@ class User(BaseModel):
     global_lead_nurturing_enabled: bool = False  # Global toggle for nurturing
     default_qualification_criteria_id: Optional[str] = None  # Default criteria to use
     default_nurturing_config_id: Optional[str] = None  # Default nurturing config to use
+    
+    # Calendar & Timezone Preferences
+    timezone: str = "UTC"  # User's preferred timezone (e.g., "America/New_York", "Europe/London")
+    working_hours_start: str = "09:00"  # Working hours start time (24h format)
+    working_hours_end: str = "17:00"  # Working hours end time (24h format)
+    working_days: List[int] = [1, 2, 3, 4, 5]  # Monday=1 to Sunday=7
 
 class UserCreate(BaseModel):
     email: EmailStr
