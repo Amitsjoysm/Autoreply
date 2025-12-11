@@ -28,6 +28,12 @@ class User(BaseModel):
     hubspot_token_expires_at: Optional[str] = None
     hubspot_portal_id: Optional[str] = None  # HubSpot account ID
     hubspot_auto_sync: bool = False  # Auto-sync leads to HubSpot
+    
+    # Lead Qualification & Nurturing Global Settings (New Feature)
+    global_lead_qualification_enabled: bool = False  # Global toggle for qualification
+    global_lead_nurturing_enabled: bool = False  # Global toggle for nurturing
+    default_qualification_criteria_id: Optional[str] = None  # Default criteria to use
+    default_nurturing_config_id: Optional[str] = None  # Default nurturing config to use
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -52,6 +58,10 @@ class UserResponse(BaseModel):
     hubspot_connected: bool
     hubspot_portal_id: Optional[str]
     hubspot_auto_sync: bool
+    global_lead_qualification_enabled: bool
+    global_lead_nurturing_enabled: bool
+    default_qualification_criteria_id: Optional[str]
+    default_nurturing_config_id: Optional[str]
 
 class TokenResponse(BaseModel):
     access_token: str
