@@ -37,12 +37,26 @@ const MainLayout = ({ children }) => {
   const [campaignExpanded, setCampaignExpanded] = useState(
     window.location.pathname.startsWith('/campaign')
   );
+  const [initialSetupExpanded, setInitialSetupExpanded] = useState(
+    window.location.pathname.includes('/email-accounts') ||
+    window.location.pathname.includes('/calendar-providers') ||
+    window.location.pathname.includes('/knowledge-base') ||
+    window.location.pathname.includes('/intents') ||
+    window.location.pathname.includes('/meeting-detection')
+  );
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
   useEffect(() => {
     setCurrentPath(window.location.pathname);
     if (window.location.pathname.startsWith('/campaign')) {
       setCampaignExpanded(true);
+    }
+    if (window.location.pathname.includes('/email-accounts') ||
+        window.location.pathname.includes('/calendar-providers') ||
+        window.location.pathname.includes('/knowledge-base') ||
+        window.location.pathname.includes('/intents') ||
+        window.location.pathname.includes('/meeting-detection')) {
+      setInitialSetupExpanded(true);
     }
   }, [window.location.pathname]);
 
@@ -58,18 +72,24 @@ const MainLayout = ({ children }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [profileDropdownOpen]);
 
-  // Main sidebar menu items - reorganized as per requirements
-  // Order: Dashboard, Campaigns (separate), Inbound Leads, Email Processing, etc.
+  // Main sidebar menu items - reorganized structure
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: BarChart3 },
-    // Campaigns section is rendered separately below with expandable submenu
-    { path: '/inbound-leads', label: 'Inbound Leads', icon: Target },
-    { path: '/email-processing', label: 'Email Processing', icon: FileText },
+    { path: '/inbound-leads', label: 'Leads Management', icon: Target },
+    { path: '/email-processing', label: 'Conversations', icon: MessageSquare },
     { path: '/follow-ups', label: 'Follow-ups', icon: UserPlus },
-    { path: '/calendar-events', label: 'Calendar Events', icon: CalendarDays },
-    { path: '/meeting-detection', label: 'Meeting Detection', icon: Brain },
+    { path: '/calendar-events', label: 'Calendar & Schedules', icon: CalendarDays },
     { path: '/live-monitoring', label: 'Live Monitoring', icon: Activity },
     { path: '/test-email', label: 'Test Email', icon: Zap },
+  ];
+
+  // Initial Setup submenu items
+  const initialSetupItems = [
+    { path: '/email-accounts', label: 'Email Accounts', icon: Mail },
+    { path: '/calendar-providers', label: 'Calendar Providers', icon: Calendar },
+    { path: '/knowledge-base', label: 'Knowledge Base', icon: Database },
+    { path: '/intents', label: 'Intents', icon: Target },
+    { path: '/meeting-detection', label: 'Meeting Detection', icon: Brain },
   ];
 
   const campaignMenuItems = [
@@ -79,12 +99,10 @@ const MainLayout = ({ children }) => {
     { path: '/campaign/templates', label: 'Templates', icon: FileText },
   ];
 
-  // Profile dropdown menu items
+  // Profile dropdown menu items (Settings only)
   const profileMenuItems = [
-    { path: '/email-accounts', label: 'Email Accounts', icon: Mail },
-    { path: '/calendar-providers', label: 'Calendar Providers', icon: Calendar },
-    { path: '/knowledge-base', label: 'Knowledge Base', icon: Database },
-    { path: '/intents', label: 'Intents', icon: Target },
+    { path: '/profile', label: 'Profile', icon: User },
+    { path: '/settings', label: 'Settings', icon: SettingsIcon },
   ];
 
   return (
