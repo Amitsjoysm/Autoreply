@@ -451,11 +451,33 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
         calendar_event,
         current_time: str,
         follow_up_context: Optional[Dict] = None,
-        meeting_info: Optional[Dict] = None
+        meeting_info: Optional[Dict] = None,
+        nurturing_questions: List[Dict] = None
     ) -> str:
         """Build comprehensive draft generation prompt"""
         
         prompt = f"Current Date & Time: {current_time}\n\n"
+        
+        # Add nurturing questions if this is a lead qualification email
+        if nurturing_questions and len(nurturing_questions) > 0:
+            prompt += "🎯 LEAD QUALIFICATION - IMPORTANT\n"
+            prompt += "="*50 + "\n"
+            prompt += "This is a potential lead. You MUST naturally integrate these qualification questions into your response:\n\n"
+            
+            for i, q in enumerate(nurturing_questions, 1):
+                question_text = q.get('question_text', '')
+                is_required = q.get('is_required', False)
+                required_mark = " (REQUIRED)" if is_required else ""
+                prompt += f"{i}. {question_text}{required_mark}\n"
+            
+            prompt += "\n✨ CRITICAL INSTRUCTIONS FOR QUESTION INTEGRATION:\n"
+            prompt += "- Weave these questions NATURALLY into your response\n"
+            prompt += "- DO NOT make it feel like an interrogation or form\n"
+            prompt += "- Introduce questions conversationally (e.g., 'To better assist you, I'd love to know...')\n"
+            prompt += "- Keep your tone warm, friendly, and genuinely curious\n"
+            prompt += "- Make it feel like you're having a conversation, not collecting data\n"
+            prompt += "- It's okay to ask questions in a different order if it flows better\n"
+            prompt += "="*50 + "\n\n"
         
         # Add follow-up context if this is an automated follow-up
         if follow_up_context and follow_up_context.get('is_automated_followup'):
