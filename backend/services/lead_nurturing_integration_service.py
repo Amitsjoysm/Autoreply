@@ -16,6 +16,7 @@ logger = logging.getLogger(__name__)
 class LeadNurturingIntegrationService:
     """
     Integration service that coordinates nurturing and qualification
+    FULLY AUTONOMOUS - Implements complete qualification flow
     """
     
     def __init__(self, db):
@@ -23,6 +24,138 @@ class LeadNurturingIntegrationService:
         self.nurturing_service = LeadNurturingService(db)
         self.qualification_service = LeadQualificationService(db)
         self.ai_service = LeadAIService()
+    
+    async def process_lead_email(
+        self,
+        user_id: str,
+        email_id: str,
+        email_content: str,
+        from_email: str,
+        intent_doc: Optional[Dict],
+        thread_context: List[Dict]
+    ) -> Tuple[bool, Optional[str], List[Dict], str]:
+        """
+        MAIN AUTONOMOUS PROCESSOR - Handles entire lead qualification flow
+        
+        Returns:
+            Tuple of (should_create_lead, lead_stage, questions_to_ask, lead_id)
+            - should_create_lead: True if lead should be created/updated in inbound_leads
+            - lead_stage: 'awaiting_info', 'qualified', 'unqualified', or 'new'
+            - questions_to_ask: List of questions to include in draft
+            - lead_id: ID of existing lead if found
+        """
+        try:
+            # Check if nurturing/qualification is enabled
+            nurturing_enabled = await self.should_enable_nurturing_for_intent(user_id, intent_doc)
+            qualification_enabled = await self.should_enable_qualification_for_intent(user_id, intent_doc)
+            
+            if not (nurturing_enabled or qualification_enabled):
+                # Feature not enabled - use old flow (immediate lead creation)
+                logger.info(f"Nurturing/qualification not enabled for user {user_id}")
+                return True, 'new', [], None
+            
+            # Check if this is a new lead or existing conversation
+            lead = await self._find_existing_lead(user_id, from_email)
+            
+            if not lead:
+                # NEW LEAD - Start qualification process
+                logger.info(f"New lead detected: {from_email}")
+                
+                # Create lead in "awaiting_info" status
+                lead_id = await self._create_awaiting_lead(
+                    user_id,
+                    from_email,
+                    email_id,
+                    intent_doc
+                )
+                
+                # Get questions to ask (attempt #1)
+                questions = await self._get_questions_for_attempt(
+                    user_id,
+                    email_content,
+                    thread_context,
+                    [],  # No previous questions
+                    1  # First attempt
+                )
+                
+                return False, 'awaiting_info', questions, lead_id
+            
+            else:
+                # EXISTING LEAD - Continue qualification process
+                lead_id = lead['id']
+                current_stage = lead.get('stage', 'awaiting_info')
+                attempt = lead.get('qualification_attempt', 0)
+                
+                logger.info(f"Existing lead {lead_id}: stage={current_stage}, attempt={attempt}")
+                
+                # If already qualified or disqualified, don't reprocess
+                if current_stage in ['qualified', 'unqualified', 'converted', 'lost']:
+                    logger.info(f"Lead {lead_id} already processed: {current_stage}")
+                    return True, current_stage, [], lead_id
+                
+                # Extract answers from this email using AI
+                questions_asked = lead.get('last_questions_asked', [])
+                answers = await self.ai_service.extract_answers_from_email(
+                    email_content,
+                    questions_asked
+                )
+                
+                # Store answers
+                await self._store_answers(lead_id, answers, questions_asked)
+                
+                # Evaluate qualification
+                is_qualified, score, reasons = await self.qualification_service.evaluate_lead_qualification(
+                    user_id,
+                    lead,  # Pass full lead data
+                    lead.get('qualification_criteria_id')
+                )
+                
+                logger.info(f"Lead {lead_id} evaluation: score={score}, qualified={is_qualified}")
+                
+                # Decision tree based on score
+                if score >= 60:
+                    # QUALIFIED - Create inbound lead
+                    await self._update_lead_status(lead_id, 'qualified', score, reasons)
+                    return True, 'qualified', [], lead_id
+                
+                elif score < 40:
+                    # DISQUALIFIED - Don't create, mark as unqualified
+                    await self._update_lead_status(lead_id, 'unqualified', score, reasons)
+                    return True, 'unqualified', [], lead_id
+                
+                else:
+                    # NEEDS MORE INFO (40 <= score < 60)
+                    if attempt >= 3:
+                        # Max attempts reached - make final decision
+                        if score >= 50:
+                            # Borderline - give benefit of doubt
+                            await self._update_lead_status(lead_id, 'qualified', score, reasons + ["Max attempts reached - borderline qualified"])
+                            return True, 'qualified', [], lead_id
+                        else:
+                            # Below 50 after 3 attempts - disqualify
+                            await self._update_lead_status(lead_id, 'unqualified', score, reasons + ["Max attempts reached - insufficient score"])
+                            return True, 'unqualified', [], lead_id
+                    
+                    else:
+                        # Ask follow-up questions (rephrased)
+                        new_attempt = attempt + 1
+                        questions = await self._get_questions_for_attempt(
+                            user_id,
+                            email_content,
+                            thread_context,
+                            questions_asked,
+                            new_attempt
+                        )
+                        
+                        # Update attempt counter
+                        await self._increment_attempt(lead_id, new_attempt, questions)
+                        
+                        return False, 'awaiting_info', questions, lead_id
+                        
+        except Exception as e:
+            logger.error(f"Error in autonomous lead processing: {e}")
+            # On error, default to old behavior
+            return True, 'new', [], None
     
     async def get_nurturing_questions_for_draft(
         self,
