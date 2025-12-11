@@ -295,7 +295,7 @@ async def send_test_message(
         is_valid, validation_issues, validation_tokens = await ai_service.validate_draft(
             draft=draft,
             original_email=test_email,
-            thread_context=thread_context if 'thread_context' in locals() else []
+            thread_context=draft_thread_context
         )
         
         validation_action = {
