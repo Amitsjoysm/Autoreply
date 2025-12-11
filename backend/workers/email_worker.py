@@ -539,6 +539,10 @@ async def process_email(email_id: str):
                 "max_attempts": max_retries + 1
             })
             
+            # Get nurturing questions if they exist
+            email_doc = await db.emails.find_one({"id": email_id})
+            nurturing_questions = email_doc.get('nurturing_questions_to_ask', []) if email_doc else []
+            
             draft, tokens = await ai_service.generate_draft(
                 email, 
                 email.user_id, 
@@ -551,7 +555,8 @@ async def process_email(email_id: str):
                     "confidence": meeting_confidence,
                     "details": meeting_details,
                     "event_created": event_created is not None
-                } if is_meeting else None
+                } if is_meeting else None,
+                nurturing_questions=nurturing_questions if nurturing_questions else None
             )
             total_tokens += tokens
             
