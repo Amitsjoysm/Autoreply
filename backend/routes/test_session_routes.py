@@ -308,8 +308,17 @@ async def send_test_message(
         }
         
         # STEP 7: Create new follow-ups
+        # Only create follow-ups if:
+        # 1. Draft is valid
+        # 2. Lead is still awaiting info (not qualified/unqualified)
+        # 3. OR no lead processing (non-lead emails)
         new_followups = []
-        if is_valid:  # Only create follow-ups for valid drafts
+        should_create_followups = is_valid and (
+            not lead_id or  # No lead (non-lead email)
+            (lead_info and lead_info.get('stage') == 'awaiting_info')  # Lead needs more info
+        )
+        
+        if should_create_followups:
             for days in [2, 4, 6]:
                 followup_id = str(uuid.uuid4())
                 scheduled_date = (datetime.now(timezone.utc) + timedelta(days=days))
