@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone, timedelta
+from models.user import User
 import uuid
 
 from routes.auth_routes import get_current_user_from_token, get_db
