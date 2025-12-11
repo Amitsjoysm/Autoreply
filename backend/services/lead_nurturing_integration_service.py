@@ -1,6 +1,7 @@
 """
 Lead Nurturing Integration Service
 Integrates nurturing and qualification with email processing
+FULLY AUTONOMOUS - Handles entire qualification flow
 """
 import logging
 from typing import Dict, List, Optional, Tuple, Any
@@ -8,6 +9,7 @@ from datetime import datetime, timezone
 
 from services.lead_nurturing_service import LeadNurturingService
 from services.lead_qualification_service import LeadQualificationService
+from services.lead_ai_service import LeadAIService
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +22,7 @@ class LeadNurturingIntegrationService:
         self.db = db
         self.nurturing_service = LeadNurturingService(db)
         self.qualification_service = LeadQualificationService(db)
+        self.ai_service = LeadAIService()
     
     async def get_nurturing_questions_for_draft(
         self,
