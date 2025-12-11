@@ -230,7 +230,7 @@ Best regards,
 John Smith
 CEO, Tech Startup Inc.""",
             received_at=datetime.now(timezone.utc).isoformat(),
-            status="new"
+            status="pending"
         )
         
         # Insert test email
