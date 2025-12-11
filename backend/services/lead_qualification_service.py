@@ -97,9 +97,16 @@ class LeadQualificationService:
             else:
                 reasons.append(f"✗ {field}: {actual_value} {operator} {expected_value}")
         
-        # Calculate final score
-        score = weighted_score / total_weight if total_weight > 0 else 0
-        min_score = criteria.get('min_qualification_score', 0.7)
+        # Calculate final score (0-100)
+        score = int((weighted_score / total_weight) * 100) if total_weight > 0 else 0
+        min_score = int(criteria.get('min_qualification_score', 0.7) * 100)  # Convert 0.7 to 70
+        if min_score > 1:  # Already in 0-100 range
+            min_score = criteria.get('min_qualification_score', 70)
+        else:
+            min_score = int(criteria.get('min_qualification_score', 0.7) * 100)
+        
+        # Use 60 as default threshold
+        min_score = min_score if min_score > 0 else 60
         is_qualified = score >= min_score
         
         return is_qualified, score, reasons
