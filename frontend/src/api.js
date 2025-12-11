@@ -583,6 +583,22 @@ class API {
     const response = await this.axios.get('/test/system-status');
     return response.data;
   }
+
+  // Test Session APIs (Multi-turn conversation testing)
+  async sendTestMessage(data) {
+    const response = await this.axios.post('/test-session/send-message', data);
+    return response.data;
+  }
+
+  async getTestSession(sessionId) {
+    const response = await this.axios.get(`/test-session/session/${sessionId}`);
+    return response.data;
+  }
+
+  async deleteTestSession(sessionId) {
+    const response = await this.axios.delete(`/test-session/session/${sessionId}`);
+    return response.data;
+  }
 }
 
 export default new API();
