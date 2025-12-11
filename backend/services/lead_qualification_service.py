@@ -168,9 +168,15 @@ class LeadQualificationService:
                 weighted_score += weight
                 reasons.append(f"✓ {question_key}: Answered - {response}")
         
-        # Calculate final score
-        score = weighted_score / total_weight if total_weight > 0 else 0
-        min_score = criteria.get('min_qualification_score', 0.7)
+        # Calculate final score (0-100)
+        score = int((weighted_score / total_weight) * 100) if total_weight > 0 else 0
+        min_score = int(criteria.get('min_qualification_score', 0.7) * 100)
+        if min_score > 1:
+            min_score = criteria.get('min_qualification_score', 70)
+        else:
+            min_score = int(criteria.get('min_qualification_score', 0.7) * 100)
+        
+        min_score = min_score if min_score > 0 else 60
         is_qualified = score >= min_score
         
         return is_qualified, score, reasons
