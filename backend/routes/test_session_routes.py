@@ -280,7 +280,7 @@ async def send_test_message(
         }
         
         # STEP 6: Draft Validation
-        is_valid, validation_issues = await ai_service.validate_draft(
+        is_valid, validation_issues, validation_tokens = await ai_service.validate_draft(
             draft=draft,
             original_email=test_email,
             thread_context=thread_context if 'thread_context' in locals() else []
