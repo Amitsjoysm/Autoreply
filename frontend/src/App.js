@@ -414,6 +414,16 @@ function App() {
             }
           />
           <Route
+            path="/lead-qualification"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <LeadQualification />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/intents"
             element={
               <ProtectedRoute>
