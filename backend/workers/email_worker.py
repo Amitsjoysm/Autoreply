@@ -197,9 +197,12 @@ async def process_email(email_id: str):
             "confidence": intent_confidence
         })
         
-        # Step 1.25: Check for Inbound Lead (Parlant.io Architecture)
+        # Step 1.25: Check for Inbound Lead with Autonomous Qualification
         from services.lead_agent_service import LeadAgentService
+        from services.lead_nurturing_integration_service import LeadNurturingIntegrationService
+        
         lead_service = LeadAgentService(db)
+        lead_integration_service = LeadNurturingIntegrationService(db)
         
         is_lead = await lead_service.is_inbound_lead(intent_id, email.user_id)
         if is_lead:
@@ -209,35 +212,77 @@ async def process_email(email_id: str):
                 "lead_email": email.from_email
             })
             
-            # Extract lead data using AI
-            extracted_data = await lead_service.extract_lead_data(email)
+            # NEW AUTONOMOUS FLOW - Process lead through qualification
+            should_create_inbound_lead, lead_stage, questions_to_ask, existing_lead_id = await lead_integration_service.process_lead_email(
+                user_id=email.user_id,
+                email_id=email.id,
+                email_content=email.body,
+                from_email=email.from_email,
+                intent_doc=intent_doc,
+                thread_context=thread_context if thread_context else []
+            )
             
-            await add_action(email_id, "lead_data_extracted", {
-                "extraction_confidence": extracted_data.extraction_confidence,
-                "fields_extracted": {
-                    "name": extracted_data.name,
-                    "company": extracted_data.company_name,
-                    "phone": extracted_data.phone,
-                    "job_title": extracted_data.job_title
-                }
-            })
+            logger.info(f"Lead processing result: create={should_create_inbound_lead}, stage={lead_stage}, questions={len(questions_to_ask)}")
             
-            # Create or update lead
-            try:
-                lead = await lead_service.create_lead(
-                    user_id=email.user_id,
-                    email=email,
-                    intent_id=intent_id,
-                    intent_name=intent_name,
-                    extracted_data=extracted_data
+            # Store questions to ask in email for draft generation
+            if questions_to_ask:
+                await db.emails.update_one(
+                    {"id": email_id},
+                    {"$set": {"nurturing_questions_to_ask": questions_to_ask}}
                 )
+                logger.info(f"Stored {len(questions_to_ask)} nurturing questions for email {email_id}")
+            
+            # Create inbound lead only if qualified or max attempts reached
+            if should_create_inbound_lead and lead_stage in ['qualified', 'unqualified']:
+                # Extract lead data using AI (for qualified/unqualified leads)
+                extracted_data = await lead_service.extract_lead_data(email)
                 
-                logger.info(f"✓ Lead created/updated: {lead.id} ({lead.lead_email}) - Stage: {lead.stage}, Score: {lead.score}")
+                await add_action(email_id, "lead_data_extracted", {
+                    "extraction_confidence": extracted_data.extraction_confidence,
+                    "fields_extracted": {
+                        "name": extracted_data.name,
+                        "company": extracted_data.company_name,
+                        "phone": extracted_data.phone,
+                        "job_title": extracted_data.job_title
+                    }
+                })
                 
-                await add_action(email_id, "lead_created", {
-                    "lead_id": lead.id,
-                    "stage": lead.stage,
-                    "score": lead.score,
+                # Create or update lead in inbound_leads collection
+                try:
+                    # If existing_lead_id exists, it's already in awaiting_info status
+                    # Just update it with final status
+                    if existing_lead_id:
+                        logger.info(f"✓ Lead {existing_lead_id} final status: {lead_stage}")
+                        # The status is already updated by integration service
+                        
+                        # Get the updated lead
+                        lead_doc = await db.inbound_leads.find_one({"id": existing_lead_id})
+                        if lead_doc:
+                            from models.inbound_lead import InboundLead
+                            lead = InboundLead(**lead_doc)
+                            
+                            await add_action(email_id, "lead_finalized", {
+                                "lead_id": lead.id,
+                                "stage": lead.stage,
+                                "score": lead.score,
+                                "qualification_score": lead.qualification_score
+                            })
+                    else:
+                        # Fallback: Create lead using old method (if integration failed)
+                        lead = await lead_service.create_lead(
+                            user_id=email.user_id,
+                            email=email,
+                            intent_id=intent_id,
+                            intent_name=intent_name,
+                            extracted_data=extracted_data
+                        )
+                        
+                        logger.info(f"✓ Lead created (fallback): {lead.id} ({lead.lead_email}) - Stage: {lead.stage}")
+                        
+                        await add_action(email_id, "lead_created", {
+                            "lead_id": lead.id,
+                            "stage": lead.stage,
+                            "score": lead.score,
                     "lead_name": lead.lead_name,
                     "company": lead.company_name
                 })
