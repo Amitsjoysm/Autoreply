@@ -72,6 +72,8 @@ from routes.campaign_routes import router as campaign_router
 from routes.contact_list_routes import router as contact_list_router
 from routes.lead_routes import router as lead_router
 from routes.hubspot_routes import router as hubspot_router
+from routes.lead_qualification_routes import router as lead_qualification_router
+from routes.lead_nurturing_routes import router as lead_nurturing_router
 
 # Include routers under /api prefix
 app.include_router(auth_router, prefix="/api")
@@ -85,6 +87,8 @@ app.include_router(follow_up_router, prefix="/api")
 app.include_router(system_router, prefix="/api")
 app.include_router(test_router, prefix="/api")
 app.include_router(hubspot_router, prefix="/api")
+app.include_router(lead_qualification_router)
+app.include_router(lead_nurturing_router)
 app.include_router(lead_router)
 app.include_router(campaign_contact_router)
 app.include_router(campaign_template_router)
