@@ -363,7 +363,7 @@ async def get_system_status(
 ):
     """Get system configuration status for testing"""
     
-    user_id = current_user['id']
+    user_id = current_user.id
     
     # Check configuration
     intents_count = await db.intents.count_documents({"user_id": user_id, "is_active": True})
