@@ -20,12 +20,14 @@ class LeadQualificationService:
         user_id: str,
         lead_data: Dict[str, Any],
         criteria_id: Optional[str] = None
-    ) -> Tuple[bool, float, List[str]]:
+    ) -> Tuple[bool, int, List[str]]:
         """
         Evaluate if a lead meets qualification criteria
         
         Returns:
             Tuple of (is_qualified, score, reasons)
+            - score is 0-100 integer
+            - is_qualified = True if score >= 60
         """
         try:
             # Get qualification criteria
@@ -45,7 +47,7 @@ class LeadQualificationService:
             
             if not criteria:
                 logger.warning(f"No active qualification criteria found for user {user_id}")
-                return True, 1.0, ["No criteria configured - auto-qualified"]
+                return True, 100, ["No criteria configured - auto-qualified"]
             
             criteria_type = criteria.get('criteria_type', 'score_based')
             
@@ -60,17 +62,17 @@ class LeadQualificationService:
         except Exception as e:
             logger.error(f"Error evaluating lead qualification: {e}")
             # Default to qualified if error occurs
-            return True, 0.5, [f"Error in evaluation: {str(e)}"]
+            return True, 50, [f"Error in evaluation: {str(e)}"]
     
     async def _evaluate_rule_based(
         self,
         criteria: Dict,
         lead_data: Dict
-    ) -> Tuple[bool, float, List[str]]:
-        """Evaluate rule-based criteria"""
+    ) -> Tuple[bool, int, List[str]]:
+        """Evaluate rule-based criteria - Returns score 0-100"""
         rules = criteria.get('rules', [])
         if not rules:
-            return True, 1.0, ["No rules configured"]
+            return True, 100, ["No rules configured"]
         
         passed_rules = 0
         total_weight = 0
@@ -106,11 +108,11 @@ class LeadQualificationService:
         self,
         criteria: Dict,
         lead_data: Dict
-    ) -> Tuple[bool, float, List[str]]:
-        """Evaluate question-based criteria"""
+    ) -> Tuple[bool, int, List[str]]:
+        """Evaluate question-based criteria - Returns score 0-100"""
         questions = criteria.get('questions', [])
         if not questions:
-            return True, 1.0, ["No questions configured"]
+            return True, 100, ["No questions configured"]
         
         responses = lead_data.get('nurturing_questions_asked', [])
         response_dict = {r.get('question_key'): r.get('response') for r in responses}
@@ -170,8 +172,8 @@ class LeadQualificationService:
         self,
         criteria: Dict,
         lead_data: Dict
-    ) -> Tuple[bool, float, List[str]]:
-        """Evaluate using combined scoring (rules + questions)"""
+    ) -> Tuple[bool, int, List[str]]:
+        """Evaluate using combined scoring (rules + questions) - Returns score 0-100"""
         # Evaluate both rules and questions
         rules_qualified, rules_score, rules_reasons = await self._evaluate_rule_based(criteria, lead_data)
         questions_qualified, questions_score, questions_reasons = await self._evaluate_question_based(criteria, lead_data)
@@ -182,7 +184,7 @@ class LeadQualificationService:
         
         if rules and questions:
             # Both exist, average them
-            combined_score = (rules_score + questions_score) / 2
+            combined_score = int((rules_score + questions_score) / 2)
         elif rules:
             # Only rules
             combined_score = rules_score
@@ -191,13 +193,13 @@ class LeadQualificationService:
             combined_score = questions_score
         else:
             # Nothing configured
-            combined_score = 1.0
+            combined_score = 100
         
-        min_score = criteria.get('min_qualification_score', 0.7)
-        is_qualified = combined_score >= min_score
+        # Use 60 as threshold
+        is_qualified = combined_score >= 60
         
         reasons = [
-            f"Combined Score: {combined_score:.2f} (threshold: {min_score})",
+            f"Combined Score: {combined_score}/100 (threshold: 60)",
             "--- Rule-based Evaluation ---",
             *rules_reasons,
             "--- Question-based Evaluation ---",
