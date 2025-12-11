@@ -313,9 +313,17 @@ async def send_test_message(
         # 2. Lead is still awaiting info (not qualified/unqualified)
         # 3. OR no lead processing (non-lead emails)
         new_followups = []
+        
+        # Check lead stage if lead exists
+        lead_stage = None
+        if lead_id:
+            lead_doc = await db.inbound_leads.find_one({"id": lead_id})
+            if lead_doc:
+                lead_stage = lead_doc.get('stage')
+        
         should_create_followups = is_valid and (
             not lead_id or  # No lead (non-lead email)
-            (lead_info and lead_info.get('stage') == 'awaiting_info')  # Lead needs more info
+            lead_stage == 'awaiting_info'  # Lead needs more info
         )
         
         if should_create_followups:
