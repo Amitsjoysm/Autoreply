@@ -17,10 +17,10 @@ from routes.auth_routes import get_current_user_from_token, get_db
 router = APIRouter(prefix="/api/lead-nurturing-config", tags=["Lead Nurturing"])
 
 @router.get("", response_model=List[NurturingConfigResponse])
-async def list_nurturing_configs(current_user: dict = Depends(get_current_user)):
+async def list_nurturing_configs(current_user: dict = Depends(get_current_user_from_token), db = Depends(get_db)):
     """List all nurturing configurations for current user"""
     try:
-        db = container.get('db')
+        db
         config_collection = db['lead_nurturing_config']
         
         configs = await config_collection.find({
@@ -43,11 +43,11 @@ async def list_nurturing_configs(current_user: dict = Depends(get_current_user))
 @router.get("/{config_id}", response_model=NurturingConfigResponse)
 async def get_nurturing_config(
     config_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_from_token), db = Depends(get_db)
 ):
     """Get specific nurturing configuration"""
     try:
-        db = container.get('db')
+        db
         config_collection = db['lead_nurturing_config']
         
         config = await config_collection.find_one({
@@ -74,11 +74,11 @@ async def get_nurturing_config(
 @router.post("", response_model=NurturingConfigResponse)
 async def create_nurturing_config(
     config_data: NurturingConfigCreate,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_from_token), db = Depends(get_db)
 ):
     """Create new nurturing configuration"""
     try:
-        db = container.get('db')
+        db
         config_collection = db['lead_nurturing_config']
         
         # Create config document
@@ -99,11 +99,11 @@ async def create_nurturing_config(
 async def update_nurturing_config(
     config_id: str,
     config_update: NurturingConfigUpdate,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_from_token), db = Depends(get_db)
 ):
     """Update nurturing configuration"""
     try:
-        db = container.get('db')
+        db
         config_collection = db['lead_nurturing_config']
         
         # Check if config exists
@@ -151,11 +151,11 @@ async def update_nurturing_config(
 @router.delete("/{config_id}")
 async def delete_nurturing_config(
     config_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_from_token), db = Depends(get_db)
 ):
     """Delete (soft delete) nurturing configuration"""
     try:
-        db = container.get('db')
+        db
         config_collection = db['lead_nurturing_config']
         
         # Soft delete by setting is_active to False
