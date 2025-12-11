@@ -12,16 +12,17 @@ from models.lead_qualification_criteria import (
     QualificationCriteriaUpdate,
     QualificationCriteriaResponse
 )
-from services.auth_service import get_current_user
-from container import container
+from routes.auth_routes import get_current_user_from_token, get_db
 
 router = APIRouter(prefix="/api/lead-qualification-criteria", tags=["Lead Qualification"])
 
 @router.get("", response_model=List[QualificationCriteriaResponse])
-async def list_qualification_criteria(current_user: dict = Depends(get_current_user)):
+async def list_qualification_criteria(
+    current_user: dict = Depends(get_current_user_from_token),
+    db = Depends(get_db)
+):
     """List all qualification criteria for current user"""
     try:
-        db = container.get('db')
         criteria_collection = db['lead_qualification_criteria']
         
         criteria_list = await criteria_collection.find({
