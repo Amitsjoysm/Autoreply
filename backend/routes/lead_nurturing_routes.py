@@ -20,7 +20,6 @@ router = APIRouter(prefix="/api/lead-nurturing-config", tags=["Lead Nurturing"])
 async def list_nurturing_configs(current_user: dict = Depends(get_current_user_from_token), db = Depends(get_db)):
     """List all nurturing configurations for current user"""
     try:
-        db
         config_collection = db['lead_nurturing_config']
         
         configs = await config_collection.find({
