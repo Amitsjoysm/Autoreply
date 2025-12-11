@@ -89,8 +89,8 @@ async def get_intent(
         auto_send=intent_doc['auto_send'],
         priority=intent_doc['priority'],
         is_inbound_lead=intent_doc.get('is_inbound_lead', False),
-            enable_lead_qualification=intent_doc.get('enable_lead_qualification', False),
-            enable_lead_nurturing=intent_doc.get('enable_lead_nurturing', False),
+        enable_lead_qualification=intent_doc.get('enable_lead_qualification', False),
+        enable_lead_nurturing=intent_doc.get('enable_lead_nurturing', False),
         is_active=intent_doc['is_active'],
         created_at=intent_doc['created_at'].isoformat() if isinstance(intent_doc['created_at'], datetime) else intent_doc['created_at']
     )
