@@ -228,15 +228,57 @@ const MainLayout = ({ children }) => {
               );
             })()}
             
-            {/* Campaign Section - Second Item */}
-            <div>
+            {/* Initial Setup Section - Expandable */}
+            <div className="mt-2">
+              <button
+                onClick={() => setInitialSetupExpanded(!initialSetupExpanded)}
+                className="flex items-center justify-between w-full px-6 py-3 hover:bg-purple-800/50 transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  <SettingsIcon className="w-5 h-5" />
+                  <span className="text-sm font-semibold">Initial Setup</span>
+                </div>
+                {initialSetupExpanded ? (
+                  <ChevronDown className="w-4 h-4" />
+                ) : (
+                  <ChevronRight className="w-4 h-4" />
+                )}
+              </button>
+              {initialSetupExpanded && (
+                <div className="bg-purple-900/30">
+                  {initialSetupItems.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = currentPath === item.path;
+                    return (
+                      <Link
+                        key={item.path}
+                        to={item.path}
+                        onClick={() => setCurrentPath(item.path)}
+                        className={`flex items-center gap-3 pl-12 pr-6 py-2.5 transition-colors text-sm ${
+                          isActive
+                            ? 'bg-gradient-to-r from-pink-500 to-purple-500 border-l-4 border-white'
+                            : 'hover:bg-purple-800/50'
+                        }`}
+                        data-testid={`nav-setup-${item.label.toLowerCase().replace(/ /g, '-')}`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            
+            {/* Campaign Section - Expandable */}
+            <div className="mt-2">
               <button
                 onClick={() => setCampaignExpanded(!campaignExpanded)}
                 className="flex items-center justify-between w-full px-6 py-3 hover:bg-purple-800/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <Send className="w-5 h-5" />
-                  <span className="text-sm font-semibold">Campaigns</span>
+                  <span className="text-sm font-semibold">Campaigns & Sequences</span>
                 </div>
                 {campaignExpanded ? (
                   <ChevronDown className="w-4 h-4" />
