@@ -45,11 +45,11 @@ async def list_qualification_criteria(
 @router.get("/{criteria_id}", response_model=QualificationCriteriaResponse)
 async def get_qualification_criteria(
     criteria_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_from_token),
+    db = Depends(get_db)
 ):
     """Get specific qualification criteria"""
     try:
-        db = container.get('db')
         criteria_collection = db['lead_qualification_criteria']
         
         criteria = await criteria_collection.find_one({
@@ -76,11 +76,11 @@ async def get_qualification_criteria(
 @router.post("", response_model=QualificationCriteriaResponse)
 async def create_qualification_criteria(
     criteria_data: QualificationCriteriaCreate,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_from_token),
+    db = Depends(get_db)
 ):
     """Create new qualification criteria"""
     try:
-        db = container.get('db')
         criteria_collection = db['lead_qualification_criteria']
         
         # Create criteria document
@@ -101,11 +101,11 @@ async def create_qualification_criteria(
 async def update_qualification_criteria(
     criteria_id: str,
     criteria_update: QualificationCriteriaUpdate,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_from_token),
+    db = Depends(get_db)
 ):
     """Update qualification criteria"""
     try:
-        db = container.get('db')
         criteria_collection = db['lead_qualification_criteria']
         
         # Check if criteria exists
@@ -153,11 +153,11 @@ async def update_qualification_criteria(
 @router.delete("/{criteria_id}")
 async def delete_qualification_criteria(
     criteria_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user_from_token),
+    db = Depends(get_db)
 ):
     """Delete (soft delete) qualification criteria"""
     try:
-        db = container.get('db')
         criteria_collection = db['lead_qualification_criteria']
         
         # Soft delete by setting is_active to False
