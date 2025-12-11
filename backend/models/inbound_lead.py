@@ -73,6 +73,18 @@ class InboundLead(BaseModel):
     last_reply_at: Optional[str] = None
     response_time_avg: Optional[float] = None  # Average response time in hours
     
+    # Lead Qualification (New Feature)
+    qualification_checked: bool = False  # Has qualification been performed
+    qualification_score: float = 0.0  # Calculated qualification score (0.0-1.0)
+    qualification_reasons: List[str] = []  # Reasons for qualification/disqualification
+    qualification_criteria_id: Optional[str] = None  # Criteria used for qualification
+    
+    # Lead Nurturing (New Feature)
+    nurturing_enabled: bool = False  # Is nurturing active for this lead
+    nurturing_exchanges_count: int = 0  # Number of nurturing exchanges completed
+    nurturing_questions_asked: List[Dict[str, Any]] = []  # Questions asked with responses
+    nurturing_config_id: Optional[str] = None  # Nurturing config used
+    
     # Meeting/Calendar
     meeting_scheduled: bool = False
     meeting_date: Optional[str] = None
@@ -168,5 +180,11 @@ class LeadDetailResponse(BaseModel):
     activities: List[Dict[str, Any]]
     notes: Optional[str]
     is_active: bool
+    qualification_checked: bool
+    qualification_score: float
+    qualification_reasons: List[str]
+    nurturing_enabled: bool
+    nurturing_exchanges_count: int
+    nurturing_questions_asked: List[Dict[str, Any]]
     created_at: str
     updated_at: str
