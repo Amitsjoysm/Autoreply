@@ -375,12 +375,14 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
         validation_issues: List[str] = None,
         calendar_event = None,
         follow_up_context: Optional[Dict] = None,
-        meeting_info: Optional[Dict] = None
+        meeting_info: Optional[Dict] = None,
+        nurturing_questions: List[Dict] = None
     ) -> Tuple[str, int]:
         """
         Generate email draft using Groq LLM with full context
         
         Args:
+            nurturing_questions: Optional list of questions to ask for lead qualification
             follow_up_context: Optional dict with:
                 - is_automated_followup: bool
                 - base_date: str (target date user mentioned)
@@ -405,7 +407,8 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
                 calendar_event=calendar_event,
                 current_time=current_time,
                 follow_up_context=follow_up_context,
-                meeting_info=meeting_info
+                meeting_info=meeting_info,
+                nurturing_questions=nurturing_questions
             )
             
             system_message = self._get_draft_system_message(context)
