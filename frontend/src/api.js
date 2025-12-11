@@ -572,6 +572,17 @@ class API {
     const response = await this.axios.put('/auth/settings', data);
     return response.data;
   }
+
+  // Test Flow APIs
+  async testCompleteFlow(data) {
+    const response = await this.axios.post('/test/complete-flow', data);
+    return response.data;
+  }
+
+  async getSystemStatus() {
+    const response = await this.axios.get('/test/system-status');
+    return response.data;
+  }
 }
 
 export default new API();
