@@ -253,11 +253,23 @@ async def send_test_message(
             }
         
         # STEP 5: Draft Generation
+        # Build thread context for draft generation (from/subject/body format)
+        draft_thread_context = []
+        for msg in session_data.get('conversation', []):
+            draft_thread_context.append({
+                "from": msg.get('from'),
+                "to": msg.get('to'),
+                "subject": msg.get('subject'),
+                "body": msg.get('body'),
+                "received_at": msg.get('timestamp'),
+                "draft_sent": msg.get('draft_sent') if msg['direction'] == 'outbound' else None
+            })
+        
         draft, tokens = await ai_service.generate_draft(
             email=test_email,
             user_id=user_id,
             intent_id=intent_id,
-            thread_context=thread_context if 'thread_context' in locals() else [],
+            thread_context=draft_thread_context,
             nurturing_questions=questions_to_ask if questions_to_ask else None,
             calendar_event=calendar_event if calendar_event else None,
             meeting_info={
