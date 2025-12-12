@@ -76,6 +76,7 @@ from routes.lead_qualification_routes import router as lead_qualification_router
 from routes.lead_nurturing_routes import router as lead_nurturing_router
 from routes.test_flow_routes import router as test_flow_router
 from routes.test_session_routes import router as test_session_router
+from routes.error_routes import router as error_router
 
 # Include routers under /api prefix
 app.include_router(auth_router, prefix="/api")
@@ -93,6 +94,7 @@ app.include_router(lead_qualification_router)
 app.include_router(lead_nurturing_router)
 app.include_router(test_flow_router)
 app.include_router(test_session_router)
+app.include_router(error_router)
 app.include_router(lead_router)
 app.include_router(campaign_contact_router)
 app.include_router(campaign_template_router)
