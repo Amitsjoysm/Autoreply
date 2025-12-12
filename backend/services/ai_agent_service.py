@@ -709,24 +709,33 @@ FORMATTING:
         context = {
             'persona': None,
             'knowledge_base': [],
-            'intent_prompt': None
+            'intent_prompt': None,
+            'intent_name': None
         }
         
-        # Get persona from email account
+        # Get persona from USER (primary) or email account (fallback)
         try:
-            account = await self.db.email_accounts.find_one({"id": email_account_id})
-            if account and account.get('persona'):
-                context['persona'] = account['persona']
+            user = await self.db.users.find_one({"id": user_id})
+            if user and user.get('persona'):
+                context['persona'] = user['persona']
+                logger.info(f"✓ Loaded user persona ({len(user['persona'])} chars)")
+            else:
+                # Fallback to email account persona
+                account = await self.db.email_accounts.find_one({"id": email_account_id})
+                if account and account.get('persona'):
+                    context['persona'] = account['persona']
+                    logger.info(f"✓ Loaded email account persona ({len(account['persona'])} chars)")
         except Exception as e:
             logger.warning(f"Could not load persona: {e}")
         
-        # Get knowledge base
+        # Get knowledge base (ALL active entries)
         try:
             kb_entries = await self.db.knowledge_base.find({
                 "user_id": user_id,
                 "is_active": True
-            }).to_list(50)
+            }).to_list(100)  # Increased from 50 to 100
             context['knowledge_base'] = kb_entries
+            logger.info(f"✓ Loaded {len(kb_entries)} knowledge base entries")
         except Exception as e:
             logger.warning(f"Could not load knowledge base: {e}")
         
@@ -734,10 +743,17 @@ FORMATTING:
         if intent_id:
             try:
                 intent = await self.db.intents.find_one({"id": intent_id})
-                if intent and intent.get('prompt'):
-                    context['intent_prompt'] = intent['prompt']
+                if intent:
+                    if intent.get('prompt'):
+                        context['intent_prompt'] = intent['prompt']
+                    context['intent_name'] = intent.get('name', 'Unknown')
+                    logger.info(f"✓ Loaded intent: {context['intent_name']}")
+                    logger.info(f"✓ Intent prompt: {len(context['intent_prompt'])} chars" if context['intent_prompt'] else "⚠ No intent prompt")
             except Exception as e:
                 logger.warning(f"Could not load intent: {e}")
+        
+        # Log what context we have
+        logger.info(f"Draft context summary: Persona={'Yes' if context['persona'] else 'No'}, KB={len(context['knowledge_base'])}, Intent={'Yes' if context['intent_prompt'] else 'No'}")
         
         return context
     
