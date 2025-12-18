@@ -111,20 +111,38 @@ const CalendarProviders = () => {
           <p className="text-gray-600 mt-1">Connect your calendar for AI-powered meeting management</p>
         </div>
         <div className="flex gap-2">
-          <Button 
-            onClick={handleConnectGoogle}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Connect Google Calendar
-          </Button>
-          <Button 
-            onClick={handleConnectMicrosoft}
-            className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Connect Outlook Calendar
-          </Button>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={handleConnectGoogle}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
+                >
+                  <GoogleIcon className="w-5 h-5 mr-2" />
+                  Connect Google Calendar
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Connect with Google</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  onClick={handleConnectMicrosoft}
+                  className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                >
+                  <OutlookIcon className="w-5 h-5 mr-2" />
+                  Connect Outlook Calendar
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Connect with Outlook</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
