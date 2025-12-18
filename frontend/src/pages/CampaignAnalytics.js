@@ -50,7 +50,7 @@ const CampaignAnalytics = () => {
       running: { color: 'bg-green-100 text-green-800', label: 'Running' },
       paused: { color: 'bg-yellow-100 text-yellow-800', label: 'Paused' },
       completed: { color: 'bg-purple-100 text-purple-800', label: 'Completed' },
-      stopped: { color: 'bg-red-100 text-red-800', label: 'Stopped' }
+      stopped: { color: 'bg-gray-100 text-gray-800', label: 'Stopped' }
     };
     const config = statusConfig[status] || statusConfig.draft;
     return <Badge className={`${config.color}`}>{config.label}</Badge>;
