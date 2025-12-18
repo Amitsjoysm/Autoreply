@@ -688,22 +688,27 @@ IMPORTANT: You MUST include in your response:
         
         return calendar_str
     
-    def _get_draft_system_message(self, context: Dict) -> str:
+    def _get_draft_system_message(self, context: Dict, nurturing_questions: List[Dict] = None) -> str:
         """Get system message for draft generation"""
         
-        base_message = """You are an AI email assistant that generates professional, helpful email responses.
+        # Adjust conciseness requirement based on whether we have lead qualification
+        has_questions = nurturing_questions and len(nurturing_questions) > 0
+        conciseness_guidance = "Be CONVERSATIONAL and THOROUGH: 200-300 words ideal for lead qualification" if has_questions else "Be CONCISE: Keep responses under 200 words (100-150 words ideal)"
+        paragraph_guidance = "Use 2-3 paragraphs to naturally integrate questions" if has_questions else "Use 1-2 short paragraphs maximum"
+        
+        base_message = f"""You are an AI email assistant that generates professional, helpful email responses.
 
 CORE PRINCIPLES:
 1. Be professional but natural and conversational
 2. Use the provided knowledge base for accurate information
 3. Follow the persona and intent-specific instructions
-4. Be CONCISE: Keep responses under 200 words (100-150 words ideal)
+4. {conciseness_guidance}
 5. Never make up information - use only what's in the knowledge base
 6. If you don't know something, say so professionally
 
 FORMATTING:
 - Only output the email body (no subject line, no "Subject:" prefix)
-- Use 1-2 short paragraphs maximum
+- {paragraph_guidance}
 - DO NOT add any sign-off, closing, signature, or "Best regards" type phrases
 - DO NOT include sender name or contact information at the end
 - End with the main content only - signature will be added automatically
