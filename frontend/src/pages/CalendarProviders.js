@@ -153,14 +153,16 @@ const CalendarProviders = () => {
             <p className="text-gray-600 text-center mb-4">
               Connect your calendar to enable AI-powered meeting detection and scheduling
             </p>
-            <div className="flex gap-3">
+            <div className="flex gap-3 justify-center">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button onClick={handleConnectGoogle} className="bg-blue-600 hover:bg-blue-700">
-                      <GoogleIcon className="w-5 h-5 mr-2" />
-                      Connect Google Calendar
-                    </Button>
+                    <button 
+                      onClick={handleConnectGoogle}
+                      className="w-16 h-16 rounded-lg bg-white border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md"
+                    >
+                      <GoogleIcon className="w-10 h-10" />
+                    </button>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Connect with Google</p>
@@ -170,10 +172,12 @@ const CalendarProviders = () => {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Button onClick={handleConnectMicrosoft} className="bg-blue-600 hover:bg-blue-700">
-                      <OutlookIcon className="w-5 h-5 mr-2" />
-                      Connect Outlook Calendar
-                    </Button>
+                    <button 
+                      onClick={handleConnectMicrosoft}
+                      className="w-16 h-16 rounded-lg bg-white border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md"
+                    >
+                      <OutlookIcon className="w-10 h-10" />
+                    </button>
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Connect with Outlook</p>
