@@ -15,8 +15,8 @@ API_BASE = f"{BACKEND_URL}/api"
 
 # Test user credentials
 TEST_USER = {
-    "email": "amits.joys@gmail.com",
-    "password": "ij@123"
+    "email": "test@example.com",
+    "password": "testpass123"
 }
 
 # Test scenarios from review request
