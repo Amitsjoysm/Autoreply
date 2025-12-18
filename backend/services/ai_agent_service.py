@@ -411,7 +411,7 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
                 nurturing_questions=nurturing_questions
             )
             
-            system_message = self._get_draft_system_message(context)
+            system_message = self._get_draft_system_message(context, nurturing_questions)
             
             # Adjust max_tokens based on content type
             # Meeting confirmations need more tokens for event details
