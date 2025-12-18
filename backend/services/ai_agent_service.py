@@ -615,17 +615,26 @@ Perfect! I've confirmed our meeting for [date] at [time]. I've sent you a calend
 
 Looking forward to our discussion!"""
                 
-            prompt += """
+            # Adjust word count guidance based on content
+            word_count_guidance = ""
+            if nurturing_questions and len(nurturing_questions) > 0:
+                # Lead qualification needs more space
+                word_count_guidance = "WORD COUNT: Aim for 200-300 words to naturally include qualification questions. Never exceed 400 words."
+            else:
+                # Standard responses are concise
+                word_count_guidance = "WORD COUNT: Aim for 100-150 words. Never exceed 200 words."
+            
+            prompt += f"""
 Generate a professional, helpful email response.
 
 CRITICAL REQUIREMENTS:
 1. ALWAYS start with a personalized greeting using the sender's name (e.g., "Hi John," or "Hello Sarah,")
    - Extract name from email address if full name not available
    - Use first name only for informal/friendly tone
-2. Keep response SHORT and CONCISE: 100-200 words MAXIMUM
+2. Keep response {'CONVERSATIONAL and NATURAL' if nurturing_questions else 'SHORT and CONCISE'}: {'200-300 words for lead qualification' if nurturing_questions else '100-200 words MAXIMUM'}
    - Get straight to the point
-   - One main paragraph for the core message
-   - Optional second paragraph only if absolutely necessary
+   - {'Build rapport while asking questions naturally' if nurturing_questions else 'One main paragraph for the core message'}
+   - {'Multiple paragraphs okay to integrate questions naturally' if nurturing_questions else 'Optional second paragraph only if absolutely necessary'}
 3. Be natural, warm, and professional
 4. Use knowledge base information for accurate responses
 5. Reference conversation context when replying to threads
@@ -635,9 +644,9 @@ CRITICAL REQUIREMENTS:
    - Closing phrases like "Best regards" or "Sincerely" (handled by signature)
    - Excessive explanations or details
 
-WORD COUNT: Aim for 100-150 words. Never exceed 200 words.
+{word_count_guidance}
 
-Focus on helpful, concise, contextual response with proper personalized greeting."""
+Focus on helpful, {'conversational' if nurturing_questions else 'concise'}, contextual response with proper personalized greeting."""
         
         return prompt
     
