@@ -156,14 +156,32 @@ const CalendarProviders = () => {
               Connect your calendar to enable AI-powered meeting detection and scheduling
             </p>
             <div className="flex gap-3">
-              <Button onClick={handleConnectGoogle} className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Connect Google Calendar
-              </Button>
-              <Button onClick={handleConnectMicrosoft} className="bg-blue-600 hover:bg-blue-700">
-                <Plus className="w-4 h-4 mr-2" />
-                Connect Outlook Calendar
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={handleConnectGoogle} className="bg-blue-600 hover:bg-blue-700">
+                      <GoogleIcon className="w-5 h-5 mr-2" />
+                      Connect Google Calendar
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Connect with Google</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button onClick={handleConnectMicrosoft} className="bg-blue-600 hover:bg-blue-700">
+                      <OutlookIcon className="w-5 h-5 mr-2" />
+                      Connect Outlook Calendar
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Connect with Outlook</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </CardContent>
         </Card>
