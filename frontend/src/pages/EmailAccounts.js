@@ -384,14 +384,14 @@ const EmailAccounts = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      account.account_type === 'oauth_gmail' ? 'bg-red-100' :
-                      account.account_type === 'oauth_outlook' ? 'bg-blue-100' :
+                      account.account_type === 'oauth_gmail' ? 'bg-gray-50' :
+                      account.account_type === 'oauth_outlook' ? 'bg-gray-50' :
                       'bg-purple-100'
                     }`}>
                       {account.account_type === 'oauth_gmail' ? (
-                        <Mail className="w-6 h-6 text-red-600" />
+                        <GoogleIcon className="w-7 h-7" />
                       ) : account.account_type === 'oauth_outlook' ? (
-                        <Mail className="w-6 h-6 text-blue-600" />
+                        <OutlookIcon className="w-7 h-7" />
                       ) : (
                         <Globe className="w-6 h-6 text-purple-600" />
                       )}
