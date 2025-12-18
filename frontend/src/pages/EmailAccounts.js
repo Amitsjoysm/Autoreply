@@ -200,22 +200,17 @@ const EmailAccounts = () => {
             <div className="space-y-4">
               <div>
                 <Label className="text-sm font-medium">Quick Connect (OAuth)</Label>
-                <div className="grid grid-cols-2 gap-3 mt-2">
+                <div className="flex gap-4 mt-3 justify-center">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
+                        <button
                           type="button"
-                          variant="outline"
                           onClick={() => handleOAuthConnect('gmail')}
-                          className="h-auto py-4"
+                          className="w-20 h-20 rounded-lg bg-white border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md"
                         >
-                          <div className="flex flex-col items-center gap-2">
-                            <GoogleIcon className="w-6 h-6" />
-                            <span className="font-medium">Gmail</span>
-                            <span className="text-xs text-gray-500">OAuth 2.0</span>
-                          </div>
-                        </Button>
+                          <GoogleIcon className="w-12 h-12" />
+                        </button>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Connect with Google</p>
@@ -225,18 +220,13 @@ const EmailAccounts = () => {
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Button
+                        <button
                           type="button"
-                          variant="outline"
                           onClick={() => handleOAuthConnect('outlook')}
-                          className="h-auto py-4"
+                          className="w-20 h-20 rounded-lg bg-white border-2 border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 flex items-center justify-center shadow-sm hover:shadow-md"
                         >
-                          <div className="flex flex-col items-center gap-2">
-                            <OutlookIcon className="w-6 h-6" />
-                            <span className="font-medium">Outlook</span>
-                            <span className="text-xs text-gray-500">OAuth 2.0</span>
-                          </div>
-                        </Button>
+                          <OutlookIcon className="w-12 h-12" />
+                        </button>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>Connect with Outlook</p>
