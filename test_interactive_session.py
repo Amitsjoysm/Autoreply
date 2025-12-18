@@ -7,7 +7,7 @@ import json
 from datetime import datetime, timedelta
 
 # Configuration
-BASE_URL = "https://icon-integration-2.preview.emergentagent.com/api"
+BASE_URL = "https://agent-response-fix-3.preview.emergentagent.com/api"
 TEST_EMAIL = "john@techcompany.com"
 
 # Colors for output

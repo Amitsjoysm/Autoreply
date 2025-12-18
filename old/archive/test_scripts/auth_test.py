@@ -9,7 +9,7 @@ This test suite comprehensively tests the authentication endpoints as requested:
 4. GET /api/auth/me with valid token
 5. Negative test cases
 
-BACKEND URL: https://icon-integration-2.preview.emergentagent.com
+BACKEND URL: https://agent-response-fix-3.preview.emergentagent.com
 """
 
 import requests
@@ -20,7 +20,7 @@ from datetime import datetime
 import logging
 
 # Configuration
-BACKEND_URL = "https://icon-integration-2.preview.emergentagent.com"
+BACKEND_URL = "https://agent-response-fix-3.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user data
