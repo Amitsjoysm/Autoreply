@@ -1,98 +1,101 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import API from '../api';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
-import { toast } from 'sonner';
-import { Calendar, Plus, Trash2, CheckCircle2 } from 'lucide-react';
-import { format } from 'date-fns';
+import { Calendar, Plus, CheckCircle2, RefreshCw, Trash2, AlertCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const CalendarProviders = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const apiUrl = import.meta.env.VITE_API_URL || process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
-    loadProviders();
-    
-    // Check for OAuth success/error
-    const success = searchParams.get('success');
-    const error = searchParams.get('error');
-    const email = searchParams.get('email');
-    
-    if (success === 'true' && email) {
-      toast.success(`Successfully connected calendar for ${email}!`);
-      // Clear URL params
-      setSearchParams({});
-    } else if (error) {
-      toast.error(`OAuth failed: ${error}`);
-      setSearchParams({});
-    }
+    fetchProviders();
   }, []);
 
-  const loadProviders = async () => {
+  const fetchProviders = async () => {
     try {
-      const data = await API.getCalendarProviders();
-      setProviders(data);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(`${apiUrl}/api/calendar/providers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setProviders(response.data);
     } catch (error) {
-      toast.error('Failed to load calendar providers');
+      console.error('Error fetching calendar providers:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleConnectGoogle = async () => {
+  const handleConnectGoogle = () => {
+    const token = localStorage.getItem('token');
+    window.location.href = `${apiUrl}/api/calendar/oauth/google?token=${token}`;
+  };
+
+  const handleConnectMicrosoft = () => {
+    const token = localStorage.getItem('token');
+    window.location.href = `${apiUrl}/api/calendar/oauth/microsoft?token=${token}`;
+  };
+
+  const handleRefreshToken = async (providerId) => {
+    setRefreshing(true);
     try {
-      const response = await API.axios.get('/oauth/google/url?account_type=calendar');
-      window.location.href = response.data.url;
+      const token = localStorage.getItem('token');
+      await axios.post(
+        `${apiUrl}/api/calendar/providers/${providerId}/refresh`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      await fetchProviders();
     } catch (error) {
-      console.error('Google OAuth error:', error);
-      toast.error('Failed to initiate OAuth flow');
+      console.error('Error refreshing token:', error);
+      alert('Failed to refresh token. Please reconnect your calendar.');
+    } finally {
+      setRefreshing(false);
     }
   };
 
-  const handleConnectMicrosoft = async () => {
-    try {
-      const data = await API.getMicrosoftOAuthUrl('calendar');
-      window.location.href = data.url;
-    } catch (error) {
-      console.error('Microsoft OAuth error:', error);
-      toast.error('Failed to initiate OAuth flow');
+  const handleDisconnect = async (providerId) => {
+    if (!window.confirm('Are you sure you want to disconnect this calendar?')) {
+      return;
     }
-  };
 
-  const handleDelete = async (providerId) => {
-    if (!window.confirm('Are you sure you want to disconnect this calendar?')) return;
-    
+    setDeleting(providerId);
     try {
-      await API.deleteCalendarProvider(providerId);
-      toast.success('Calendar provider disconnected');
-      loadProviders();
+      const token = localStorage.getItem('token');
+      await axios.delete(`${apiUrl}/api/calendar/providers/${providerId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      await fetchProviders();
     } catch (error) {
-      toast.error('Failed to disconnect provider');
+      console.error('Error disconnecting calendar:', error);
+      alert('Failed to disconnect calendar.');
+    } finally {
+      setDeleting(null);
     }
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-gray-500">Loading calendar providers...</div>
-      </div>
-    );
+    return <div className="flex items-center justify-center h-64">Loading...</div>;
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Calendar Providers</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Calendar Integration</h1>
           <p className="text-gray-600 mt-1">Connect your calendar for AI-powered meeting management</p>
         </div>
         <div className="flex gap-2">
           <Button 
             onClick={handleConnectGoogle}
-            className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
           >
             <Plus className="w-4 h-4 mr-2" />
             Connect Google Calendar
@@ -117,7 +120,7 @@ const CalendarProviders = () => {
               Connect your calendar to enable AI-powered meeting detection and scheduling
             </p>
             <div className="flex gap-3">
-              <Button onClick={handleConnectGoogle} className="bg-red-600 hover:bg-red-700">
+              <Button onClick={handleConnectGoogle} className="bg-blue-600 hover:bg-blue-700">
                 <Plus className="w-4 h-4 mr-2" />
                 Connect Google Calendar
               </Button>
@@ -136,10 +139,10 @@ const CalendarProviders = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      provider.provider === 'google' ? 'bg-red-100' : 'bg-blue-100'
+                      provider.provider === 'google' ? 'bg-blue-100' : 'bg-blue-100'
                     }`}>
                       <Calendar className={`w-6 h-6 ${
-                        provider.provider === 'google' ? 'text-red-600' : 'text-blue-600'
+                        provider.provider === 'google' ? 'text-blue-600' : 'text-blue-600'
                       }`} />
                     </div>
                     <div>
@@ -149,33 +152,72 @@ const CalendarProviders = () => {
                           <CheckCircle2 className="w-3 h-3 mr-1" />
                           Connected
                         </Badge>
-                        <Badge variant="secondary">
+                        <span className="text-xs capitalize">
                           {provider.provider === 'google' ? 'Google Calendar' : 'Outlook Calendar'}
-                        </Badge>
+                        </span>
                       </CardDescription>
                     </div>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDisconnect(provider.id)}
+                    disabled={deleting === provider.id}
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                  >
+                    {deleting === provider.id ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
+                  </Button>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="text-sm">
-                    <span className="font-medium text-gray-700">Connected:</span>
-                    <p className="text-gray-600 mt-1">
-                      {provider.created_at && format(new Date(provider.created_at), 'MMM dd, yyyy HH:mm')}
-                    </p>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">Status</span>
+                    <span className="font-medium text-green-600">Active</span>
                   </div>
-                  
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => handleDelete(provider.id)}
-                    className="w-full"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Disconnect
-                  </Button>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">Connected On</span>
+                    <span className="font-medium">
+                      {new Date(provider.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  {provider.last_sync && (
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Last Synced</span>
+                      <span className="font-medium">
+                        {new Date(provider.last_sync).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
                 </div>
+
+                {provider.token_expires_at && (
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className="w-4 h-4 text-yellow-600" />
+                        <span className="text-sm text-gray-600">Token expires soon</span>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleRefreshToken(provider.id)}
+                        disabled={refreshing}
+                      >
+                        {refreshing ? (
+                          <RefreshCw className="w-3 h-3 mr-2 animate-spin" />
+                        ) : (
+                          <RefreshCw className="w-3 h-3 mr-2" />
+                        )}
+                        Refresh Token
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
