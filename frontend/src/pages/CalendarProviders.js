@@ -192,12 +192,12 @@ const CalendarProviders = () => {
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      provider.provider === 'google' ? 'bg-blue-100' : 'bg-blue-100'
-                    }`}>
-                      <Calendar className={`w-6 h-6 ${
-                        provider.provider === 'google' ? 'text-blue-600' : 'text-blue-600'
-                      }`} />
+                    <div className="w-12 h-12 rounded-full flex items-center justify-center bg-gray-50">
+                      {provider.provider === 'google' ? (
+                        <GoogleIcon className="w-7 h-7" />
+                      ) : (
+                        <OutlookIcon className="w-7 h-7" />
+                      )}
                     </div>
                     <div>
                       <CardTitle className="text-lg">{provider.email}</CardTitle>
