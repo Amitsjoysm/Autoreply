@@ -415,8 +415,15 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
             
             # Adjust max_tokens based on content type
             # Meeting confirmations need more tokens for event details
+            # Lead qualification emails need more space to naturally integrate questions
             max_tokens = 300  # Default for concise responses
-            if calendar_event:
+            
+            # Lead qualification needs more tokens to naturally integrate questions
+            if nurturing_questions and len(nurturing_questions) > 0:
+                # More tokens needed to answer + ask questions naturally
+                max_tokens = 600  # Increased for lead qualification with questions
+                logger.info(f"Adjusted max_tokens to {max_tokens} for lead qualification with {len(nurturing_questions)} questions")
+            elif calendar_event:
                 max_tokens = 400  # More space for meeting details
             elif meeting_info and meeting_info.get('detected'):
                 max_tokens = 350  # Medium space for meeting discussions
