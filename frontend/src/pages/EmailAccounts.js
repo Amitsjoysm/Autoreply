@@ -201,30 +201,48 @@ const EmailAccounts = () => {
               <div>
                 <Label className="text-sm font-medium">Quick Connect (OAuth)</Label>
                 <div className="grid grid-cols-2 gap-3 mt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleOAuthConnect('gmail')}
-                    className="h-auto py-4"
-                  >
-                    <div className="flex flex-col items-center gap-2">
-                      <Mail className="w-6 h-6 text-red-500" />
-                      <span className="font-medium">Gmail</span>
-                      <span className="text-xs text-gray-500">OAuth 2.0</span>
-                    </div>
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => handleOAuthConnect('outlook')}
-                    className="h-auto py-4"
-                  >
-                    <div className="flex flex-col items-center gap-2">
-                      <Mail className="w-6 h-6 text-blue-500" />
-                      <span className="font-medium">Outlook</span>
-                      <span className="text-xs text-gray-500">OAuth 2.0</span>
-                    </div>
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleOAuthConnect('gmail')}
+                          className="h-auto py-4"
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <GoogleIcon className="w-6 h-6" />
+                            <span className="font-medium">Gmail</span>
+                            <span className="text-xs text-gray-500">OAuth 2.0</span>
+                          </div>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Connect with Google</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => handleOAuthConnect('outlook')}
+                          className="h-auto py-4"
+                        >
+                          <div className="flex flex-col items-center gap-2">
+                            <OutlookIcon className="w-6 h-6" />
+                            <span className="font-medium">Outlook</span>
+                            <span className="text-xs text-gray-500">OAuth 2.0</span>
+                          </div>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Connect with Outlook</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
 
