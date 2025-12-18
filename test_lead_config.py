@@ -3,14 +3,14 @@ Test script to check lead qualification configuration
 """
 import asyncio
 import sys
+import os
 from motor.motor_asyncio import AsyncIOMotorClient
-from backend.config import get_settings
 
 async def check_configuration():
     """Check user and intent configuration for lead processing"""
-    settings = get_settings()
-    client = AsyncIOMotorClient(settings.mongo_url)
-    db = client[settings.mongo_db_name]
+    mongo_url = os.environ.get('MONGO_URL', 'mongodb://localhost:27017')
+    client = AsyncIOMotorClient(mongo_url)
+    db = client['autoreply_db']
     
     print("=" * 80)
     print("LEAD QUALIFICATION CONFIGURATION CHECK")
