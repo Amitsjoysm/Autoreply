@@ -253,10 +253,36 @@ Tested the complete email automation flow through the `/api/test/complete-flow` 
 
 ## NEW: Interactive Test Session API Testing
 
-### Test Date: 2025-12-11 (Latest)
+### Test Date: 2025-12-18 (Latest - Parlant.io Architecture Update)
 
 ### Test Overview
-Tested the NEW Interactive Test Session API (`/api/test-session/send-message`) that allows multi-turn conversation testing with full visibility into agent actions, lead processing, and follow-up management.
+**MAJOR ARCHITECTURE UPDATE**: Implemented Parlant.io-inspired architecture for predictable and reliable agent responses.
+
+#### Changes Made:
+1. **State Machine Implementation** (`agent_state_machine.py`):
+   - Explicit state transitions for email processing and lead qualification
+   - Decision logging with reasoning at each state change
+   - Validation of state transitions
+   - Complete audit trail
+
+2. **Guideline Engine** (`agent_guidelines.py`):
+   - Declarative condition-action rules
+   - Priority-based guideline matching
+   - Deterministic tool authorization
+   - Guidelines for intent classification, lead qualification, and auto-send
+
+3. **Enhanced Lead Qualification** (`enhanced_lead_qualification_service.py`):
+   - Full state tracking with explicit reasoning
+   - Guideline-based decision making
+   - Complete decision log for debugging
+   - Predictable behavior with clear failure states
+
+4. **Updated Groq API Key**: Changed to `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`
+
+5. **Workers Started**: Email and campaign workers now running
+
+#### Previous Test Session API Testing:
+Tested the Interactive Test Session API (`/api/test-session/send-message`) that allows multi-turn conversation testing with full visibility into agent actions, lead processing, and follow-up management.
 
 ### Test Scenario
 Complete 5-step multi-turn conversation flow:
