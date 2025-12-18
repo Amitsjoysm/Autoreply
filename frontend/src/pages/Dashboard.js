@@ -96,7 +96,7 @@ const Dashboard = () => {
           data-testid="stop-polling-btn"
           onClick={handleStopPolling}
           disabled={polling}
-          variant="destructive"
+          className="bg-gray-600 hover:bg-gray-700"
         >
           Stop Polling
         </Button>
