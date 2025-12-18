@@ -261,7 +261,7 @@ const MainLayout = ({ children }) => {
               >
                 <div className="flex items-center gap-3">
                   <Send className="w-5 h-5" />
-                  <span className="text-sm font-semibold">Campaigns & Sequences</span>
+                  <span className="text-sm font-semibold">Smart Outreach</span>
                 </div>
                 {campaignExpanded ? (
                   <ChevronDown className="w-4 h-4" />
