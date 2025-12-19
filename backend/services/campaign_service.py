@@ -11,6 +11,7 @@ from models.campaign_follow_up import CampaignFollowUp
 from repositories.base_repository import GenericRepository
 from services.campaign_contact_service import CampaignContactService
 from services.campaign_template_service import CampaignTemplateService
+from services.campaign_analytics_service import CampaignAnalyticsService
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ class CampaignService:
         self.campaign_follow_up_repo = GenericRepository(db, "campaign_follow_ups")
         self.contact_service = CampaignContactService(db)
         self.template_service = CampaignTemplateService(db)
+        self.analytics_service = CampaignAnalyticsService(db)
         self.db = db
     
     async def create_campaign(self, user_id: str, campaign_data: CampaignCreate) -> Campaign:
