@@ -338,16 +338,4 @@ class CampaignService:
         analytics = await self.analytics_service.get_campaign_analytics(campaign_id)
         
         return analytics
-        
-        # By email type
-        for email in campaign_emails:
-            email_type = email.get("email_type", "initial")
-            if email_type in analytics["by_email_type"]:
-                if email.get("status") == "sent":
-                    analytics["by_email_type"][email_type]["sent"] += 1
-                if email.get("opened"):
-                    analytics["by_email_type"][email_type]["opened"] += 1
-                if email.get("replied"):
-                    analytics["by_email_type"][email_type]["replied"] += 1
-        
-        return analytics
+
