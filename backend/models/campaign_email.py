@@ -37,10 +37,27 @@ class CampaignEmail(BaseModel):
     # Tracking
     opened: bool = False
     opened_at: Optional[str] = None
+    open_count: int = 0  # Number of times opened
+    
+    clicked: bool = False  # New: Track if any link was clicked
+    clicked_at: Optional[str] = None
+    click_count: int = 0  # Number of clicks
+    links_clicked: List[str] = []  # Which links were clicked
+    
     replied: bool = False
     replied_at: Optional[str] = None
+    reply_content: Optional[str] = None  # Store reply for analysis
+    reply_sentiment: Optional[Literal["positive", "neutral", "negative"]] = None
+    
+    # Lead qualification from reply
+    is_lead: bool = False
+    lead_score: Optional[int] = None  # 0-100
+    is_opportunity: bool = False  # Expressed interest
+    is_converted: bool = False  # Meeting booked / deal closed
+    
     bounced: bool = False
     bounce_reason: Optional[str] = None
+    bounce_type: Optional[Literal["hard", "soft"]] = None
     
     # Error handling
     error_message: Optional[str] = None
