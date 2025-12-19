@@ -6,8 +6,13 @@ from fastapi import APIRouter, Depends
 from typing import Dict, Any
 from datetime import datetime, timezone
 import logging
-import psutil
 import sys
+
+try:
+    import psutil
+    HAS_PSUTIL = True
+except ImportError:
+    HAS_PSUTIL = False
 
 from routes.auth_routes import get_db
 
