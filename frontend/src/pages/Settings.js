@@ -159,6 +159,136 @@ const Settings = () => {
         <p className="text-gray-600 mt-1">Manage your integrations and preferences</p>
       </div>
 
+      {/* Lead Management Settings Card */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-2xl flex items-center gap-2">
+                <Target className="w-8 h-8 text-purple-600" />
+                Lead Management Settings
+              </CardTitle>
+              <CardDescription className="mt-2">
+                Control how the system qualifies and nurtures inbound leads
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Lead Qualification Toggle */}
+          <div className="border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-indigo-50">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <Target className="w-5 h-5 text-indigo-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Lead Qualification</h3>
+                  {leadSettings.global_lead_qualification_enabled ? (
+                    <Badge className="bg-green-500 text-white">
+                      <Check className="w-3 h-3 mr-1" />
+                      Enabled
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">
+                      <X className="w-3 h-3 mr-1" />
+                      Disabled
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-gray-700 mb-3">
+                  Automatically evaluate and score incoming leads based on their responses. The system will ask qualification questions and assign scores to help prioritize high-value leads.
+                </p>
+                <div className="bg-white rounded p-3 border border-indigo-200">
+                  <p className="text-xs text-gray-600">
+                    <strong>How it works:</strong> When enabled, the system will automatically ask relevant questions to qualify leads and score them from 0-100 based on their answers. Leads scoring above 60 are marked as "qualified".
+                  </p>
+                </div>
+              </div>
+              <div className="ml-4">
+                <Button
+                  onClick={handleToggleLeadQualification}
+                  disabled={savingLeadSettings}
+                  className={leadSettings.global_lead_qualification_enabled 
+                    ? "bg-green-600 hover:bg-green-700" 
+                    : "bg-gray-400 hover:bg-gray-500"
+                  }
+                >
+                  {savingLeadSettings ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : leadSettings.global_lead_qualification_enabled ? (
+                    'Disable'
+                  ) : (
+                    'Enable'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Lead Nurturing Toggle */}
+          <div className="border rounded-lg p-4 bg-gradient-to-r from-purple-50 to-pink-50">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  <h3 className="text-lg font-semibold text-gray-900">Lead Nurturing</h3>
+                  {leadSettings.global_lead_nurturing_enabled ? (
+                    <Badge className="bg-green-500 text-white">
+                      <Check className="w-3 h-3 mr-1" />
+                      Enabled
+                    </Badge>
+                  ) : (
+                    <Badge variant="secondary">
+                      <X className="w-3 h-3 mr-1" />
+                      Disabled
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-sm text-gray-700 mb-3">
+                  Engage leads with intelligent follow-up questions to gather more information and build relationships. The system will ask 1-2 contextual questions per email to understand their needs better.
+                </p>
+                <div className="bg-white rounded p-3 border border-purple-200">
+                  <p className="text-xs text-gray-600 mb-2">
+                    <strong>How it works:</strong> When enabled, the AI will naturally include 1-2 relevant questions in auto-replies to learn more about the lead's needs, timeline, and budget.
+                  </p>
+                  <p className="text-xs text-amber-700 bg-amber-50 p-2 rounded">
+                    <strong>Note:</strong> Nurturing is kept minimal - only essential questions are asked to avoid overwhelming leads. You can configure specific questions per intent in the Intents page.
+                  </p>
+                </div>
+              </div>
+              <div className="ml-4">
+                <Button
+                  onClick={handleToggleLeadNurturing}
+                  disabled={savingLeadSettings}
+                  className={leadSettings.global_lead_nurturing_enabled 
+                    ? "bg-green-600 hover:bg-green-700" 
+                    : "bg-gray-400 hover:bg-gray-500"
+                  }
+                >
+                  {savingLeadSettings ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : leadSettings.global_lead_nurturing_enabled ? (
+                    'Disable'
+                  ) : (
+                    'Enable'
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Important Notes */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="text-sm font-semibold text-blue-900 mb-2">Important Notes</h4>
+            <ul className="text-sm text-blue-800 space-y-2 list-disc list-inside">
+              <li><strong>Optional by Default:</strong> Both features are disabled by default. Enable only if you want automated lead management.</li>
+              <li><strong>Per-Intent Control:</strong> Even when globally enabled, you can control these features per intent in the Intents configuration page.</li>
+              <li><strong>Minimal Conversations:</strong> The system is designed to gather information efficiently with minimal back-and-forth.</li>
+              <li><strong>Auto-Reply Integration:</strong> These features work seamlessly with auto-reply. Questions are naturally integrated into response emails.</li>
+            </ul>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* HubSpot Integration Card */}
       <Card>
         <CardHeader>
