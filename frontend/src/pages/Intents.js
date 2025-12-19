@@ -290,6 +290,42 @@ const Intents = () => {
                   Emails matching this intent will be tracked as inbound leads with detailed information extraction
                 </p>
                 
+                {formData.is_inbound_lead && (
+                  <div className="ml-6 space-y-3 pt-2 pl-4 border-l-2 border-purple-200">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="enable_lead_qualification"
+                        checked={formData.enable_lead_qualification}
+                        onChange={(e) => setFormData({...formData, enable_lead_qualification: e.target.checked})}
+                        className="w-4 h-4"
+                      />
+                      <Label htmlFor="enable_lead_qualification" className="cursor-pointer text-sm">
+                        Enable Lead Qualification
+                      </Label>
+                    </div>
+                    <p className="text-xs text-gray-500 ml-6">
+                      Automatically qualify leads by asking questions and scoring their responses (0-100)
+                    </p>
+                    
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="enable_lead_nurturing"
+                        checked={formData.enable_lead_nurturing}
+                        onChange={(e) => setFormData({...formData, enable_lead_nurturing: e.target.checked})}
+                        className="w-4 h-4"
+                      />
+                      <Label htmlFor="enable_lead_nurturing" className="cursor-pointer text-sm">
+                        Enable Lead Nurturing
+                      </Label>
+                    </div>
+                    <p className="text-xs text-gray-500 ml-6">
+                      Ask 1-2 contextual questions per email to gather more information about the lead
+                    </p>
+                  </div>
+                )}
+                
                 <div className="flex items-center gap-2 pt-2">
                   <input
                     type="checkbox"
