@@ -1,14 +1,72 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi.responses import RedirectResponse
 from typing import List
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from datetime import datetime, timezone
+import uuid
 
 from routes.auth_routes import get_current_user_from_token, get_db
 from services.calendar_service import CalendarService
+from services.oauth_service import OAuthService
 from models.calendar import CalendarProvider, CalendarEvent, CalendarEventCreate, CalendarEventResponse
 from models.user import User
+from config import config
 
 router = APIRouter(prefix="/calendar", tags=["calendar"])
+
+@router.get("/oauth/google")
+async def start_google_calendar_oauth(
+    token: str = Query(..., description='JWT token for authentication'),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Start Google Calendar OAuth flow"""
+    try:
+        # Validate token and get user
+        from services.auth_service import AuthService
+        auth_service = AuthService(db)
+        user = await auth_service.get_current_user(token)
+        
+        # Generate OAuth URL
+        oauth_service = OAuthService(db)
+        state_data = {
+            "user_id": user.id,
+            "account_type": "calendar",
+            "provider": "google"
+        }
+        
+        auth_url = oauth_service.get_google_auth_url(state_data, account_type="calendar")
+        
+        return RedirectResponse(url=auth_url)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start OAuth: {str(e)}")
+
+@router.get("/oauth/microsoft")
+async def start_microsoft_calendar_oauth(
+    token: str = Query(..., description='JWT token for authentication'),
+    db: AsyncIOMotorDatabase = Depends(get_db)
+):
+    """Start Microsoft Calendar OAuth flow"""
+    try:
+        # Validate token and get user
+        from services.auth_service import AuthService
+        auth_service = AuthService(db)
+        user = await auth_service.get_current_user(token)
+        
+        # Generate OAuth URL
+        oauth_service = OAuthService(db)
+        state_data = {
+            "user_id": user.id,
+            "account_type": "calendar",
+            "provider": "microsoft"
+        }
+        
+        auth_url = oauth_service.get_microsoft_auth_url(state_data, account_type="calendar")
+        
+        return RedirectResponse(url=auth_url)
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to start OAuth: {str(e)}")
 
 @router.get("/providers")
 async def list_calendar_providers(
