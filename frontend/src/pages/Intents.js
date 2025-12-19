@@ -25,6 +25,8 @@ const Intents = () => {
     priority: 1,
     auto_send: false,
     is_inbound_lead: false,
+    enable_lead_qualification: false,
+    enable_lead_nurturing: false,
     is_active: true
   });
 
