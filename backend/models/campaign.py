@@ -119,6 +119,7 @@ class CampaignResponse(BaseModel):
     list_ids: List[str]
     initial_template_id: str
     follow_up_config: FollowUpConfig
+    tracking_settings: TrackingSettings
     email_account_ids: List[str]
     daily_limit_per_account: int
     random_delay_min: int
@@ -132,8 +133,25 @@ class CampaignResponse(BaseModel):
     emails_pending: int
     emails_failed: int
     emails_opened: int
+    emails_clicked: int
     emails_replied: int
     emails_bounced: int
+    open_rate: float
+    click_rate: float
+    reply_rate: float
+    bounce_rate: float
+    positive_replies: int
+    neutral_replies: int
+    negative_replies: int
+    leads_generated: int
+    lead_rate: float
+    opportunities_created: int
+    opportunities_rate: float
+    conversions: int
+    conversion_rate: float
+    emails_delivered: int
+    delivery_rate: float
+    inbox_rate: float
     verify_emails: bool
     created_at: str
     updated_at: str
