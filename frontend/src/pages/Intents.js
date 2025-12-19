@@ -399,6 +399,26 @@ const Intents = () => {
                       <Badge variant="outline">
                         Priority: {intent.priority}
                       </Badge>
+                      {intent.auto_send && (
+                        <Badge className="bg-green-500">
+                          Auto-Send
+                        </Badge>
+                      )}
+                      {intent.is_inbound_lead && (
+                        <Badge className="bg-blue-500">
+                          Lead
+                        </Badge>
+                      )}
+                      {intent.enable_lead_qualification && (
+                        <Badge className="bg-indigo-500">
+                          Qualification
+                        </Badge>
+                      )}
+                      {intent.enable_lead_nurturing && (
+                        <Badge className="bg-pink-500">
+                          Nurturing
+                        </Badge>
+                      )}
                     </div>
                     {intent.description && (
                       <CardDescription className="mt-2">{intent.description}</CardDescription>
