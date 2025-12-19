@@ -23,12 +23,13 @@ import CampaignAnalytics from './pages/CampaignAnalytics';
 import ContactLists from './pages/ContactLists';
 import InboundLeads from './pages/InboundLeads';
 import LeadQualification from './pages/LeadQualification';
+import LeadSettings from './pages/LeadSettings';
 import '@/App.css';
 import {
   Mail, BarChart3, User, Calendar, CalendarDays, Brain, Target, 
   Database, FileText, UserPlus, Activity, Zap, LogOut, MessageSquare,
   Users, Send, ChevronDown, ChevronRight, List, Settings as SettingsIcon,
-  Menu
+  Menu, Sparkles
 } from 'lucide-react';
 
 const MainLayout = ({ children }) => {
