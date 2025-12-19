@@ -186,6 +186,7 @@ class CampaignUpdate(BaseModel):
     list_ids: Optional[List[str]] = None
     initial_template_id: Optional[str] = None
     follow_up_config: Optional[FollowUpConfig] = None
+    tracking_settings: Optional[TrackingSettings] = None
     email_account_ids: Optional[List[str]] = None
     daily_limit_per_account: Optional[int] = None
     random_delay_min: Optional[int] = None
