@@ -95,6 +95,7 @@ const MainLayout = ({ children }) => {
     { path: '/intents', label: 'Intents', icon: Target },
     { path: '/meeting-detection', label: 'Meeting Detection', icon: Brain },
     { path: '/lead-qualification', label: 'Lead Qualification', icon: Target },
+    { path: '/lead-settings', label: 'Lead Controls', icon: Sparkles },
   ];
 
   const campaignMenuItems = [
