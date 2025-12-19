@@ -142,7 +142,7 @@ async def send_test_message(
             "details": {
                 "intent": intent_doc.get('name') if intent_doc else "No match",
                 "confidence": round(confidence * 100, 1),
-                "is_lead": intent_doc.get('is_lead', False) if intent_doc else False
+                "is_lead": intent_doc.get('is_inbound_lead', False) if intent_doc else False
             }
         }
         
@@ -151,7 +151,7 @@ async def send_test_message(
         questions_to_ask = []
         lead_action = None
         
-        if intent_doc and intent_doc.get('is_lead'):
+        if intent_doc and intent_doc.get('is_inbound_lead'):
             integration_service = LeadNurturingIntegrationService(db)
             
             # Build thread context for lead processing (role/content format)
