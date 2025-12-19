@@ -1,6 +1,27 @@
 import axios from 'axios';
+import { toast } from 'sonner';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
+
+// Error logging function
+const logError = (error, context) => {
+  const errorData = {
+    message: error.message,
+    context,
+    status: error.response?.status,
+    data: error.response?.data,
+    timestamp: new Date().toISOString(),
+    url: error.config?.url
+  };
+  
+  console.error('API Error:', errorData);
+  
+  // In production, send to error tracking service
+  // You can also send to backend: 
+  // axios.post('/errors/log', errorData).catch(() => {});
+  
+  return errorData;
+};
 
 class API {
   constructor() {
@@ -9,6 +30,7 @@ class API {
       headers: {
         'Content-Type': 'application/json',
       },
+      timeout: 30000, // 30 second timeout
     });
 
     // Add auth token to requests
@@ -20,34 +42,91 @@ class API {
         }
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => {
+        logError(error, 'request_interceptor');
+        return Promise.reject(error);
+      }
     );
 
-    // Handle 401 errors by clearing invalid tokens
+    // Enhanced error handling
     this.axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) {
-          // Clear invalid token
-          localStorage.removeItem('token');
-          // Only redirect to login if not already on auth page
-          if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
-            window.location.href = '/';
+        // Log all errors
+        logError(error, 'response_interceptor');
+        
+        // Handle different error types
+        if (error.response) {
+          // Server responded with error status
+          const status = error.response.status;
+          const detail = error.response.data?.detail || error.response.data?.message || 'An error occurred';
+          
+          switch (status) {
+            case 401:
+              // Clear invalid token
+              localStorage.removeItem('token');
+              if (!window.location.pathname.includes('/auth') && !window.location.pathname.includes('/login')) {
+                toast.error('Session expired. Please login again.');
+                window.location.href = '/';
+              }
+              break;
+            
+            case 403:
+              toast.error('Access denied');
+              break;
+            
+            case 404:
+              toast.error('Resource not found');
+              break;
+            
+            case 500:
+              toast.error(`Server error: ${detail}`);
+              break;
+            
+            case 503:
+              toast.error('Service temporarily unavailable');
+              break;
+            
+            default:
+              toast.error(detail);
           }
+        } else if (error.request) {
+          // Request made but no response received
+          toast.error('Network error. Please check your connection.');
+        } else {
+          // Something else happened
+          toast.error('An unexpected error occurred');
         }
+        
         return Promise.reject(error);
       }
     );
   }
 
+  // Wrapper method to handle errors gracefully
+  async _safeRequest(requestFn, context) {
+    try {
+      return await requestFn();
+    } catch (error) {
+      logError(error, context);
+      throw error;
+    }
+  }
+
   // Auth
   async register(data) {
-    const response = await this.axios.post('/auth/register', data);
-    return response.data;
+    return this._safeRequest(async () => {
+      const response = await this.axios.post('/auth/register', data);
+      return response.data;
+    }, 'register');
   }
 
   async login(data) {
-    const response = await this.axios.post('/auth/login', data);
+    return this._safeRequest(async () => {
+      const response = await this.axios.post('/auth/login', data);
+      return response.data;
+    }, 'login');
+  }
     return response.data;
   }
 
