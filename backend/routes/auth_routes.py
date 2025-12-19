@@ -3,9 +3,13 @@ from typing import Optional
 from motor.motor_asyncio import AsyncIOMotorDatabase
 from pydantic import BaseModel
 from datetime import datetime, timezone
+import logging
+import traceback
 
 from services.auth_service import AuthService
-from models.user import UserCreate, UserLogin, TokenResponse, UserResponse
+from models.user import UserCreate, UserLogin, TokenResponse, UserResponse, User
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
