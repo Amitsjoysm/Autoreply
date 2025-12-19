@@ -39,6 +39,9 @@ class Campaign(BaseModel):
     # Follow-up configuration
     follow_up_config: FollowUpConfig = FollowUpConfig()
     
+    # Tracking settings
+    tracking_settings: TrackingSettings = TrackingSettings()
+    
     # Email account selection
     email_account_ids: List[str] = []  # Can use multiple accounts
     
