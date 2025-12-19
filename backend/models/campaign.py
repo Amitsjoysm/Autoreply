@@ -3,6 +3,13 @@ from typing import Optional, List, Literal, Dict, Any
 from datetime import datetime, timezone
 import uuid
 
+class TrackingSettings(BaseModel):
+    """Email tracking settings for deliverability"""
+    enable_open_tracking: bool = True  # Track email opens
+    enable_click_tracking: bool = True  # Track link clicks
+    enable_reply_tracking: bool = True  # Track replies
+    enable_sentiment_analysis: bool = True  # Analyze reply sentiment
+    
 class FollowUpConfig(BaseModel):
     """Configuration for follow-up emails"""
     enabled: bool = True
