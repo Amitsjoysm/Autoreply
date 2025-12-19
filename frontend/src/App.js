@@ -428,6 +428,16 @@ function App() {
             }
           />
           <Route
+            path="/lead-settings"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <LeadSettings />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/intents"
             element={
               <ProtectedRoute>
