@@ -45,7 +45,8 @@ const MainLayout = ({ children }) => {
     window.location.pathname.includes('/knowledge-base') ||
     window.location.pathname.includes('/intents') ||
     window.location.pathname.includes('/meeting-detection') ||
-    window.location.pathname.includes('/lead-qualification')
+    window.location.pathname.includes('/lead-qualification') ||
+    window.location.pathname.includes('/lead-settings')
   );
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
 
