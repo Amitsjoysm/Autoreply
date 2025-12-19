@@ -374,7 +374,6 @@ const Intents = () => {
             </form>
           </DialogContent>
         </Dialog>
-      </div>
 
       {/* Intents List */}
       {intents.length === 0 ? (
