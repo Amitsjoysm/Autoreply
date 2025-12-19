@@ -17,6 +17,7 @@ router = APIRouter(prefix="/calendar", tags=["calendar"])
 
 @router.get("/oauth/google")
 async def start_google_calendar_oauth(
+    request: Request,
     token: str = Query(..., description='JWT token for authentication'),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
@@ -27,16 +28,22 @@ async def start_google_calendar_oauth(
         auth_service = AuthService(db)
         user = await auth_service.get_current_user(token)
         
+        # Get frontend URL from request
+        frontend_url = request.headers.get('origin') or request.headers.get('referer') or config.APP_URL
+        if frontend_url and frontend_url.endswith('/'):
+            frontend_url = frontend_url[:-1]
+        
         # Generate state for OAuth
         oauth_service = OAuthService(db)
         state = str(uuid.uuid4())
         
-        # Store state in DB for verification
+        # Store state in DB for verification with frontend_url
         await db.oauth_states.insert_one({
             "state": state,
             "user_id": user.id,
             "provider": "google",
             "account_type": "calendar",
+            "frontend_url": frontend_url,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         
@@ -52,6 +59,7 @@ async def start_google_calendar_oauth(
 
 @router.get("/oauth/microsoft")
 async def start_microsoft_calendar_oauth(
+    request: Request,
     token: str = Query(..., description='JWT token for authentication'),
     db: AsyncIOMotorDatabase = Depends(get_db)
 ):
@@ -62,16 +70,22 @@ async def start_microsoft_calendar_oauth(
         auth_service = AuthService(db)
         user = await auth_service.get_current_user(token)
         
+        # Get frontend URL from request
+        frontend_url = request.headers.get('origin') or request.headers.get('referer') or config.APP_URL
+        if frontend_url and frontend_url.endswith('/'):
+            frontend_url = frontend_url[:-1]
+        
         # Generate state for OAuth
         oauth_service = OAuthService(db)
         state = str(uuid.uuid4())
         
-        # Store state in DB for verification
+        # Store state in DB for verification with frontend_url
         await db.oauth_states.insert_one({
             "state": state,
             "user_id": user.id,
             "provider": "microsoft",
             "account_type": "calendar",
+            "frontend_url": frontend_url,
             "created_at": datetime.now(timezone.utc).isoformat()
         })
         
