@@ -48,6 +48,8 @@ def enable_lead_qualification():
         "id": qualification_criteria_id,
         "user_id": user_id,
         "name": "Default Qualification Criteria",
+        "is_active": True,
+        "is_enabled": True,
         "min_exchanges_before_check": 1,
         "required_fields": [
             {
