@@ -186,6 +186,25 @@ const Intents = () => {
               Create Intent
             </Button>
           </DialogTrigger>
+
+      {/* Info Banner for Lead Management */}
+      <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
+        <CardContent className="py-4">
+          <div className="flex items-start gap-3">
+            <Target className="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-indigo-900 mb-1">
+                Lead Qualification & Nurturing Controls
+              </p>
+              <p className="text-xs text-indigo-700">
+                When creating or editing an intent, mark it as <strong>"Inbound Lead"</strong> to reveal Lead Qualification and Lead Nurturing options. 
+                These features help you automatically qualify leads and gather information through contextual questions. 
+                <span className="text-indigo-800 font-medium"> Note:</span> Global settings must also be enabled in <strong>Lead Controls</strong> page.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editMode ? 'Edit Intent' : 'Create New Intent'}</DialogTitle>
