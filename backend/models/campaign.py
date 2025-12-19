@@ -66,8 +66,35 @@ class Campaign(BaseModel):
     
     # Engagement metrics
     emails_opened: int = 0
+    emails_clicked: int = 0  # New: Track link clicks
     emails_replied: int = 0
     emails_bounced: int = 0
+    
+    # Advanced analytics
+    open_rate: float = 0.0  # Percentage
+    click_rate: float = 0.0  # Percentage  
+    reply_rate: float = 0.0  # Percentage
+    bounce_rate: float = 0.0  # Percentage
+    
+    # Sentiment analysis
+    positive_replies: int = 0
+    neutral_replies: int = 0
+    negative_replies: int = 0
+    
+    # Lead generation
+    leads_generated: int = 0  # Number of leads identified
+    lead_rate: float = 0.0  # Percentage
+    
+    # Opportunities & Conversion
+    opportunities_created: int = 0  # Interested prospects
+    opportunities_rate: float = 0.0  # Percentage
+    conversions: int = 0  # Actual conversions/meetings booked
+    conversion_rate: float = 0.0  # Percentage
+    
+    # Deliverability metrics
+    emails_delivered: int = 0  # Successfully delivered
+    delivery_rate: float = 0.0  # Percentage (sent - bounced)
+    inbox_rate: float = 0.0  # Estimated inbox placement rate
     
     # Email verification
     verify_emails: bool = False  # User can enable/disable
