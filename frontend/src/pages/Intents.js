@@ -66,6 +66,8 @@ const Intents = () => {
       priority: parseInt(formData.priority),
       auto_send: formData.auto_send,
       is_inbound_lead: formData.is_inbound_lead,
+      enable_lead_qualification: formData.enable_lead_qualification,
+      enable_lead_nurturing: formData.enable_lead_nurturing,
       is_active: formData.is_active
     };
 
