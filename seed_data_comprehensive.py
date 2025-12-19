@@ -42,7 +42,7 @@ async def create_comprehensive_seed_data():
         demo_user = {
             "id": demo_user_id,
             "email": DEMO_EMAIL,
-            "hashed_password": pwd_context.hash(DEMO_PASSWORD),
+            "password_hash": pwd_context.hash(DEMO_PASSWORD),
             "full_name": "Demo User",
             "quota": 1000,
             "quota_used": 45,
