@@ -78,6 +78,10 @@ class LeadNurturingIntegrationService:
                     1  # First attempt
                 )
                 
+                # Store questions in lead record for attempt #1
+                if questions:
+                    await self._increment_attempt(lead_id, 1, questions)
+                
                 return False, 'awaiting_info', questions, lead_id
             
             else:
