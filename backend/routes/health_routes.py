@@ -59,31 +59,37 @@ async def detailed_health_check(db = Depends(get_db)):
             health_status["status"] = "unhealthy"
         
         # Check System Resources
-        try:
-            cpu_percent = psutil.cpu_percent(interval=1)
-            memory = psutil.virtual_memory()
-            disk = psutil.disk_usage('/')
-            
-            health_status["components"]["system"] = {
-                "status": "healthy",
-                "cpu_percent": cpu_percent,
-                "memory_percent": memory.percent,
-                "disk_percent": disk.percent,
-                "warnings": []
-            }
-            
-            # Add warnings for high resource usage
-            if cpu_percent > 90:
-                health_status["components"]["system"]["warnings"].append("High CPU usage")
-            if memory.percent > 90:
-                health_status["components"]["system"]["warnings"].append("High memory usage")
-            if disk.percent > 90:
-                health_status["components"]["system"]["warnings"].append("High disk usage")
+        if HAS_PSUTIL:
+            try:
+                cpu_percent = psutil.cpu_percent(interval=1)
+                memory = psutil.virtual_memory()
+                disk = psutil.disk_usage('/')
                 
-        except Exception as e:
+                health_status["components"]["system"] = {
+                    "status": "healthy",
+                    "cpu_percent": cpu_percent,
+                    "memory_percent": memory.percent,
+                    "disk_percent": disk.percent,
+                    "warnings": []
+                }
+                
+                # Add warnings for high resource usage
+                if cpu_percent > 90:
+                    health_status["components"]["system"]["warnings"].append("High CPU usage")
+                if memory.percent > 90:
+                    health_status["components"]["system"]["warnings"].append("High memory usage")
+                if disk.percent > 90:
+                    health_status["components"]["system"]["warnings"].append("High disk usage")
+                    
+            except Exception as e:
+                health_status["components"]["system"] = {
+                    "status": "unknown",
+                    "error": str(e)
+                }
+        else:
             health_status["components"]["system"] = {
-                "status": "unknown",
-                "error": str(e)
+                "status": "unavailable",
+                "message": "psutil not installed"
             }
         
         # Check Python Environment
