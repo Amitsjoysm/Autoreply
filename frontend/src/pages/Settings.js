@@ -20,6 +20,7 @@ const Settings = () => {
 
   useEffect(() => {
     loadHubSpotStatus();
+    loadLeadSettings();
   }, []);
 
   const loadHubSpotStatus = async () => {
@@ -30,6 +31,63 @@ const Settings = () => {
       console.error('Failed to load HubSpot status:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadLeadSettings = () => {
+    if (user) {
+      setLeadSettings({
+        global_lead_qualification_enabled: user.global_lead_qualification_enabled || false,
+        global_lead_nurturing_enabled: user.global_lead_nurturing_enabled || false
+      });
+    }
+  };
+
+  const handleToggleLeadQualification = async () => {
+    const newValue = !leadSettings.global_lead_qualification_enabled;
+    setSavingLeadSettings(true);
+    
+    try {
+      await API.updateUserSettings({
+        global_lead_qualification_enabled: newValue
+      });
+      
+      setLeadSettings(prev => ({
+        ...prev,
+        global_lead_qualification_enabled: newValue
+      }));
+      
+      await refreshUser();
+      
+      toast.success(newValue ? 'Lead Qualification enabled' : 'Lead Qualification disabled');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to update settings');
+    } finally {
+      setSavingLeadSettings(false);
+    }
+  };
+
+  const handleToggleLeadNurturing = async () => {
+    const newValue = !leadSettings.global_lead_nurturing_enabled;
+    setSavingLeadSettings(true);
+    
+    try {
+      await API.updateUserSettings({
+        global_lead_nurturing_enabled: newValue
+      });
+      
+      setLeadSettings(prev => ({
+        ...prev,
+        global_lead_nurturing_enabled: newValue
+      }));
+      
+      await refreshUser();
+      
+      toast.success(newValue ? 'Lead Nurturing enabled' : 'Lead Nurturing disabled');
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to update settings');
+    } finally {
+      setSavingLeadSettings(false);
     }
   };
 
