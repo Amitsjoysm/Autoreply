@@ -329,45 +329,15 @@ class CampaignService:
         )
     
     async def get_campaign_analytics(self, user_id: str, campaign_id: str) -> Dict[str, Any]:
-        """Get campaign analytics"""
+        """Get comprehensive campaign analytics"""
         campaign = await self.get_campaign(user_id, campaign_id)
         if not campaign:
             raise ValueError("Campaign not found")
         
-        # Get campaign emails
-        campaign_emails = await self.campaign_email_repo.find_many(
-            {"campaign_id": campaign_id},
-            limit=10000
-        )
+        # Use the new analytics service
+        analytics = await self.analytics_service.get_campaign_analytics(campaign_id)
         
-        # Calculate metrics
-        analytics = {
-            "campaign_id": campaign_id,
-            "campaign_name": campaign.name,
-            "status": campaign.status,
-            "total_contacts": campaign.total_contacts,
-            "emails_sent": campaign.emails_sent,
-            "emails_pending": campaign.emails_pending,
-            "emails_failed": campaign.emails_failed,
-            "emails_opened": campaign.emails_opened,
-            "emails_replied": campaign.emails_replied,
-            "emails_bounced": campaign.emails_bounced,
-            "open_rate": 0.0,
-            "reply_rate": 0.0,
-            "bounce_rate": 0.0,
-            "by_email_type": {
-                "initial": {"sent": 0, "opened": 0, "replied": 0},
-                "follow_up_1": {"sent": 0, "opened": 0, "replied": 0},
-                "follow_up_2": {"sent": 0, "opened": 0, "replied": 0},
-                "follow_up_3": {"sent": 0, "opened": 0, "replied": 0}
-            }
-        }
-        
-        # Calculate rates
-        if campaign.emails_sent > 0:
-            analytics["open_rate"] = round((campaign.emails_opened / campaign.emails_sent) * 100, 2)
-            analytics["reply_rate"] = round((campaign.emails_replied / campaign.emails_sent) * 100, 2)
-            analytics["bounce_rate"] = round((campaign.emails_bounced / campaign.emails_sent) * 100, 2)
+        return analytics
         
         # By email type
         for email in campaign_emails:
