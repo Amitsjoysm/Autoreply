@@ -179,13 +179,14 @@ const Intents = () => {
           <h1 className="text-3xl font-bold text-gray-900">Email Intents</h1>
           <p className="text-gray-600 mt-1">Define intents for AI-powered email classification and responses</p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
-          <DialogTrigger asChild>
-            <Button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Create Intent
-            </Button>
-          </DialogTrigger>
+        <Button 
+          onClick={() => setDialogOpen(true)}
+          className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Create Intent
+        </Button>
+      </div>
 
       {/* Info Banner for Lead Management */}
       <Card className="bg-gradient-to-r from-indigo-50 to-purple-50 border-indigo-200">
@@ -205,6 +206,9 @@ const Intents = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Create/Edit Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={handleDialogClose}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editMode ? 'Edit Intent' : 'Create New Intent'}</DialogTitle>
