@@ -167,6 +167,7 @@ class CampaignCreate(BaseModel):
     list_ids: List[str] = []
     initial_template_id: str
     follow_up_config: FollowUpConfig = FollowUpConfig()
+    tracking_settings: TrackingSettings = TrackingSettings()
     email_account_ids: List[str]
     daily_limit_per_account: int = 100
     random_delay_min: int = 60
