@@ -715,7 +715,22 @@ FORMATTING:
 - Use the persona's tone and style"""
         
         if context.get('persona'):
-            base_message += f"\n\nYOUR STYLE: {context['persona'][:200]}"
+            persona = context['persona']
+            if isinstance(persona, dict):
+                # Format persona dictionary as a readable string
+                persona_parts = []
+                if persona.get('role'):
+                    persona_parts.append(f"Role: {persona['role']}")
+                if persona.get('tone'):
+                    persona_parts.append(f"Tone: {persona['tone']}")
+                if persona.get('communication_style'):
+                    persona_parts.append(f"Style: {persona['communication_style']}")
+                if persona.get('company_context'):
+                    persona_parts.append(f"Context: {persona['company_context']}")
+                persona_str = ". ".join(persona_parts)
+            else:
+                persona_str = str(persona)[:200]
+            base_message += f"\n\nYOUR STYLE: {persona_str}"
         
         return base_message
     
