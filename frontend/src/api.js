@@ -127,8 +127,6 @@ class API {
       return response.data;
     }, 'login');
   }
-    return response.data;
-  }
 
   async getProfile() {
     const response = await this.axios.get('/auth/me');
