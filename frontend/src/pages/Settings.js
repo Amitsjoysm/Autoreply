@@ -5,13 +5,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../co
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { toast } from 'sonner';
-import { Settings as SettingsIcon, Link as LinkIcon, Unlink, RefreshCw, Check, X, ExternalLink } from 'lucide-react';
+import { Settings as SettingsIcon, Link as LinkIcon, Unlink, RefreshCw, Check, X, ExternalLink, Target, Sparkles } from 'lucide-react';
 
 const Settings = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [hubspotStatus, setHubspotStatus] = useState(null);
   const [loading, setLoading] = useState(true);
   const [connecting, setConnecting] = useState(false);
+  const [leadSettings, setLeadSettings] = useState({
+    global_lead_qualification_enabled: false,
+    global_lead_nurturing_enabled: false
+  });
+  const [savingLeadSettings, setSavingLeadSettings] = useState(false);
 
   useEffect(() => {
     loadHubSpotStatus();
