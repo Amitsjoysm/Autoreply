@@ -430,6 +430,16 @@ class LeadNurturingIntegrationService:
             logger.error(f"Error finding lead: {e}")
             return None
     
+    async def _find_existing_lead_by_id(self, lead_id: str) -> Optional[Dict]:
+        """Find existing lead by ID"""
+        try:
+            leads_collection = self.db['inbound_leads']
+            lead = await leads_collection.find_one({"id": lead_id})
+            return lead
+        except Exception as e:
+            logger.error(f"Error finding lead by ID: {e}")
+            return None
+    
     async def _create_awaiting_lead(
         self,
         user_id: str,
