@@ -107,10 +107,13 @@ class LeadNurturingIntegrationService:
                 # Store answers
                 await self._store_answers(lead_id, answers, questions_asked)
                 
+                # Refetch lead to get updated data with answers
+                lead = await self._find_existing_lead_by_id(lead_id)
+                
                 # Evaluate qualification
                 is_qualified, score, reasons = await self.qualification_service.evaluate_lead_qualification(
                     user_id,
-                    lead,  # Pass full lead data
+                    lead,  # Pass full lead data with answers
                     lead.get('qualification_criteria_id')
                 )
                 
