@@ -98,6 +98,8 @@ const Intents = () => {
       priority: intent.priority,
       auto_send: intent.auto_send || false,
       is_inbound_lead: intent.is_inbound_lead || false,
+      enable_lead_qualification: intent.enable_lead_qualification || false,
+      enable_lead_nurturing: intent.enable_lead_nurturing || false,
       is_active: intent.is_active
     });
     setDialogOpen(true);
