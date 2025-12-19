@@ -77,6 +77,7 @@ from routes.lead_nurturing_routes import router as lead_nurturing_router
 from routes.test_flow_routes import router as test_flow_router
 from routes.test_session_routes import router as test_session_router
 from routes.error_routes import router as error_router
+from routes.health_routes import router as health_router
 
 # Include routers under /api prefix
 app.include_router(auth_router, prefix="/api")
@@ -90,6 +91,7 @@ app.include_router(follow_up_router, prefix="/api")
 app.include_router(system_router, prefix="/api")
 app.include_router(test_router, prefix="/api")
 app.include_router(hubspot_router, prefix="/api")
+app.include_router(health_router, prefix="/api")
 app.include_router(lead_qualification_router)
 app.include_router(lead_nurturing_router)
 app.include_router(test_flow_router)
