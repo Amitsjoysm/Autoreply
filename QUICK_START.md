@@ -1,7 +1,7 @@
 # 🚀 Quick Start Guide
 
 ## Login Credentials
-- **URL**: https://sync-feature-deploy.preview.emergentagent.com
+- **URL**: https://auth-api-integration.preview.emergentagent.com
 - **Email**: demo@example.com
 - **Password**: demo123
 

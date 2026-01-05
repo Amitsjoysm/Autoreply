@@ -13,12 +13,12 @@ This document shows all changes made to fix the auto-reply, lead qualification, 
 
 **BEFORE:**
 ```
-Line 1: REACT_APP_BACKEND_URL=https://sync-feature-deploy.preview.emergentagent.com
+Line 1: REACT_APP_BACKEND_URL=https://auth-api-integration.preview.emergentagent.com
 ```
 
 **AFTER:**
 ```
-Line 1: REACT_APP_BACKEND_URL=https://sync-feature-deploy.preview.emergentagent.com
+Line 1: REACT_APP_BACKEND_URL=https://auth-api-integration.preview.emergentagent.com
 ```
 
 **Reason**: Backend URL was outdated, causing all API calls to fail with network errors.
@@ -31,14 +31,14 @@ Line 1: REACT_APP_BACKEND_URL=https://sync-feature-deploy.preview.emergentagent.
 
 **BEFORE:**
 ```
-Line 11: GOOGLE_REDIRECT_URI="https://sync-feature-deploy.preview.emergentagent.com/api/oauth/google/callback"
-Line 17: MICROSOFT_REDIRECT_URI="https://sync-feature-deploy.preview.emergentagent.com/api/oauth/microsoft/callback"
+Line 11: GOOGLE_REDIRECT_URI="https://auth-api-integration.preview.emergentagent.com/api/oauth/google/callback"
+Line 17: MICROSOFT_REDIRECT_URI="https://auth-api-integration.preview.emergentagent.com/api/oauth/microsoft/callback"
 ```
 
 **AFTER:**
 ```
-Line 11: GOOGLE_REDIRECT_URI="https://sync-feature-deploy.preview.emergentagent.com/api/oauth/google/callback"
-Line 17: MICROSOFT_REDIRECT_URI="https://sync-feature-deploy.preview.emergentagent.com/api/oauth/microsoft/callback"
+Line 11: GOOGLE_REDIRECT_URI="https://auth-api-integration.preview.emergentagent.com/api/oauth/google/callback"
+Line 17: MICROSOFT_REDIRECT_URI="https://auth-api-integration.preview.emergentagent.com/api/oauth/microsoft/callback"
 ```
 
 **Reason**: OAuth redirect URIs must match the current deployment URL.
