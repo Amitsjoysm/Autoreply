@@ -280,6 +280,8 @@ const LeadQualification = () => {
           </CardContent>
         </Card>
       ))}
+        </>
+      )}
     </div>
   );
 };
