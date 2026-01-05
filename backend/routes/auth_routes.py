@@ -94,12 +94,12 @@ async def update_settings(
             update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
             
             await users_collection.update_one(
-                {"id": user['id']},
+                {"id": user.id},
                 {"$set": update_data}
             )
         
         # Get updated user
-        updated_user_dict = await users_collection.find_one({"id": user['id']})
+        updated_user_dict = await users_collection.find_one({"id": user.id})
         
         if not updated_user_dict:
             raise HTTPException(status_code=404, detail="User not found")
