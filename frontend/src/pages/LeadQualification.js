@@ -13,6 +13,7 @@ import { Target, Plus, Edit2, Trash2, Save, X } from 'lucide-react';
 const LeadQualification = () => {
   const [criteria, setCriteria] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [editing, setEditing] = useState(null);
   const [showForm, setShowForm] = useState(false);
   
@@ -33,10 +34,14 @@ const LeadQualification = () => {
 
   const fetchCriteria = async () => {
     try {
+      setInitialLoading(true);
       const data = await API.getQualificationCriteria();
       setCriteria(data);
     } catch (error) {
+      console.error('Error loading qualification criteria:', error);
       toast.error('Failed to load qualification criteria');
+    } finally {
+      setInitialLoading(false);
     }
   };
 
