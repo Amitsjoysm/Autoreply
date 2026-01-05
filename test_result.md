@@ -755,7 +755,7 @@ Complete 5-step multi-turn conversation flow:
 **COMPLETE SUCCESS**: Login functionality for demo user tested and verified working correctly.
 
 ### Test Configuration
-- **Application URL**: https://c8544c37-151d-4aae-9390-d903791816a0.preview.emergentagent.com
+- **Application URL**: https://sync-feature-deploy.preview.emergentagent.com
 - **Test User**: demo@example.com / demo123
 - **Viewport**: 1920x800
 - **Screenshot Quality**: 20
@@ -778,7 +778,7 @@ Complete 5-step multi-turn conversation flow:
 - Entered email: demo@example.com
 - Entered password: demo123
 - Clicked "Sign In" button
-- Network request sent to: https://c8544c37-151d-4aae-9390-d903791816a0.preview.emergentagent.com/api/auth/login
+- Network request sent to: https://sync-feature-deploy.preview.emergentagent.com/api/auth/login
 - Screenshot: 03_before_login_click.png
 
 #### Step 4: Verify Login Success ✅
@@ -797,7 +797,7 @@ Complete 5-step multi-turn conversation flow:
 - Console clean
 
 #### Step 6: Check Network Request/Response ✅
-- Request URL matches expected: https://c8544c37-151d-4aae-9390-d903791816a0.preview.emergentagent.com/api/auth/login
+- Request URL matches expected: https://sync-feature-deploy.preview.emergentagent.com/api/auth/login
 - Request method: POST
 - Response status: 200
 - Access token received and stored in localStorage (165 characters)

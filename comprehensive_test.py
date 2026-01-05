@@ -11,7 +11,7 @@ from datetime import datetime
 import time
 
 # Configuration
-BACKEND_URL = "https://agent-response-fix-3.preview.emergentagent.com"
+BACKEND_URL = "https://sync-feature-deploy.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # Test user credentials

@@ -6,7 +6,7 @@ import httpx
 import json
 from datetime import datetime
 
-BASE_URL = "https://9fab78ec-31ea-4379-a884-530e0b23a402.preview.emergentagent.com"
+BASE_URL = "https://sync-feature-deploy.preview.emergentagent.com"
 TEST_EMAIL = "amits.joys@gmail.com"
 TEST_PASSWORD = "ij@123"
 
