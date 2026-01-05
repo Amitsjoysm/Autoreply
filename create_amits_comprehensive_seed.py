@@ -84,9 +84,9 @@ async def create_seed_data():
             "keywords": ["product", "service", "offering", "solution", "what do you", "tell me about"],
             "priority": 8,
             "auto_send": True,
-            "is_lead": True,
+            "is_inbound_lead": True,
             "is_default": False,
-            "ai_prompt": """Respond professionally to product inquiries. Provide relevant information from knowledge base. Ask qualifying questions naturally."""
+            "prompt": """Respond professionally to product inquiries. Provide relevant information from knowledge base. Ask qualifying questions naturally."""
         },
         {
             "name": "Pricing Request",
@@ -94,9 +94,9 @@ async def create_seed_data():
             "keywords": ["price", "cost", "pricing", "quote", "budget", "how much"],
             "priority": 9,
             "auto_send": True,
-            "is_lead": True,
+            "is_inbound_lead": True,
             "is_default": False,
-            "ai_prompt": """Provide pricing information if available in knowledge base. Otherwise, schedule a call to discuss pricing in detail."""
+            "prompt": """Provide pricing information if available in knowledge base. Otherwise, schedule a call to discuss pricing in detail."""
         },
         {
             "name": "Meeting Request",
@@ -104,9 +104,9 @@ async def create_seed_data():
             "keywords": ["meeting", "schedule", "call", "zoom", "meet", "catch up", "discuss"],
             "priority": 10,
             "auto_send": True,
-            "is_lead": False,
+            "is_inbound_lead": False,
             "is_default": False,
-            "ai_prompt": """Acknowledge the meeting request. Confirm or ask about proposed time. Mention that calendar invite will follow."""
+            "prompt": """Acknowledge the meeting request. Confirm or ask about proposed time. Mention that calendar invite will follow."""
         },
         {
             "name": "General Inquiry",
@@ -114,9 +114,9 @@ async def create_seed_data():
             "keywords": ["hello", "hi", "question", "inquiry", "wondering"],
             "priority": 5,
             "auto_send": True,
-            "is_lead": True,
+            "is_inbound_lead": True,
             "is_default": True,
-            "ai_prompt": """Respond professionally and warmly. Provide relevant information and ask how you can help further."""
+            "prompt": """Respond professionally and warmly. Provide relevant information and ask how you can help further."""
         }
     ]
     
