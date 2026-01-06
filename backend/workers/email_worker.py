@@ -501,6 +501,16 @@ async def process_email(email_id: str):
                     
                     logger.info(f"Created calendar event for email {email.id} with Meet link: {event_result.get('meet_link')}")
                     
+                    # Send calendar notification email with event details
+                    await send_calendar_notification(
+                        email,
+                        event_created,
+                        email_service,
+                        has_conflict=has_conflict,
+                        conflict_details=conflict_details
+                    )
+                    logger.info(f"Sent calendar notification email for event {event_result['event_id']}")
+                    
                     # Update lead if this is from an inbound lead
                     if is_lead:
                         try:
