@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
@@ -6,6 +7,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../com
 import { Calendar, Plus, CheckCircle2, RefreshCw, Trash2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'sonner'; 
 
 // Google Icon Component
 const GoogleIcon = ({ className }) => (
@@ -26,6 +28,7 @@ const OutlookIcon = ({ className }) => (
 
 const CalendarProviders = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams(); 
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,6 +37,19 @@ const CalendarProviders = () => {
 
   useEffect(() => {
     fetchProviders();
+    // ✅ ADDED: Check for OAuth success/error
+    const success = searchParams.get('success');
+    const error = searchParams.get('error');
+    const email = searchParams.get('email');
+    
+    if (success === 'true' && email) {
+      toast.success(`Successfully connected ${email}!`);
+      // Clear URL params
+      setSearchParams({});
+    } else if (error) {
+      toast.error(`OAuth failed: ${error}`);
+      setSearchParams({});
+    }    
   }, []);
 
   const fetchProviders = async () => {
