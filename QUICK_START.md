@@ -1,7 +1,7 @@
 # 🚀 Quick Start Guide
 
 ## Login Credentials
-- **URL**: https://auth-api-integration.preview.emergentagent.com
+- **URL**: https://redis-calendar-agent.preview.emergentagent.com
 - **Email**: demo@example.com
 - **Password**: demo123
 

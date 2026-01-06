@@ -6,7 +6,7 @@ import httpx
 import json
 from datetime import datetime
 
-BASE_URL = "https://auth-api-integration.preview.emergentagent.com"
+BASE_URL = "https://redis-calendar-agent.preview.emergentagent.com"
 TEST_EMAIL = "amits.joys@gmail.com"
 TEST_PASSWORD = "ij@123"
 
