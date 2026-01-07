@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Configuration
-BACKEND_URL = "https://redis-calendar-agent.preview.emergentagent.com"
+BACKEND_URL = "https://redis-worker-fix-1.preview.emergentagent.com"
 API_BASE = f"{BACKEND_URL}/api"
 
 # JWT Token (from previous login)

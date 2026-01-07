@@ -1,7 +1,7 @@
 # 🚀 Quick Start Guide
 
 ## Login Credentials
-- **URL**: https://redis-calendar-agent.preview.emergentagent.com
+- **URL**: https://redis-worker-fix-1.preview.emergentagent.com
 - **Email**: demo@example.com
 - **Password**: demo123
 

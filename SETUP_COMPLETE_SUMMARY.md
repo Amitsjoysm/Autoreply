@@ -19,7 +19,7 @@
    - **Google OAuth**:
      - Client ID: `41068712596-6jt6q5nk2ogfqk82v5i6mb4otcfbp3dp.apps.googleusercontent.com`
      - Client Secret: `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`
-     - Redirect URI: `https://redis-calendar-agent.preview.emergentagent.com/api/oauth/google/callback`
+     - Redirect URI: `https://redis-worker-fix-1.preview.emergentagent.com/api/oauth/google/callback`
    - **Groq API**:
      - API Key: `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`
 
@@ -129,7 +129,7 @@
 You need to add this Authorized Redirect URI in your Google Cloud Console:
 
 ```
-https://redis-calendar-agent.preview.emergentagent.com/api/oauth/google/callback
+https://redis-worker-fix-1.preview.emergentagent.com/api/oauth/google/callback
 ```
 
 **Steps**:
@@ -142,7 +142,7 @@ https://redis-calendar-agent.preview.emergentagent.com/api/oauth/google/callback
 ### Microsoft OAuth
 The redirect URI is already configured:
 ```
-https://redis-calendar-agent.preview.emergentagent.com/api/oauth/microsoft/callback
+https://redis-worker-fix-1.preview.emergentagent.com/api/oauth/microsoft/callback
 ```
 
 ---
