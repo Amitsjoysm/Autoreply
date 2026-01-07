@@ -119,7 +119,9 @@ const LeadQualification = () => {
           weight: 1.0,
           is_required: true,
           priority: formData.questions.length + 1,
-          max_asks: 2
+          max_asks: 2,
+          qualifying_answers: [],
+          disqualifying_answers: []
         }
       ]
     });
