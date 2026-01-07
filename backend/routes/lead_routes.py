@@ -298,6 +298,13 @@ async def update_lead_stage(
             activities=updated_lead.activities,
             notes=updated_lead.notes,
             is_active=updated_lead.is_active,
+            qualification_checked=updated_lead.qualification_checked,
+            qualification_score=updated_lead.qualification_score,
+            qualification_reasons=updated_lead.qualification_reasons,
+            qualification_attempt=updated_lead.qualification_attempt,
+            nurturing_enabled=updated_lead.nurturing_enabled,
+            nurturing_exchanges_count=updated_lead.nurturing_exchanges_count,
+            nurturing_questions_asked=updated_lead.nurturing_questions_asked,
             created_at=updated_lead.created_at,
             updated_at=updated_lead.updated_at
         )
