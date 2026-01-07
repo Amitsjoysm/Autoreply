@@ -204,17 +204,74 @@ const LeadQualification = () => {
               
               <div className="space-y-3">
                 {formData.questions.map((q, idx) => (
-                  <div key={idx} className="border rounded p-3 space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium">Q{idx + 1}</span>
+                  <div key={idx} className="border rounded p-4 space-y-3 bg-gray-50">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-semibold text-gray-700">Question {idx + 1}</span>
                       <Button size="sm" variant="ghost" onClick={() => removeQuestion(idx)}>
                         <X className="w-4 h-4" />
                       </Button>
                     </div>
-                    <Input placeholder="Question text" value={q.question_text} onChange={(e) => updateQuestion(idx, 'question_text', e.target.value)} />
-                    <div className="grid grid-cols-2 gap-2">
-                      <Input placeholder="Key" value={q.question_key} onChange={(e) => updateQuestion(idx, 'question_key', e.target.value)} />
-                      <Input type="number" placeholder="Weight" value={q.weight} onChange={(e) => updateQuestion(idx, 'weight', parseFloat(e.target.value))} step="0.1" />
+                    
+                    <div>
+                      <Label className="text-xs text-gray-600">Question Text</Label>
+                      <Input 
+                        placeholder="e.g., What is your company size?" 
+                        value={q.question_text} 
+                        onChange={(e) => updateQuestion(idx, 'question_text', e.target.value)} 
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label className="text-xs text-gray-600">Question Key</Label>
+                        <Input 
+                          placeholder="e.g., company_size" 
+                          value={q.question_key} 
+                          onChange={(e) => updateQuestion(idx, 'question_key', e.target.value)} 
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs text-gray-600">Weight (0.0-1.0)</Label>
+                        <Input 
+                          type="number" 
+                          placeholder="e.g., 0.25" 
+                          value={q.weight} 
+                          onChange={(e) => updateQuestion(idx, 'weight', parseFloat(e.target.value))} 
+                          step="0.05"
+                          min="0"
+                          max="1"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Switch 
+                        checked={q.is_required} 
+                        onCheckedChange={(checked) => updateQuestion(idx, 'is_required', checked)} 
+                      />
+                      <Label className="text-sm">Required Question</Label>
+                    </div>
+                    
+                    <div className="space-y-2 border-t pt-3">
+                      <div>
+                        <Label className="text-xs text-gray-600">✅ Qualifying Answers (Optional)</Label>
+                        <p className="text-xs text-gray-500 mb-1">Comma-separated answers that qualify the lead (e.g., "51-200, 201-500, enterprise")</p>
+                        <Input 
+                          placeholder="Leave empty to accept any answer" 
+                          value={(q.qualifying_answers || []).join(', ')} 
+                          onChange={(e) => updateQuestion(idx, 'qualifying_answers', e.target.value ? e.target.value.split(',').map(s => s.trim()) : [])} 
+                        />
+                      </div>
+                      
+                      <div>
+                        <Label className="text-xs text-gray-600">❌ Disqualifying Answers (Optional)</Label>
+                        <p className="text-xs text-gray-500 mb-1">Comma-separated answers that disqualify the lead (e.g., "1-10, self-employed, freelancer")</p>
+                        <Input 
+                          placeholder="Leave empty if no disqualifying answers" 
+                          value={(q.disqualifying_answers || []).join(', ')} 
+                          onChange={(e) => updateQuestion(idx, 'disqualifying_answers', e.target.value ? e.target.value.split(',').map(s => s.trim()) : [])} 
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
