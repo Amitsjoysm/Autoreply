@@ -452,9 +452,13 @@ class LeadNurturingIntegrationService:
             from models.inbound_lead import InboundLead
             import uuid
             
+            # Extract name from email address (e.g., john.doe@company.com -> John Doe)
+            lead_name = self._extract_name_from_email(from_email)
+            
             lead = InboundLead(
                 id=str(uuid.uuid4()),
                 user_id=user_id,
+                lead_name=lead_name,
                 lead_email=from_email,
                 initial_email_id=email_id,
                 intent_id=intent_doc.get('id') if intent_doc else None,
@@ -468,7 +472,7 @@ class LeadNurturingIntegrationService:
             leads_collection = self.db['inbound_leads']
             await leads_collection.insert_one(lead.model_dump())
             
-            logger.info(f"Created awaiting lead: {lead.id}")
+            logger.info(f"Created awaiting lead: {lead.id} for {lead_name} <{from_email}>")
             return lead.id
             
         except Exception as e:
