@@ -140,6 +140,13 @@ async def get_lead(
             activities=lead_doc.get("activities", []),
             notes=lead_doc.get("notes"),
             is_active=lead_doc["is_active"],
+            qualification_checked=lead_doc.get("qualification_checked", False),
+            qualification_score=lead_doc.get("qualification_score", 0),
+            qualification_reasons=lead_doc.get("qualification_reasons", []),
+            qualification_attempt=lead_doc.get("qualification_attempt", 0),
+            nurturing_enabled=lead_doc.get("nurturing_enabled", False),
+            nurturing_exchanges_count=lead_doc.get("nurturing_exchanges_count", 0),
+            nurturing_questions_asked=lead_doc.get("nurturing_questions_asked", []),
             created_at=lead_doc["created_at"],
             updated_at=lead_doc["updated_at"]
         )
