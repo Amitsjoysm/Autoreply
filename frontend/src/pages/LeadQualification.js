@@ -329,10 +329,24 @@ const LeadQualification = () => {
               </div>
             </div>
             {item.questions?.length > 0 && (
-              <div className="bg-purple-50 rounded p-3">
-                <p className="text-sm font-medium mb-1">Questions:</p>
+              <div className="bg-purple-50 rounded p-3 space-y-2">
+                <p className="text-sm font-semibold mb-2">Questions:</p>
                 {item.questions.map((q, i) => (
-                  <p key={i} className="text-sm text-gray-700">• {q.question_text}</p>
+                  <div key={i} className="bg-white rounded p-2 border">
+                    <p className="text-sm font-medium text-gray-900">• {q.question_text}</p>
+                    <div className="text-xs text-gray-600 mt-1 space-y-1">
+                      <p>Key: <span className="font-mono">{q.question_key}</span> | Weight: {(q.weight * 100).toFixed(0)}% | {q.is_required ? '✓ Required' : '○ Optional'}</p>
+                      {q.qualifying_answers && q.qualifying_answers.length > 0 && (
+                        <p className="text-green-700">✅ Qualifying: {q.qualifying_answers.join(', ')}</p>
+                      )}
+                      {q.disqualifying_answers && q.disqualifying_answers.length > 0 && (
+                        <p className="text-red-700">❌ Disqualifying: {q.disqualifying_answers.join(', ')}</p>
+                      )}
+                      {(!q.qualifying_answers || q.qualifying_answers.length === 0) && (!q.disqualifying_answers || q.disqualifying_answers.length === 0) && (
+                        <p className="text-blue-700">ℹ️ Any answer accepted</p>
+                      )}
+                    </div>
+                  </div>
                 ))}
               </div>
             )}
