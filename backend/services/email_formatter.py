@@ -160,18 +160,29 @@ class EmailFormatter:
     @staticmethod
     def _format_links(text: str) -> str:
         """Convert URLs to clickable links"""
-        # Match URLs
-        url_pattern = r'(https?://[^\s<>"]+)'
+        # Match URLs - exclude trailing punctuation that's not part of the URL
+        url_pattern = r'(https?://[^\s<>"]+?)([.,;:!?\)]*(?:\s|$))'
         
         def replace_url(match):
             url = match.group(1)
+            trailing = match.group(2)
+            
+            # Remove trailing periods or commas that are likely sentence punctuation
+            # But keep them if they're part of the URL path (like file.html)
+            while url.endswith(('.', ',', ';', ':')) and '/' in url:
+                # Move trailing punctuation to trailing group
+                trailing = url[-1] + trailing
+                url = url[:-1]
+            
             # Make link more readable
             display_text = url
             if len(display_text) > 60:
                 display_text = display_text[:57] + '...'
-            return f'<a href="{url}" style="color: #2196F3; text-decoration: none; font-weight: 500;">{EmailFormatter._escape_html(display_text)}</a>'
+            return f'<a href="{url}" style="color: #2196F3; text-decoration: none; font-weight: 500;">{EmailFormatter._escape_html(display_text)}</a>{trailing}'
         
-        return re.sub(url_pattern, replace_url, EmailFormatter._escape_html(text))
+        # First escape HTML, then replace URLs
+        escaped_text = EmailFormatter._escape_html(text)
+        return re.sub(url_pattern, replace_url, escaped_text)
     
     @staticmethod
     def _escape_html(text: str) -> str:
