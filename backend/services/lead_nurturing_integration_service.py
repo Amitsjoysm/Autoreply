@@ -638,3 +638,39 @@ class LeadNurturingIntegrationService:
         except Exception as e:
             logger.error(f"Error incrementing attempt: {e}")
             return False
+    
+    def _extract_name_from_email(self, email: str) -> Optional[str]:
+        """
+        Extract name from email address
+        Examples:
+        - john.doe@company.com -> John Doe
+        - jane_smith@example.com -> Jane Smith
+        - contact@company.com -> Contact
+        """
+        try:
+            # Get the local part (before @)
+            local_part = email.split('@')[0]
+            
+            # Replace common separators with space
+            name_parts = local_part.replace('.', ' ').replace('_', ' ').replace('-', ' ')
+            
+            # Split into words and capitalize each
+            words = name_parts.split()
+            
+            # Filter out common non-name words
+            filtered_words = [
+                word.capitalize() 
+                for word in words 
+                if word.lower() not in ['info', 'contact', 'admin', 'support', 'sales', 'hello', 'hi']
+            ]
+            
+            if filtered_words:
+                return ' '.join(filtered_words)
+            else:
+                # If all words were filtered, just capitalize the first word
+                return words[0].capitalize() if words else None
+                
+        except Exception as e:
+            logger.error(f"Error extracting name from email {email}: {e}")
+            return None
+
