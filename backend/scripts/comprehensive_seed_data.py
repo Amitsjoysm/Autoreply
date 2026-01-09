@@ -1121,6 +1121,7 @@ async def main():
         templates = await create_campaign_templates(db, user_id)
         contacts = await create_campaign_contacts(db, user_id)
         lists = await create_contact_lists(db, user_id, contacts)
+        campaigns = await create_campaigns(db, user_id, templates, contacts, lists)
         leads = await create_sample_inbound_leads(db, user_id, intents)
         
         print("\n" + "=" * 80)
@@ -1135,6 +1136,7 @@ async def main():
         print(f"  • Campaign Templates: {len(templates)}")
         print(f"  • Campaign Contacts: {len(contacts)}")
         print(f"  • Contact Lists: {len(lists)}")
+        print(f"  • Campaigns: {len(campaigns)}")
         print(f"  • Sample Inbound Leads: {len(leads)}")
         print("\n🎉 App is fully seeded and ready to use!")
         print("=" * 80)
