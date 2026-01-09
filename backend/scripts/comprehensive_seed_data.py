@@ -695,6 +695,255 @@ async def create_contact_lists(db, user_id, contacts):
     return lists
 
 
+async def create_campaigns(db, user_id, templates, contacts, lists):
+    """Create sample campaigns"""
+    print("\n📢 Creating Campaigns...")
+    await db.campaigns.delete_many({"user_id": user_id})
+    
+    # Get template and contact IDs
+    initial_template_id = next((t["id"] for t in templates if t["template_type"] == "initial"), templates[0]["id"])
+    followup1_template_id = next((t["id"] for t in templates if t["template_type"] == "follow_up_1"), None)
+    followup2_template_id = next((t["id"] for t in templates if t["template_type"] == "follow_up_2"), None)
+    
+    contact_ids = [c["id"] for c in contacts]
+    enterprise_list_id = next((l["id"] for l in lists if "Enterprise" in l["name"]), None)
+    
+    campaigns = [
+        {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "name": "Q4 Enterprise Outreach",
+            "description": "Targeting enterprise prospects for Q4 growth",
+            "contact_ids": contact_ids[:3],  # First 3 contacts
+            "contact_tags": ["enterprise"],
+            "list_ids": [enterprise_list_id] if enterprise_list_id else [],
+            "initial_template_id": initial_template_id,
+            "follow_up_config": {
+                "enabled": True,
+                "count": 2,
+                "intervals": [2, 4],
+                "template_ids": [followup1_template_id, followup2_template_id] if followup1_template_id else []
+            },
+            "tracking_settings": {
+                "enable_open_tracking": True,
+                "enable_click_tracking": True,
+                "enable_reply_tracking": True,
+                "enable_sentiment_analysis": True
+            },
+            "email_account_ids": [],  # User needs to add email accounts
+            "daily_limit_per_account": 50,
+            "random_delay_min": 60,
+            "random_delay_max": 300,
+            "scheduled_start": get_timestamp(days_ago=10),
+            "scheduled_end": get_future_timestamp(days_ahead=20),
+            "timezone": "America/New_York",
+            "status": "completed",
+            "total_contacts": 3,
+            "emails_sent": 3,
+            "emails_pending": 0,
+            "emails_failed": 0,
+            "emails_opened": 2,
+            "emails_clicked": 1,
+            "emails_replied": 1,
+            "emails_bounced": 0,
+            "emails_delivered": 3,
+            "open_rate": 66.67,
+            "click_rate": 33.33,
+            "reply_rate": 33.33,
+            "bounce_rate": 0.0,
+            "delivery_rate": 100.0,
+            "inbox_rate": 95.0,
+            "positive_replies": 1,
+            "neutral_replies": 0,
+            "negative_replies": 0,
+            "leads_generated": 1,
+            "lead_rate": 33.33,
+            "opportunities_created": 1,
+            "opportunities_rate": 33.33,
+            "conversions": 1,
+            "conversion_rate": 33.33,
+            "verify_emails": False,
+            "created_at": get_timestamp(days_ago=10),
+            "updated_at": get_timestamp(days_ago=1),
+            "started_at": get_timestamp(days_ago=10),
+            "completed_at": get_timestamp(days_ago=1)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "name": "Startup Founders Outreach",
+            "description": "Connecting with startup founders and early-stage companies",
+            "contact_ids": contact_ids[3:],  # Remaining contacts
+            "contact_tags": ["startup", "founder"],
+            "list_ids": [],
+            "initial_template_id": initial_template_id,
+            "follow_up_config": {
+                "enabled": True,
+                "count": 2,
+                "intervals": [3, 5],
+                "template_ids": [followup1_template_id, followup2_template_id] if followup1_template_id else []
+            },
+            "tracking_settings": {
+                "enable_open_tracking": True,
+                "enable_click_tracking": True,
+                "enable_reply_tracking": True,
+                "enable_sentiment_analysis": True
+            },
+            "email_account_ids": [],
+            "daily_limit_per_account": 100,
+            "random_delay_min": 120,
+            "random_delay_max": 300,
+            "scheduled_start": get_timestamp(days_ago=5),
+            "timezone": "America/New_York",
+            "status": "running",
+            "total_contacts": 2,
+            "emails_sent": 2,
+            "emails_pending": 0,
+            "emails_failed": 0,
+            "emails_opened": 2,
+            "emails_clicked": 1,
+            "emails_replied": 0,
+            "emails_bounced": 0,
+            "emails_delivered": 2,
+            "open_rate": 100.0,
+            "click_rate": 50.0,
+            "reply_rate": 0.0,
+            "bounce_rate": 0.0,
+            "delivery_rate": 100.0,
+            "inbox_rate": 98.0,
+            "positive_replies": 0,
+            "neutral_replies": 0,
+            "negative_replies": 0,
+            "leads_generated": 0,
+            "lead_rate": 0.0,
+            "opportunities_created": 0,
+            "opportunities_rate": 0.0,
+            "conversions": 0,
+            "conversion_rate": 0.0,
+            "verify_emails": False,
+            "created_at": get_timestamp(days_ago=5),
+            "updated_at": get_timestamp(hours_ago=2),
+            "started_at": get_timestamp(days_ago=5)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "name": "Technology Leaders - Q1 2024",
+            "description": "Outreach to CTOs and tech decision makers",
+            "contact_ids": [],
+            "contact_tags": ["technology", "decision-maker"],
+            "list_ids": [],
+            "initial_template_id": initial_template_id,
+            "follow_up_config": {
+                "enabled": True,
+                "count": 3,
+                "intervals": [2, 4, 6],
+                "template_ids": [followup1_template_id, followup2_template_id] if followup1_template_id else []
+            },
+            "tracking_settings": {
+                "enable_open_tracking": True,
+                "enable_click_tracking": True,
+                "enable_reply_tracking": True,
+                "enable_sentiment_analysis": True
+            },
+            "email_account_ids": [],
+            "daily_limit_per_account": 75,
+            "random_delay_min": 90,
+            "random_delay_max": 240,
+            "scheduled_start": get_future_timestamp(days_ahead=3),
+            "scheduled_end": get_future_timestamp(days_ahead=30),
+            "timezone": "America/New_York",
+            "status": "scheduled",
+            "total_contacts": 0,
+            "emails_sent": 0,
+            "emails_pending": 0,
+            "emails_failed": 0,
+            "emails_opened": 0,
+            "emails_clicked": 0,
+            "emails_replied": 0,
+            "emails_bounced": 0,
+            "emails_delivered": 0,
+            "open_rate": 0.0,
+            "click_rate": 0.0,
+            "reply_rate": 0.0,
+            "bounce_rate": 0.0,
+            "delivery_rate": 0.0,
+            "inbox_rate": 0.0,
+            "positive_replies": 0,
+            "neutral_replies": 0,
+            "negative_replies": 0,
+            "leads_generated": 0,
+            "lead_rate": 0.0,
+            "opportunities_created": 0,
+            "opportunities_rate": 0.0,
+            "conversions": 0,
+            "conversion_rate": 0.0,
+            "verify_emails": False,
+            "created_at": get_timestamp(hours_ago=12),
+            "updated_at": get_timestamp(hours_ago=12)
+        },
+        {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "name": "Marketing Directors Campaign",
+            "description": "Draft campaign for marketing professionals",
+            "contact_ids": [],
+            "contact_tags": ["marketing"],
+            "list_ids": [],
+            "initial_template_id": initial_template_id,
+            "follow_up_config": {
+                "enabled": True,
+                "count": 2,
+                "intervals": [3, 6],
+                "template_ids": [followup1_template_id] if followup1_template_id else []
+            },
+            "tracking_settings": {
+                "enable_open_tracking": True,
+                "enable_click_tracking": True,
+                "enable_reply_tracking": True,
+                "enable_sentiment_analysis": True
+            },
+            "email_account_ids": [],
+            "daily_limit_per_account": 50,
+            "random_delay_min": 60,
+            "random_delay_max": 180,
+            "timezone": "America/New_York",
+            "status": "draft",
+            "total_contacts": 0,
+            "emails_sent": 0,
+            "emails_pending": 0,
+            "emails_failed": 0,
+            "emails_opened": 0,
+            "emails_clicked": 0,
+            "emails_replied": 0,
+            "emails_bounced": 0,
+            "emails_delivered": 0,
+            "open_rate": 0.0,
+            "click_rate": 0.0,
+            "reply_rate": 0.0,
+            "bounce_rate": 0.0,
+            "delivery_rate": 0.0,
+            "inbox_rate": 0.0,
+            "positive_replies": 0,
+            "neutral_replies": 0,
+            "negative_replies": 0,
+            "leads_generated": 0,
+            "lead_rate": 0.0,
+            "opportunities_created": 0,
+            "opportunities_rate": 0.0,
+            "conversions": 0,
+            "conversion_rate": 0.0,
+            "verify_emails": False,
+            "created_at": get_timestamp(hours_ago=6),
+            "updated_at": get_timestamp(hours_ago=6)
+        }
+    ]
+    
+    result = await db.campaigns.insert_many(campaigns)
+    print(f"✅ Created {len(result.inserted_ids)} campaigns")
+    return campaigns
+
+
 async def create_sample_inbound_leads(db, user_id, intents):
     """Create sample inbound leads"""
     print("\n🎯 Creating Sample Inbound Leads...")
