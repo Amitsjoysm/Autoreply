@@ -789,82 +789,159 @@ FORMATTING:
         thread_context: List[Dict] = None
     ) -> Tuple[bool, List[str], int]:
         """
-        Validate email draft using Groq LLM
+        Validate email draft using multiple layers of validation
+        
+        STRICT VALIDATION - Prevents incomplete or greeting-only responses
         
         Returns:
             Tuple of (is_valid, issues, tokens_used)
-            - is_valid: True if draft passes validation
+            - is_valid: True if draft passes ALL validation layers
             - issues: List of issues found (empty if valid)
             - tokens_used: Total tokens consumed
         """
         try:
-            # Quick validation: Check minimum length (50 characters minimum)
-            if not draft or len(draft.strip()) < 50:
-                logger.warning(f"✗ Draft too short: {len(draft.strip())} characters (minimum 50)")
-                return False, ["Draft is too short - must be at least 50 characters"], 0
+            issues = []
             
-            # Check for generic/template responses
-            draft_lower = draft.lower().strip()
-            if draft_lower.startswith('hi ') and len(draft_lower) < 100:
-                # Likely just "Hi {Name}," with no content
-                logger.warning(f"✗ Draft appears to be just a greeting with no content")
-                return False, ["Draft appears incomplete - only contains greeting"], 0
+            # ============================================================
+            # LAYER 1: BASIC LENGTH VALIDATION (CRITICAL)
+            # ============================================================
+            if not draft or not draft.strip():
+                return False, ["Draft is empty"], 0
             
+            draft_stripped = draft.strip()
+            draft_length = len(draft_stripped)
+            
+            # Absolute minimum: 50 characters
+            if draft_length < 50:
+                logger.warning(f"✗ VALIDATION FAILED: Draft too short ({draft_length} chars, minimum 50)")
+                return False, [f"Draft is too short: {draft_length} characters (minimum 50 required)"], 0
+            
+            # ============================================================
+            # LAYER 2: GREETING-ONLY DETECTION (CRITICAL)
+            # ============================================================
+            draft_lower = draft_stripped.lower()
+            
+            # Pattern 1: Just "Hi {Name}," or "Hello {Name},"
+            greeting_patterns = [
+                r'^hi\s+\w+[\s,]*$',
+                r'^hello\s+\w+[\s,]*$',
+                r'^dear\s+\w+[\s,]*$',
+                r'^hey\s+\w+[\s,]*$',
+            ]
+            
+            import re
+            for pattern in greeting_patterns:
+                if re.match(pattern, draft_lower):
+                    logger.warning(f"✗ VALIDATION FAILED: Greeting-only response detected")
+                    return False, ["Draft contains only a greeting with no actual content"], 0
+            
+            # Pattern 2: Greeting + comma/newline + nothing else
+            if draft_length < 100:
+                # Check if it's mostly just a greeting
+                lines = draft_stripped.split('\n')
+                first_line = lines[0].strip().lower()
+                
+                if first_line.startswith(('hi ', 'hello ', 'dear ', 'hey ')):
+                    # If first line is a greeting and there's no substantial content
+                    remaining_content = '\n'.join(lines[1:]).strip()
+                    if len(remaining_content) < 30:
+                        logger.warning(f"✗ VALIDATION FAILED: Only greeting with minimal content")
+                        return False, ["Draft appears to be just a greeting with insufficient content"], 0
+            
+            # ============================================================
+            # LAYER 3: WORD COUNT VALIDATION
+            # ============================================================
+            word_count = len(draft_stripped.split())
+            
+            # Minimum 20 words for any response
+            if word_count < 20:
+                logger.warning(f"✗ VALIDATION FAILED: Too few words ({word_count}, minimum 20)")
+                return False, [f"Draft has only {word_count} words (minimum 20 required)"], 0
+            
+            # ============================================================
+            # LAYER 4: SENTENCE COUNT VALIDATION
+            # ============================================================
+            # Must have at least 2 sentences (indicated by . ! ? or newlines)
+            sentence_endings = draft_stripped.count('.') + draft_stripped.count('!') + draft_stripped.count('?')
+            
+            if sentence_endings < 2:
+                logger.warning(f"✗ VALIDATION FAILED: Too few sentences ({sentence_endings})")
+                return False, [f"Draft needs at least 2 complete sentences (found {sentence_endings})"], 0
+            
+            # ============================================================
+            # LAYER 5: AI-POWERED VALIDATION
+            # ============================================================
             # Build validation prompt
             prompt = self._build_validation_prompt(draft, original_email, thread_context)
             
-            system_message = """You are an email validation AI. Check email drafts for quality and appropriateness.
+            system_message = """You are a STRICT email validation AI. Your job is to prevent low-quality or incomplete drafts from being sent.
 
-VALIDATION CRITERIA:
-1. Professional tone and language
-2. Addresses the sender's questions/concerns
-3. Provides helpful, actionable information
-4. No grammatical errors or typos
-5. Appropriate length (minimum 50 characters, 100+ words for lead qualification)
-6. Does not repeat information already shared in thread
-7. Does not make promises that can't be kept
-8. Is not generic - shows understanding of the specific situation
-9. NOT just a greeting - must have actual content
+VALIDATION CRITERIA (ALL must pass):
+1. ✅ Professional tone and language
+2. ✅ Directly addresses the sender's questions/concerns
+3. ✅ Provides helpful, actionable information
+4. ✅ No grammatical errors or typos
+5. ✅ Appropriate length (minimum 50 characters, 20+ words)
+6. ✅ Does not repeat information already in thread
+7. ✅ Does not make promises that can't be kept
+8. ✅ Shows understanding of the specific situation
+9. ✅ Has actual content (NOT just a greeting)
+10. ✅ Answers questions if any were asked
 
-CRITICAL: Reject drafts that are:
-- Just "Hi {Name}," with no content
-- Under 50 characters
-- Missing responses to questions asked
+CRITICAL REJECTION RULES:
+❌ REJECT if draft is just "Hi {Name}," or similar greeting
+❌ REJECT if draft is under 50 characters
+❌ REJECT if draft doesn't address the email content
+❌ REJECT if draft is generic template text
+❌ REJECT if draft doesn't answer questions asked
+❌ REJECT if draft is incomplete or cut off
+
+BE STRICT. When in doubt, REJECT the draft.
 
 Respond with JSON:
 {
   "is_valid": true/false,
-  "issues": ["list of specific issues found"],
+  "issues": ["specific issues found"],
   "score": 0-100
 }
 
-If draft is good, return is_valid: true with empty issues array."""
+Score < 70 = REJECT (is_valid: false)"""
             
             # Call Groq API
             result = await self._call_groq_api(
                 system_message=system_message,
                 user_message=prompt,
-                temperature=0.3,
-                max_tokens=400
+                temperature=0.2,  # Lower temperature for more consistent validation
+                max_tokens=500
             )
             
             # Parse response
             data = self._parse_json_response(result)
             
             is_valid = data.get('is_valid', False)
-            issues = data.get('issues', [])
+            ai_issues = data.get('issues', [])
+            score = data.get('score', 0)
             
-            if is_valid:
-                logger.info("✓ Draft validation passed")
+            # Enforce score threshold
+            if score < 70:
+                is_valid = False
+                if "Low quality score" not in str(ai_issues):
+                    ai_issues.append(f"Quality score too low: {score}/100 (minimum 70)")
+            
+            # Combine issues from all layers
+            all_issues = issues + ai_issues
+            
+            if is_valid and not all_issues:
+                logger.info(f"✓ Draft validation PASSED (score: {score}/100, {draft_length} chars, {word_count} words)")
             else:
-                logger.warning(f"✗ Draft validation failed: {', '.join(issues)}")
+                logger.warning(f"✗ Draft validation FAILED (score: {score}/100): {', '.join(all_issues)}")
             
-            return is_valid, issues, self.tokens_used
+            return is_valid, all_issues, self.tokens_used
             
         except Exception as e:
             logger.error(f"Error validating draft: {e}", exc_info=True)
-            # On error, assume valid to avoid blocking
-            return True, [], self.tokens_used
+            # On error, REJECT to be safe
+            return False, [f"Validation error: {str(e)}"], self.tokens_used
     
     def _build_validation_prompt(
         self,
