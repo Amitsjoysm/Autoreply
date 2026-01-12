@@ -195,7 +195,7 @@ const LeadSettings = () => {
                 )}
               </div>
               <p className="text-sm text-gray-700 mb-4">
-                Ask 1-2 contextual questions per email to gather lead information naturally
+                Ask one-two contextual questions per email to gather lead information naturally
               </p>
               <Button
                 onClick={handleToggleNurturing}
