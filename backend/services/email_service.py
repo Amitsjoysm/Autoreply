@@ -24,6 +24,20 @@ class EmailService:
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
         self.oauth_service = OAuthService(db)
+        
+        # Initialize encryption for password decryption
+        from utils.encryption import EncryptionService
+        import os
+        encryption_key = os.environ.get('ENCRYPTION_KEY', 'your-encryption-key-32-bytes-long')
+        self.encryption_service = EncryptionService(encryption_key)
+    
+    def _decrypt_password(self, encrypted_password: str) -> str:
+        """Decrypt account password"""
+        try:
+            return self.encryption_service.decrypt(encrypted_password)
+        except Exception as e:
+            logger.error(f"Failed to decrypt password: {e}")
+            return encrypted_password  # Return as-is if decryption fails
     
     async def ensure_token_valid(self, account: EmailAccount) -> EmailAccount:
         """Check and refresh OAuth token if expired"""
