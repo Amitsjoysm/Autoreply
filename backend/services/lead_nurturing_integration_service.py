@@ -487,14 +487,23 @@ class LeadNurturingIntegrationService:
         email_content: str,
         thread_context: List[Dict],
         previous_questions: List[Dict],
-        attempt: int
+        attempt: int,
+        intent_doc: Optional[Dict] = None
     ) -> List[Dict]:
         """Get questions for specific attempt (with AI rephrasing)"""
         try:
             # Get base questions from config
-            users_collection = self.db['users']
-            user = await users_collection.find_one({"id": user_id})
-            config_id = user.get('default_nurturing_config_id') if user else None
+            # First try to get config_id from intent, then fall back to user default
+            config_id = None
+            if intent_doc:
+                config_id = intent_doc.get('nurturing_config_id')
+            
+            if not config_id:
+                users_collection = self.db['users']
+                user = await users_collection.find_one({"id": user_id})
+                config_id = user.get('default_nurturing_config_id') if user else None
+            
+            logger.info(f"Getting questions for attempt {attempt} with config_id: {config_id}")
             
             questions = await self.nurturing_service.generate_nurturing_questions(
                 user_id,
