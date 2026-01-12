@@ -355,7 +355,7 @@ async def process_email(email_id: str):
                         reply = EmailSend(
                             email_account_id=email.email_account_id,
                             to_email=[email.from_email],
-                            subject=f"Re: {email.subject}",
+                            subject=format_reply_subject(email.subject),
                             body=simple_ack_message
                         )
                         
@@ -682,7 +682,7 @@ async def process_email(email_id: str):
                     reply = EmailSend(
                         email_account_id=email.email_account_id,
                         to_email=[email.from_email],
-                        subject=f"Re: {email.subject}",
+                        subject=format_reply_subject(email.subject),
                         body=draft
                     )
                     
