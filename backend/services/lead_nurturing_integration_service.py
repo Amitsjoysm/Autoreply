@@ -75,7 +75,8 @@ class LeadNurturingIntegrationService:
                     email_content,
                     thread_context,
                     [],  # No previous questions
-                    1  # First attempt
+                    1,  # First attempt
+                    intent_doc  # Pass intent_doc to get config_id
                 )
                 
                 # Store questions in lead record for attempt #1
