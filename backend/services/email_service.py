@@ -192,8 +192,13 @@ class EmailService:
         try:
             from dateutil import parser
             
+            # Decrypt password before use
+            password = self._decrypt_password(account.password) if account.password else None
+            if not password:
+                raise Exception("No password available for IMAP authentication")
+            
             mail = imaplib.IMAP4_SSL(account.imap_host, account.imap_port)
-            mail.login(account.email, account.password)
+            mail.login(account.email, password)
             mail.select('inbox')
             
             # Determine the date to search from
