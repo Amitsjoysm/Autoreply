@@ -533,17 +533,20 @@ Return ONLY the JSON object, no explanations."""
     
     def _calculate_lead_score(self, lead: InboundLead, extracted_data: Optional[ExtractedData]) -> int:
         """
-        Calculate lead score (0-100) based on deterministic rules
+        Calculate lead score (0-100) based on multiple factors
         
         Scoring Factors:
-        - Data completeness: 0-30 points
-        - Engagement: 0-40 points
-        - Meeting scheduled: 20 points
+        - Data completeness: 0-20 points
+        - Engagement (emails): 0-30 points (progressive: 5pts per interaction)
+        - Questions answered: 0-20 points (10pts per answer)
+        - Meeting scheduled: 30 points (HIGHEST PRIORITY)
         - Extraction confidence: 0-10 points
+        
+        Progressive scoring means score increases with each conversation!
         """
         score = 0
         
-        # Data completeness (0-30 points)
+        # Data completeness (0-20 points)
         fields = [
             lead.lead_name,
             lead.company_name,
@@ -554,23 +557,38 @@ Return ONLY the JSON object, no explanations."""
             lead.specific_interests
         ]
         filled_fields = sum(1 for f in fields if f)
-        score += int((filled_fields / len(fields)) * 30)
+        data_score = int((filled_fields / len(fields)) * 20)
+        score += data_score
         
-        # Engagement (0-40 points)
-        # More emails = higher score
+        # Engagement - Progressive scoring (0-30 points)
+        # Each email interaction = 5 points (up to 6 interactions = 30 points)
         total_interactions = lead.emails_received + lead.emails_sent
-        engagement_score = min(total_interactions * 5, 40)
+        engagement_score = min(total_interactions * 5, 30)
         score += engagement_score
         
-        # Meeting scheduled (20 points)
+        # Questions answered (0-20 points)
+        # Each answered question = 10 points (up to 2 questions = 20 points)
+        answers_count = len(lead.answers_collected) if lead.answers_collected else 0
+        answer_score = min(answers_count * 10, 20)
+        score += answer_score
+        
+        # Meeting scheduled (30 points) - HIGHEST PRIORITY
+        # This is the strongest signal of qualified lead
         if lead.meeting_scheduled:
-            score += 20
+            score += 30
+            logger.info(f"Meeting bonus applied: +30 points (lead: {lead.id})")
         
         # Extraction confidence (0-10 points)
         if extracted_data:
-            score += int(extracted_data.extraction_confidence * 10)
+            confidence_score = int(extracted_data.extraction_confidence * 10)
+            score += confidence_score
         
-        return min(score, 100)  # Cap at 100
+        # Cap at 100
+        final_score = min(score, 100)
+        
+        logger.info(f"Lead score calculated: {final_score}/100 (data:{data_score}, engagement:{engagement_score}, answers:{answer_score}, meeting:{30 if lead.meeting_scheduled else 0})")
+        
+        return final_score
     
     # ========================================================================
     # ACTIVITY TRACKING (Observable)
