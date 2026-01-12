@@ -366,8 +366,9 @@ Return ONLY the JSON object, no explanations."""
         Actions:
         1. Add email to lead's email list
         2. Update engagement metrics
-        3. Recalculate score
+        3. Recalculate score (PROGRESSIVE - increases with each interaction!)
         4. Add activity
+        5. Check for auto-stage transition
         """
         try:
             lead_doc = await self.db.inbound_leads.find_one({"id": lead_id})
@@ -380,14 +381,14 @@ Return ONLY the JSON object, no explanations."""
             if email.id not in lead.email_ids:
                 lead.email_ids.append(email.id)
             
-            # Update engagement metrics
+            # Update engagement metrics (THIS INCREASES SCORE!)
             if email.direction == 'inbound':
                 lead.emails_received += 1
                 lead.last_contact_at = email.received_at
             else:
                 lead.emails_sent += 1
             
-            # Recalculate score
+            # Recalculate score - WILL INCREASE due to engagement
             lead.score = self._calculate_lead_score(lead, None)
             
             # Add activity
@@ -395,12 +396,32 @@ Return ONLY the JSON object, no explanations."""
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "activity_type": "email_received" if email.direction == 'inbound' else "email_sent",
                 "description": f"Email: {email.subject}",
-                "details": {"email_id": email.id},
+                "details": {
+                    "email_id": email.id,
+                    "new_score": lead.score,
+                    "engagement": f"{lead.emails_received}+{lead.emails_sent}"
+                },
                 "performed_by": "system"
             }
             lead.activities.append(activity)
             
             lead.updated_at = datetime.now(timezone.utc).isoformat()
+            
+            # Check for auto stage transition
+            new_stage = await self.check_auto_stage_transition(lead)
+            if new_stage and new_stage != lead.stage:
+                old_stage = lead.stage
+                lead.stage = new_stage
+                logger.info(f"Auto stage transition: {old_stage} → {new_stage} (score: {lead.score})")
+                
+                # Add transition activity
+                lead.activities.append({
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "activity_type": "stage_transition",
+                    "description": f"Auto-transitioned from {old_stage} to {new_stage}",
+                    "details": {"old_stage": old_stage, "new_stage": new_stage, "score": lead.score},
+                    "performed_by": "system"
+                })
             
             # Save to database
             await self.db.inbound_leads.update_one(
@@ -408,7 +429,7 @@ Return ONLY the JSON object, no explanations."""
                 {"$set": lead.model_dump()}
             )
             
-            logger.info(f"✓ Lead updated: {lead.id} - Emails: {lead.emails_received}+{lead.emails_sent}, Score: {lead.score}")
+            logger.info(f"✓ Lead updated: {lead.id} - Stage: {lead.stage}, Score: {lead.score} (+{5}pts engagement), Emails: {lead.emails_received}+{lead.emails_sent}")
             
             return lead
             
