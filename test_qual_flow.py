@@ -99,10 +99,11 @@ def test_lead_qualification():
         print(f"  Length: {len(draft)} characters")
         print(f"\n  Draft Content:")
         print("  " + "-" * 76)
-        for line in draft.split('\n')[:15]:  # Show first 15 lines
+        draft_lines = draft.split('\n')
+        for line in draft_lines[:15]:  # Show first 15 lines
             print(f"  {line}")
-        if len(draft.split('\n')) > 15:
-            print(f"  ... ({len(draft.split('\n')) - 15} more lines)")
+        if len(draft_lines) > 15:
+            print(f"  ... ({len(draft_lines) - 15} more lines)")
         print("  " + "-" * 76)
         
         # Check if questions are in the draft
