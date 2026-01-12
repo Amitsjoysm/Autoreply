@@ -798,6 +798,18 @@ FORMATTING:
             - tokens_used: Total tokens consumed
         """
         try:
+            # Quick validation: Check minimum length (50 characters minimum)
+            if not draft or len(draft.strip()) < 50:
+                logger.warning(f"✗ Draft too short: {len(draft.strip())} characters (minimum 50)")
+                return False, ["Draft is too short - must be at least 50 characters"], 0
+            
+            # Check for generic/template responses
+            draft_lower = draft.lower().strip()
+            if draft_lower.startswith('hi ') and len(draft_lower) < 100:
+                # Likely just "Hi {Name}," with no content
+                logger.warning(f"✗ Draft appears to be just a greeting with no content")
+                return False, ["Draft appears incomplete - only contains greeting"], 0
+            
             # Build validation prompt
             prompt = self._build_validation_prompt(draft, original_email, thread_context)
             
@@ -808,10 +820,16 @@ VALIDATION CRITERIA:
 2. Addresses the sender's questions/concerns
 3. Provides helpful, actionable information
 4. No grammatical errors or typos
-5. Appropriate length (not too short, not too long)
+5. Appropriate length (minimum 50 characters, 100+ words for lead qualification)
 6. Does not repeat information already shared in thread
 7. Does not make promises that can't be kept
 8. Is not generic - shows understanding of the specific situation
+9. NOT just a greeting - must have actual content
+
+CRITICAL: Reject drafts that are:
+- Just "Hi {Name}," with no content
+- Under 50 characters
+- Missing responses to questions asked
 
 Respond with JSON:
 {
