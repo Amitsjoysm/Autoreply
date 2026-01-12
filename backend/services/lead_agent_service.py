@@ -311,6 +311,10 @@ Return ONLY the JSON object, no explanations."""
                 lead.industry = extracted_data.industry
                 lead.specific_interests = extracted_data.specific_interests
                 lead.requirements = extracted_data.requirements
+                lead.linkedin_url = extracted_data.linkedin_url
+                lead.facebook_url = extracted_data.facebook_url
+                lead.twitter_url = extracted_data.twitter_url
+                lead.website_url = extracted_data.website_url
             
             # Calculate initial score
             lead.score = self._calculate_lead_score(lead, extracted_data)
