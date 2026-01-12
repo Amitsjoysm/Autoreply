@@ -14,6 +14,18 @@ from models.email import Email
 
 logger = logging.getLogger(__name__)
 
+def format_reply_subject(subject: str) -> str:
+    """Format subject line for reply - adds 'Re:' only if not already present"""
+    if not subject:
+        return "Re: (no subject)"
+    
+    # Check if subject already starts with 'Re:' (case insensitive)
+    subject_lower = subject.strip().lower()
+    if subject_lower.startswith('re:'):
+        return subject.strip()  # Return as-is if already has Re:
+    
+    return f"Re: {subject.strip()}"
+
 # Database connection
 client = AsyncIOMotorClient(config.MONGO_URL)
 db = client[config.DB_NAME]
