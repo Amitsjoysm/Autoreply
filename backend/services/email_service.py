@@ -396,7 +396,13 @@ class EmailService:
             if not password:
                 raise Exception("No password available for SMTP authentication")
             
-            server = smtplib.SMTP_SSL(account.smtp_host, account.smtp_port)
+            # Use SMTP with starttls for port 587, SMTP_SSL for port 465
+            if account.smtp_port == 465:
+                server = smtplib.SMTP_SSL(account.smtp_host, account.smtp_port)
+            else:
+                server = smtplib.SMTP(account.smtp_host, account.smtp_port)
+                server.starttls()
+            
             server.login(account.email, password)
             
             recipients = email_data.to_email + (email_data.cc or []) + (email_data.bcc or [])
