@@ -87,13 +87,11 @@ def test_lead_qualification():
                 print(f"\n  📋 Nurturing Questions Generated:")
                 for i, q in enumerate(questions, 1):
                     print(f"    {i}. {q.get('question_text')}")
+            else:
+                print(f"\n  ⚠️  WARNING: No questions generated!")
         else:
             print(f"  Questions to ask: {questions}")
-            
-            if questions and questions != 0:
-                print(f"\n  ⚠️  WARNING: questions_to_ask is not a list!")
-        else:
-            print(f"\n  ⚠️  WARNING: No questions generated!")
+            print(f"\n  ⚠️  WARNING: questions_to_ask is not a list!")
     else:
         print(f"\n❌ No lead processing occurred!")
         print("This indicates lead qualification is NOT working.")
