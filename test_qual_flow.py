@@ -152,7 +152,8 @@ def test_lead_qualification():
     
     has_intent = intent_action is not None
     has_lead_processing = lead_action is not None
-    has_questions = lead_action and len(lead_action['details'].get('questions_to_ask', [])) > 0
+    questions_data = lead_action['details'].get('questions_to_ask', []) if lead_action else []
+    has_questions = isinstance(questions_data, list) and len(questions_data) > 0
     has_draft = draft is not None
     
     print(f"\n✓ Intent Classification: {'✅ YES' if has_intent else '❌ NO'}")
