@@ -201,7 +201,7 @@ const LeadSettings = () => {
                 onClick={handleToggleNurturing}
                 disabled={saving}
                 className={`w-full ${leadSettings.global_lead_nurturing_enabled 
-                  ? 'bg-amber-500 hover:bg-amber-600' 
+                  ? 'bg-orange-500 hover:bg-orange-600' 
                   : 'bg-pink-600 hover:bg-pink-700'
                 }`}
               >
