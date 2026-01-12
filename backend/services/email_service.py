@@ -391,8 +391,13 @@ class EmailService:
             # Attach ONLY plain text (as requested by user)
             message.attach(MIMEText(plain_body, 'plain'))
             
+            # Decrypt password before use
+            password = self._decrypt_password(account.password) if account.password else None
+            if not password:
+                raise Exception("No password available for SMTP authentication")
+            
             server = smtplib.SMTP_SSL(account.smtp_host, account.smtp_port)
-            server.login(account.email, account.password)
+            server.login(account.email, password)
             
             recipients = email_data.to_email + (email_data.cc or []) + (email_data.bcc or [])
             server.sendmail(account.email, recipients, message.as_string())
