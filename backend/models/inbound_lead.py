@@ -26,6 +26,10 @@ class ExtractedData(BaseModel):
     industry: Optional[str] = None
     specific_interests: Optional[str] = None
     requirements: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    facebook_url: Optional[str] = None
+    twitter_url: Optional[str] = None
+    website_url: Optional[str] = None
     extraction_confidence: float = 0.0  # 0.0-1.0
 
 class InboundLead(BaseModel):
@@ -44,6 +48,12 @@ class InboundLead(BaseModel):
     job_title: Optional[str] = None
     company_size: Optional[str] = None
     industry: Optional[str] = None
+    
+    # Social Media & Web Presence
+    linkedin_url: Optional[str] = None
+    facebook_url: Optional[str] = None
+    twitter_url: Optional[str] = None
+    website_url: Optional[str] = None
     
     # Lead Details
     specific_interests: Optional[str] = None  # What they're interested in
@@ -126,6 +136,10 @@ class LeadUpdate(BaseModel):
     industry: Optional[str] = None
     specific_interests: Optional[str] = None
     requirements: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    facebook_url: Optional[str] = None
+    twitter_url: Optional[str] = None
+    website_url: Optional[str] = None
     priority: Optional[Literal['low', 'medium', 'high', 'urgent']] = None
     notes: Optional[str] = None
 
