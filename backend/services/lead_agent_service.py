@@ -118,33 +118,44 @@ class LeadAgentService:
     
     async def _ai_extract_lead_data(self, email: Email) -> ExtractedData:
         """
-        Use Groq LLM to extract structured data from email
+        Use Groq LLM to extract structured data from email including signatures and social URLs
         """
         if not self.groq_api_key:
             return ExtractedData(extraction_confidence=0.0)
         
         try:
-            # Prepare extraction prompt
-            prompt = f"""Extract structured lead information from this email. Return ONLY valid JSON.
+            # Prepare extraction prompt with enhanced instructions
+            prompt = f"""Extract comprehensive lead information from this email, including details from email signature. Return ONLY valid JSON.
 
 Email Subject: {email.subject}
 Email From: {email.from_email}
-Email Body:
-{email.body[:1500]}
+Email Body (including signature):
+{email.body[:2000]}
 
-Extract the following information (use null if not found):
+Extract ALL available information (use null if not found):
 {{
-  "name": "Full name of the sender",
+  "name": "Full name of the sender (check signature and email body)",
   "email": "Email address",
-  "company_name": "Company/Organization name",
-  "address": "Physical address if mentioned",
-  "phone": "Phone number if mentioned",
-  "job_title": "Job title or position",
-  "company_size": "Company size (e.g., '1-10', '11-50', '51-200', '200+')",
+  "company_name": "Company/Organization name (check signature)",
+  "address": "Physical address if mentioned (check signature)",
+  "phone": "Phone number (check signature, format: +1-xxx-xxx-xxxx or similar)",
+  "job_title": "Job title or position (check signature)",
+  "company_size": "Company size if mentioned (e.g., '1-10', '11-50', '51-200', '200+')",
   "industry": "Industry or sector",
-  "specific_interests": "What they're interested in (products/services)",
-  "requirements": "Their specific needs or requirements"
+  "specific_interests": "What they're interested in (products/services mentioned)",
+  "requirements": "Their specific needs or requirements",
+  "linkedin_url": "LinkedIn profile URL (look for linkedin.com/in/ links)",
+  "facebook_url": "Facebook profile or page URL",
+  "twitter_url": "Twitter/X profile URL",
+  "website_url": "Company website URL"
 }}
+
+IMPORTANT:
+- Look carefully in email signatures for phone, address, social URLs
+- Extract URLs exactly as they appear
+- For phone numbers, preserve format including country code if present
+- Company name often appears in email domain or signature
+- Check for "linkedin.com", "facebook.com", "twitter.com", "x.com" links
 
 Return ONLY the JSON object, no explanations."""
             
@@ -159,11 +170,11 @@ Return ONLY the JSON object, no explanations."""
                     json={
                         "model": "llama-3.3-70b-versatile",
                         "messages": [
-                            {"role": "system", "content": "You are a data extraction expert. Extract structured information from emails and return valid JSON only."},
+                            {"role": "system", "content": "You are an expert at extracting structured data from emails. Pay special attention to email signatures which often contain phone, address, and social media URLs. Extract information accurately and return only valid JSON."},
                             {"role": "user", "content": prompt}
                         ],
                         "temperature": 0.1,
-                        "max_tokens": 500
+                        "max_tokens": 600
                     }
                 )
             
@@ -199,6 +210,10 @@ Return ONLY the JSON object, no explanations."""
                 industry=extracted_json.get('industry'),
                 specific_interests=extracted_json.get('specific_interests'),
                 requirements=extracted_json.get('requirements'),
+                linkedin_url=extracted_json.get('linkedin_url'),
+                facebook_url=extracted_json.get('facebook_url'),
+                twitter_url=extracted_json.get('twitter_url'),
+                website_url=extracted_json.get('website_url'),
                 extraction_confidence=confidence
             )
             
