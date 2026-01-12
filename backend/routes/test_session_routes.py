@@ -189,7 +189,7 @@ async def send_test_message(
                             "stage": lead_doc.get('stage'),
                             "score": lead_doc.get('qualification_score', 0),
                             "attempt": lead_doc.get('qualification_attempt', 0),
-                            "questions_to_ask": len(questions_to_ask),
+                            "questions_to_ask": questions_to_ask,  # Return actual questions list
                             "should_create_inbound": should_create
                         }
                     }
