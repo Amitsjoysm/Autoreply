@@ -949,7 +949,7 @@ Score < 70 = REJECT (is_valid: false)"""
         original_email: Email,
         thread_context: List[Dict]
     ) -> str:
-        """Build validation prompt"""
+        """Build validation prompt with strict criteria"""
         
         prompt = f"""ORIGINAL EMAIL:
 From: {original_email.from_email}
@@ -963,22 +963,34 @@ Body:
         if thread_context:
             prompt += "PREVIOUS CONVERSATION:\n"
             for msg in thread_context:
-                prompt += f"- {msg['from']}: {msg['body'][:100]}...\n"
+                prompt += f"- {msg['from']}: {msg['body'][:150]}...\n"
                 if msg.get('draft_sent'):
-                    prompt += f"  Our response: {msg['draft_sent'][:100]}...\n"
+                    prompt += f"  Our response: {msg['draft_sent'][:150]}...\n"
             prompt += "\n"
         
         prompt += f"""DRAFT TO VALIDATE:
 {draft}
 
-Validate this draft. Check if it:
-1. Addresses the original email appropriately
-2. Provides helpful information
-3. Is professional and well-written
-4. Does not repeat what was already said in the thread
-5. Is specific to this situation (not generic)
+VALIDATION CHECKLIST:
+1. ✅ Is the draft MORE than just a greeting? (Must answer: YES)
+2. ✅ Does it address the sender's specific questions/concerns? (Must answer: YES)
+3. ✅ Does it provide helpful, actionable information? (Must answer: YES)
+4. ✅ Is it at least 50 characters and 20 words? (Must answer: YES)
+5. ✅ Is it professional and well-written? (Must answer: YES)
+6. ✅ Does it avoid repeating what was already said? (Must answer: YES)
+7. ✅ Is it specific to this situation, not generic? (Must answer: YES)
 
-Respond with JSON indicating if valid and any issues found."""
+EXAMPLES OF INVALID DRAFTS (MUST REJECT):
+❌ "Hi John,"
+❌ "Hello Sarah, "
+❌ "Dear Customer,"
+❌ "Hi there, thanks for reaching out."
+❌ Any draft under 50 characters
+❌ Any draft that doesn't answer the questions asked
+
+If ANY checklist item fails, mark as invalid.
+
+Respond with JSON indicating validation result."""
         
         return prompt
     
