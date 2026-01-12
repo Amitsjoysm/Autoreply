@@ -437,6 +437,73 @@ Return ONLY the JSON object, no explanations."""
             logger.error(f"Error updating lead: {e}")
             raise
     
+    async def mark_meeting_scheduled(
+        self,
+        lead_id: str,
+        meeting_time: str,
+        meeting_details: Dict[str, Any] = None
+    ) -> InboundLead:
+        """
+        Mark lead as having scheduled a meeting
+        
+        This gives the HIGHEST score boost (+30 points) as meeting
+        booking is the strongest signal of a qualified, interested lead
+        """
+        try:
+            lead_doc = await self.db.inbound_leads.find_one({"id": lead_id})
+            if not lead_doc:
+                raise ValueError(f"Lead {lead_id} not found")
+            
+            lead = InboundLead(**lead_doc)
+            old_score = lead.score
+            
+            # Mark meeting scheduled
+            lead.meeting_scheduled = True
+            lead.meeting_date = meeting_time
+            
+            # Recalculate score - WILL GET +30 BONUS!
+            lead.score = self._calculate_lead_score(lead, None)
+            score_increase = lead.score - old_score
+            
+            # Auto-transition to qualified stage
+            if lead.stage not in ['qualified', 'opportunity', 'won']:
+                old_stage = lead.stage
+                lead.stage = 'qualified'
+                
+                logger.info(f"Meeting scheduled! Auto-qualified: {old_stage} → qualified (score: {old_score} → {lead.score}, +{score_increase}pts)")
+            
+            # Add activity
+            activity = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "activity_type": "meeting_scheduled",
+                "description": f"Meeting scheduled for {meeting_time}",
+                "details": {
+                    "meeting_time": meeting_time,
+                    "meeting_details": meeting_details or {},
+                    "score_before": old_score,
+                    "score_after": lead.score,
+                    "score_increase": score_increase
+                },
+                "performed_by": "system"
+            }
+            lead.activities.append(activity)
+            
+            lead.updated_at = datetime.now(timezone.utc).isoformat()
+            
+            # Save to database
+            await self.db.inbound_leads.update_one(
+                {"id": lead_id},
+                {"$set": lead.model_dump()}
+            )
+            
+            logger.info(f"✓ Meeting scheduled for lead: {lead.id} - Score increased: {old_score} → {lead.score} (+{score_increase}pts, meeting bonus: +30)")
+            
+            return lead
+            
+        except Exception as e:
+            logger.error(f"Error marking meeting scheduled: {e}")
+            raise
+    
     async def transition_stage(
         self,
         lead_id: str,
