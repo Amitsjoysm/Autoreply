@@ -152,7 +152,8 @@ class LeadNurturingIntegrationService:
                             email_content,
                             thread_context,
                             questions_asked,
-                            new_attempt
+                            new_attempt,
+                            intent_doc  # Pass intent_doc
                         )
                         
                         # Update attempt counter
