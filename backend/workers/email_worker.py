@@ -1007,7 +1007,7 @@ async def check_follow_ups():
                         follow_up_email = EmailSend(
                             email_account_id=follow_up.email_account_id,
                             to_email=[email.from_email],
-                            subject=f"Re: {email.subject}",
+                            subject=format_reply_subject(email.subject),
                             body=draft
                         )
                     else:
