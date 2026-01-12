@@ -1,7 +1,7 @@
 # 🚀 Quick Start Guide
 
 ## Login Credentials
-- **URL**: https://qual-system-review.preview.emergentagent.com
+- **URL**: https://agentfix.preview.emergentagent.com
 - **Email**: demo@example.com
 - **Password**: demo123
 
