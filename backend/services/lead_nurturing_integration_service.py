@@ -581,23 +581,86 @@ class LeadNurturingIntegrationService:
         score: int,
         reasons: List[str]
     ) -> bool:
-        """Update lead status after qualification"""
+        """
+        Update lead status after qualification
+        Also recalculates engagement score
+        """
         try:
             leads_collection = self.db['inbound_leads']
             
-            await leads_collection.update_one(
-                {"id": lead_id},
-                {
-                    "$set": {
-                        "stage": stage,
-                        "qualification_checked": True,
-                        "qualification_score": score,
-                        "qualification_reasons": reasons,
-                        "stage_changed_at": datetime.now(timezone.utc).isoformat(),
-                        "updated_at": datetime.now(timezone.utc).isoformat()
-                    },
-                    "$push": {
-                        "stage_history": {
+            # Get current lead to calculate engagement score
+            lead_doc = await leads_collection.find_one({"id": lead_id})
+            if lead_doc:
+                lead = InboundLead(**lead_doc)
+                
+                # Calculate engagement score (separate from qualification score)
+                from services.lead_agent_service import LeadAgentService
+                lead_service = LeadAgentService(self.db)
+                engagement_score = lead_service._calculate_lead_score(lead, None)
+                
+                # Store both scores
+                await leads_collection.update_one(
+                    {"id": lead_id},
+                    {
+                        "$set": {
+                            "stage": stage,
+                            "qualification_checked": True,
+                            "qualification_score": score,  # Based on answers to qualifying questions
+                            "score": engagement_score,  # Based on engagement + data completeness + meetings
+                            "qualification_reasons": reasons,
+                            "stage_changed_at": datetime.now(timezone.utc).isoformat(),
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        },
+                        "$push": {
+                            "stage_history": {
+                                "stage": stage,
+                                "changed_at": datetime.now(timezone.utc).isoformat(),
+                                "reason": f"Qualification: {score}/100 - {', '.join(reasons[:2])}"
+                            },
+                            "activities": {
+                                "timestamp": datetime.now(timezone.utc).isoformat(),
+                                "activity_type": "qualification_completed",
+                                "description": f"Lead {stage} with score {score}/100",
+                                "details": {
+                                    "qualification_score": score,
+                                    "engagement_score": engagement_score,
+                                    "reasons": reasons
+                                },
+                                "performed_by": "system"
+                            }
+                        }
+                    }
+                )
+                
+                logger.info(f"Updated lead {lead_id}: stage={stage}, qual_score={score}, engagement_score={engagement_score}")
+            else:
+                # Fallback if lead not found
+                await leads_collection.update_one(
+                    {"id": lead_id},
+                    {
+                        "$set": {
+                            "stage": stage,
+                            "qualification_checked": True,
+                            "qualification_score": score,
+                            "qualification_reasons": reasons,
+                            "stage_changed_at": datetime.now(timezone.utc).isoformat(),
+                            "updated_at": datetime.now(timezone.utc).isoformat()
+                        },
+                        "$push": {
+                            "stage_history": {
+                                "stage": stage,
+                                "changed_at": datetime.now(timezone.utc).isoformat(),
+                                "reason": f"Qualification: {score}/100"
+                            }
+                        }
+                    }
+                )
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error updating lead status: {e}")
+            return False
                             "from_stage": "awaiting_info",
                             "to_stage": stage,
                             "changed_at": datetime.now(timezone.utc).isoformat(),
