@@ -152,7 +152,7 @@ const LeadSettings = () => {
                 onClick={handleToggleQualification}
                 disabled={saving}
                 className={`w-full ${leadSettings.global_lead_qualification_enabled 
-                  ? 'bg-red-500 hover:bg-red-600' 
+                  ? 'bg-orange-500 hover:bg-orange-600' 
                   : 'bg-indigo-600 hover:bg-indigo-700'
                 }`}
               >
@@ -201,7 +201,7 @@ const LeadSettings = () => {
                 onClick={handleToggleNurturing}
                 disabled={saving}
                 className={`w-full ${leadSettings.global_lead_nurturing_enabled 
-                  ? 'bg-red-500 hover:bg-red-600' 
+                  ? 'bg-amber-500 hover:bg-amber-600' 
                   : 'bg-pink-600 hover:bg-pink-700'
                 }`}
               >
