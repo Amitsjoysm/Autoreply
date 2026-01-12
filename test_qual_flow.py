@@ -80,7 +80,10 @@ def test_lead_qualification():
         print(f"  Qualification Attempt: {lead_details.get('qualification_attempt')}")
         
         questions = lead_details.get('questions_to_ask', [])
-        print(f"  Questions to ask: {len(questions)}")
+        if isinstance(questions, list):
+            print(f"  Questions to ask: {len(questions)}")
+        else:
+            print(f"  Questions to ask: {questions}")
         
         if questions:
             print(f"\n  📋 Nurturing Questions Generated:")
