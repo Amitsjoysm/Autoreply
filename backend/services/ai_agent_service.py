@@ -1,7 +1,7 @@
 """
 AI Agent Service - Production-Ready Implementation
 Handles all AI operations: intent classification, meeting detection, draft generation, and validation
-Uses Groq API for all AI operations
+Supports multiple LLM providers: Groq and Claude (Anthropic)
 """
 import json
 import logging
@@ -9,6 +9,7 @@ from typing import List, Optional, Dict, Tuple
 from datetime import datetime, timezone
 import httpx
 from motor.motor_asyncio import AsyncIOMotorDatabase
+from anthropic import AsyncAnthropic
 
 from config import config
 from models.email import Email
@@ -24,19 +25,43 @@ class AIAgentService:
     """
     Service for all AI operations in the email assistant
     - Intent classification using keyword matching
-    - Meeting detection using Groq LLM
-    - Draft generation using Groq LLM with context
-    - Draft validation using Groq LLM
+    - Meeting detection using LLM (Groq or Claude)
+    - Draft generation using LLM (Groq or Claude) with context
+    - Draft validation using LLM (Groq or Claude)
+    
+    Supports multiple providers with automatic fallback
     """
     
     def __init__(self, db: AsyncIOMotorDatabase):
         self.db = db
+        
+        # Groq configuration
         self.groq_api_key = config.GROQ_API_KEY
+        
+        # Claude configuration
+        self.claude_api_key = config.CLAUDE_API_KEY
+        self.claude_client = None
+        if self.claude_api_key:
+            self.claude_client = AsyncAnthropic(api_key=self.claude_api_key)
+        
+        # Provider configuration
+        self.primary_provider = config.PRIMARY_LLM_PROVIDER
+        self.fallback_provider = config.FALLBACK_LLM_PROVIDER
+        
         self.tokens_used = 0
         self.date_parser = DateParserService()
         
-        if not self.groq_api_key:
-            logger.error("GROQ_API_KEY not configured! AI features will not work.")
+        # Validate at least one provider is configured
+        if not self.groq_api_key and not self.claude_api_key:
+            logger.error("No LLM provider configured! AI features will not work.")
+        else:
+            providers = []
+            if self.groq_api_key:
+                providers.append("Groq")
+            if self.claude_api_key:
+                providers.append("Claude")
+            logger.info(f"AI Agent Service initialized with providers: {', '.join(providers)}")
+            logger.info(f"Primary provider: {self.primary_provider}, Fallback: {self.fallback_provider}")
     
     # ============================================================================
     # INTENT CLASSIFICATION
