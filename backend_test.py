@@ -254,12 +254,14 @@ class ClaudeLLMIntegrationTest:
             # Test draft generation with Claude
             test_email = Email(
                 id="test-claude-draft",
+                user_id="test-user",
+                email_account_id="test-account",
+                message_id="test-message-claude",
                 from_email="customer@business.com",
                 to_email=["support@company.com"],
                 subject="Product Inquiry",
                 body="I'm interested in your enterprise solution. What features are included and what's the pricing structure?",
-                received_at=datetime.now(timezone.utc),
-                email_account_id="test-account"
+                received_at=datetime.now(timezone.utc).isoformat()
             )
             
             draft, tokens = await self.ai_service.generate_draft(
