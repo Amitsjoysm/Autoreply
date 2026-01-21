@@ -453,8 +453,8 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
             elif meeting_info and meeting_info.get('detected'):
                 max_tokens = 350  # Medium space for meeting discussions
             
-            # Call Groq API
-            result = await self._call_groq_api(
+            # Call LLM API (with fallback support)
+            result = await self._call_llm_api(
                 system_message=system_message,
                 user_message=prompt,
                 temperature=0.7,
