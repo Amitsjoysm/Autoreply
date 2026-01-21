@@ -706,12 +706,14 @@ class ClaudeLLMIntegrationTest:
         try:
             test_email = Email(
                 id="validation-test",
+                user_id="test-user",
+                email_account_id="test-account",
+                message_id="test-message-validation",
                 from_email="validation@test.com",
                 to_email=["support@company.com"],
                 subject="Validation Test",
                 body="Please provide information about your services and pricing structure.",
-                received_at=datetime.now(timezone.utc),
-                email_account_id="test-account"
+                received_at=datetime.now(timezone.utc).isoformat()
             )
             
             # Test Groq validation
