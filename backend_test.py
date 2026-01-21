@@ -398,7 +398,7 @@ class EnhancementTester:
             # Try to create second lead with same email
             self.log("Attempting to create duplicate lead...")
             test_data_2 = {
-                "email_content": "Following up on my previous email about pricing.",
+                "body": "Following up on my previous email about pricing.",
                 "from_email": TEST_LEAD_EMAIL,
                 "subject": "Follow-up on Pricing"
             }
