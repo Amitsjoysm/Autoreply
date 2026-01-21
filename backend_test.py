@@ -934,12 +934,14 @@ class ClaudeLLMIntegrationTest:
                 
                 test_email = Email(
                     id=f"prod-test-{i}",
+                    user_id="test-user",
+                    email_account_id="test-account",
+                    message_id=f"test-message-prod-{i}",
                     from_email=scenario["from_email"],
                     to_email=["support@company.com"],
                     subject=scenario["subject"],
                     body=scenario["body"],
-                    received_at=datetime.now(timezone.utc),
-                    email_account_id="test-account"
+                    received_at=datetime.now(timezone.utc).isoformat()
                 )
                 
                 scenario_results = {}
