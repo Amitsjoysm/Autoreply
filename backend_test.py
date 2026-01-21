@@ -519,7 +519,7 @@ class EnhancementTester:
             self.log("Creating follow-up email...")
             
             followup_data = {
-                "email_content": "Thanks for your response. I have a few more questions about pricing.",
+                "body": "Thanks for your response. I have a few more questions about pricing.",
                 "from_email": "conversation@test.com",
                 "subject": "Re: Service Inquiry",
                 "session_id": session_id
