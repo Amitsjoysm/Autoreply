@@ -288,8 +288,8 @@ class AIAgentService:
                 current_year
             )
             
-            # Call Groq API
-            result = await self._call_groq_api(
+            # Call LLM API (with fallback support)
+            result = await self._call_llm_api(
                 system_message="You are a meeting detection AI. Analyze emails and extract meeting details. Always respond with valid JSON.",
                 user_message=prompt,
                 temperature=0.3,
