@@ -294,12 +294,14 @@ class ClaudeLLMIntegrationTest:
             # Test meeting detection with Claude
             meeting_email = Email(
                 id="test-claude-meeting",
+                user_id="test-user",
+                email_account_id="test-account",
+                message_id="test-message-claude-meeting",
                 from_email="prospect@startup.com",
                 to_email=["sales@company.com"],
                 subject="Demo Request",
                 body="Hi, I'd like to schedule a product demo. Are you available tomorrow at 3 PM for a 30-minute call?",
-                received_at=datetime.now(timezone.utc),
-                email_account_id="test-account"
+                received_at=datetime.now(timezone.utc).isoformat()
             )
             
             is_meeting, confidence, details = await self.ai_service.detect_meeting(meeting_email)
