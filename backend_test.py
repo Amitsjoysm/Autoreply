@@ -483,25 +483,23 @@ class ClaudeLLMIntegrationTest:
             
             # Test Groq
             logger.info("🧪 Testing Groq provider")
-            groq_draft, groq_tokens = await self.ai_service._call_llm_api(
+            groq_draft = await self.ai_service._call_llm_api(
                 system_message="You are a helpful email assistant. Generate a professional response.",
                 user_message=f"Respond to this email:\nFrom: {test_email.from_email}\nSubject: {test_email.subject}\nBody: {test_email.body}",
                 provider='groq'
             )
             
             results["details"]["groq_response_length"] = len(groq_draft)
-            results["details"]["groq_tokens"] = groq_tokens
             
             # Test Claude
             logger.info("🧪 Testing Claude provider")
-            claude_draft, claude_tokens = await self.ai_service._call_llm_api(
+            claude_draft = await self.ai_service._call_llm_api(
                 system_message="You are a helpful email assistant. Generate a professional response.",
                 user_message=f"Respond to this email:\nFrom: {test_email.from_email}\nSubject: {test_email.subject}\nBody: {test_email.body}",
                 provider='claude'
             )
             
             results["details"]["claude_response_length"] = len(claude_draft)
-            results["details"]["claude_tokens"] = claude_tokens
             
             # Compare responses
             results["details"]["both_providers_working"] = len(groq_draft) > 50 and len(claude_draft) > 50
