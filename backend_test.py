@@ -370,7 +370,7 @@ class EnhancementTester:
             # Create first lead
             self.log("Creating first lead...")
             test_data_1 = {
-                "email_content": "Hi, I'm interested in your pricing. Can you share details?",
+                "body": "Hi, I'm interested in your pricing. Can you share details?",
                 "from_email": TEST_LEAD_EMAIL,
                 "subject": "Pricing Inquiry"
             }
