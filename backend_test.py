@@ -491,7 +491,7 @@ class EnhancementTester:
             self.log("Creating initial email conversation...")
             
             initial_data = {
-                "email_content": "Hi, I'm interested in your service. Can you provide more information?",
+                "body": "Hi, I'm interested in your service. Can you provide more information?",
                 "from_email": "conversation@test.com",
                 "subject": "Service Inquiry"
             }
