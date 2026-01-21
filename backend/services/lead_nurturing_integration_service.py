@@ -469,10 +469,25 @@ class LeadNurturingIntegrationService:
         email_id: str,
         intent_doc: Optional[Dict]
     ) -> str:
-        """Create new lead in awaiting_info status"""
+        """
+        Create new lead in awaiting_info status
+        WITH DUPLICATE PREVENTION - ensures only one lead per email per user
+        """
         try:
             from models.inbound_lead import InboundLead
             import uuid
+            
+            leads_collection = self.db['inbound_leads']
+            
+            # CRITICAL: Check one more time for duplicates before creating
+            existing = await leads_collection.find_one({
+                "user_id": user_id,
+                "lead_email": from_email
+            })
+            
+            if existing:
+                logger.warning(f"⚠️ Lead already exists for {from_email}, returning existing ID: {existing['id']}")
+                return existing['id']
             
             # Extract name from email address (e.g., john.doe@company.com -> John Doe)
             lead_name = self._extract_name_from_email(from_email)
@@ -491,11 +506,22 @@ class LeadNurturingIntegrationService:
                 email_ids=[email_id]
             )
             
-            leads_collection = self.db['inbound_leads']
-            await leads_collection.insert_one(lead.model_dump())
-            
-            logger.info(f"Created awaiting lead: {lead.id} for {lead_name} <{from_email}>")
-            return lead.id
+            # Use insert_one with unique constraint handling
+            try:
+                await leads_collection.insert_one(lead.model_dump())
+                logger.info(f"✓ Created awaiting lead: {lead.id} for {lead_name} <{from_email}>")
+                return lead.id
+            except Exception as insert_error:
+                # If duplicate key error, try to find and return existing
+                if "duplicate" in str(insert_error).lower():
+                    logger.warning(f"⚠️ Duplicate key error, finding existing lead for {from_email}")
+                    existing = await leads_collection.find_one({
+                        "user_id": user_id,
+                        "lead_email": from_email
+                    })
+                    if existing:
+                        return existing['id']
+                raise insert_error
             
         except Exception as e:
             logger.error(f"Error creating awaiting lead: {e}")
