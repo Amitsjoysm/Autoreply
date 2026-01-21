@@ -815,12 +815,14 @@ class ClaudeLLMIntegrationTest:
             
             test_email = Email(
                 id="error-test",
+                user_id="test-user",
+                email_account_id="test-account",
+                message_id="test-message-error",
                 from_email="error@test.com",
                 to_email=["support@company.com"],
                 subject="Error Handling Test",
                 body="This is a test for error handling capabilities.",
-                received_at=datetime.now(timezone.utc),
-                email_account_id="test-account"
+                received_at=datetime.now(timezone.utc).isoformat()
             )
             
             # Test 1: Invalid Groq key (should fallback to Claude)
