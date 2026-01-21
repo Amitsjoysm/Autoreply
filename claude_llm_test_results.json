@@ -1,8 +1,8 @@
 {
   "total_tests": 9,
-  "passed_tests": 1,
-  "failed_tests": 8,
-  "success_rate": "1/9 (11.1%)",
+  "passed_tests": 2,
+  "failed_tests": 7,
+  "success_rate": "2/9 (22.2%)",
   "overall_status": "FAILED",
   "test_results": {
     "Provider Configuration": {
@@ -18,26 +18,47 @@
     },
     "Groq Primary Provider": {
       "test_name": "Groq Primary Provider",
-      "passed": false,
-      "details": {},
-      "issues": [
-        "Groq API error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'test-groq-draft',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'test-groq-draft',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
-      ]
+      "passed": true,
+      "details": {
+        "draft_generated": true,
+        "draft_length": 507,
+        "tokens_used": 795,
+        "draft_preview": "Hi Test, \nI'd be happy to help you with our product. Could you please provide more details about the...",
+        "validation_passed": true,
+        "validation_tokens": 1523,
+        "validation_issues": [],
+        "meeting_detected": true,
+        "meeting_confidence": 0.6,
+        "meeting_details": {
+          "title": "Project Discussion",
+          "start_time": "2026-01-27T14:00:00",
+          "end_time": "2026-01-27T15:00:00",
+          "location": "TBD",
+          "description": "Discuss the project",
+          "attendees": [],
+          "timezone": "UTC"
+        }
+      },
+      "issues": []
     },
     "Claude Provider Functionality": {
       "test_name": "Claude Provider Functionality",
       "passed": false,
       "details": {},
       "issues": [
-        "Claude API error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'test-claude-draft...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'test-claude-draft...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+        "Claude API error: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CXLZvKUdnX9RH6vmJ7MiR'}"
       ]
     },
     "Fallback Mechanism": {
       "test_name": "Fallback Mechanism",
       "passed": false,
-      "details": {},
+      "details": {
+        "groq_to_claude_fallback": false,
+        "claude_to_groq_fallback": false
+      },
       "issues": [
-        "Fallback test error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'test-fallback-1',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'test-fallback-1',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+        "Groq\u2192Claude fallback failed: Both primary and fallback LLM providers failed",
+        "Claude\u2192Groq fallback failed: Primary provider 'claude' not configured"
       ]
     },
     "Dual Provider Integration": {
@@ -45,7 +66,7 @@
       "passed": false,
       "details": {},
       "issues": [
-        "Dual provider test error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'test-dual-provide...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'test-dual-provide...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+        "Dual provider test error: too many values to unpack (expected 2)"
       ]
     },
     "Context-Aware Generation with Claude": {
@@ -53,7 +74,7 @@
       "passed": false,
       "details": {},
       "issues": [
-        "Context-aware generation error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'claude-context-te...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'claude-context-te...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+        "Context-aware generation error: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CXLZvQu4uN8tTuCgnzKh8'}"
       ]
     },
     "Validation Standards Consistent": {
@@ -61,24 +82,59 @@
       "passed": false,
       "details": {},
       "issues": [
-        "Validation standards test error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'validation-test',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'validation-test',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+        "Validation standards test error: too many values to unpack (expected 2)"
       ]
     },
     "Error Handling": {
       "test_name": "Error Handling",
       "passed": false,
-      "details": {},
+      "details": {
+        "invalid_groq_fallback_success": false,
+        "invalid_claude_fallback_success": false,
+        "both_invalid_handled": true,
+        "both_invalid_error": "Primary provider 'claude' not configured"
+      },
       "issues": [
-        "Error handling test error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'error-test', 'fro...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'error-test', 'fro...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+        "Groq fallback failed: Both primary and fallback LLM providers failed",
+        "Claude fallback failed: Primary provider 'claude' not configured"
       ]
     },
     "Production Readiness": {
       "test_name": "Production Readiness",
       "passed": false,
-      "details": {},
-      "issues": [
-        "Production readiness test error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'prod-test-1', 'fr...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'prod-test-1', 'fr...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
-      ]
+      "details": {
+        "scenario_1_Pricing Inquiry": {
+          "groq_success": true,
+          "groq_valid": true,
+          "groq_length": 580,
+          "groq_tokens": 3890,
+          "claude_success": false,
+          "claude_error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CXLZvbjBsTmPtdLfVXALd'}"
+        },
+        "scenario_2_Meeting Request": {
+          "groq_success": true,
+          "groq_valid": true,
+          "groq_length": 549,
+          "groq_tokens": 5451,
+          "claude_success": false,
+          "claude_error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CXLZvfi3vqREW8x9qzTPh'}",
+          "meeting_detected": false,
+          "meeting_confidence": 0.0
+        },
+        "scenario_3_Technical Question": {
+          "groq_success": true,
+          "groq_valid": true,
+          "groq_length": 589,
+          "groq_tokens": 7003,
+          "claude_success": false,
+          "claude_error": "Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011CXLZvjwYXEHCDSvjkLJ52'}"
+        },
+        "scenarios_passed": 0,
+        "total_scenarios": 3,
+        "success_rate": "0/3",
+        "token_tracking_working": true
+      },
+      "issues": []
     }
   }
 }
