@@ -441,7 +441,31 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
             # Remove any AI-generated signature to prevent double signatures
             draft = SignatureHandler.remove_ai_signature(draft)
             
-            logger.info(f"✓ Draft generated ({len(draft)} chars, signature removed)")
+            # CRITICAL PRE-CHECK: Reject obviously incomplete drafts immediately
+            draft_length = len(draft)
+            word_count = len(draft.split())
+            
+            if draft_length < 30:
+                logger.error(f"✗ CRITICAL: Draft extremely short ({draft_length} chars) - likely just greeting")
+                raise ValueError(f"Draft generation failed: Response too short ({draft_length} characters, minimum 30)")
+            
+            if word_count < 10:
+                logger.error(f"✗ CRITICAL: Draft has very few words ({word_count} words) - incomplete response")
+                raise ValueError(f"Draft generation failed: Too few words ({word_count} words, minimum 10)")
+            
+            # Check for greeting-only patterns
+            draft_lower = draft.lower().strip()
+            greeting_only_patterns = [
+                r'^(hi|hello|dear|hey)\s+\w+[\s,\.]*$',
+                r'^(hi|hello|dear|hey)[\s,\.]*$',
+            ]
+            import re
+            for pattern in greeting_only_patterns:
+                if re.match(pattern, draft_lower):
+                    logger.error(f"✗ CRITICAL: Draft is greeting-only: '{draft}'")
+                    raise ValueError("Draft generation failed: Response is only a greeting with no content")
+            
+            logger.info(f"✓ Draft generated ({draft_length} chars, {word_count} words, signature removed)")
             
             return draft, self.tokens_used
             
