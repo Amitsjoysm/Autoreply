@@ -311,10 +311,9 @@ class EnhancementTester:
             try:
                 # Test draft validation via test session API
                 test_data = {
-                    "email_content": "Test email for draft validation",
+                    "body": "Test email for draft validation",
                     "from_email": "test@example.com",
-                    "subject": "Test Subject",
-                    "custom_draft": test_case["draft"]
+                    "subject": "Test Subject"
                 }
                 
                 response = self.session.post(
