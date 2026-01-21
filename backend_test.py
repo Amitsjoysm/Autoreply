@@ -632,7 +632,7 @@ class EnhancementTester:
             self.log("Providing qualification answers...")
             
             answer_data = {
-                "email_content": "Our company has 500 employees, budget is $50k annually, we're in the technology sector, and we need implementation within 3 months.",
+                "body": "Our company has 500 employees, budget is $50k annually, we're in the technology sector, and we need implementation within 3 months.",
                 "from_email": "qualification@testcompany.com",
                 "subject": "Re: Enterprise Solution Inquiry",
                 "session_id": data1.get("session_id")
