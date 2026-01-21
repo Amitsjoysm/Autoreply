@@ -154,12 +154,14 @@ class ClaudeLLMIntegrationTest:
             # Test draft generation with Groq
             test_email = Email(
                 id="test-groq-draft",
+                user_id="test-user",
+                email_account_id="test-account",
+                message_id="test-message-groq",
                 from_email="test@example.com",
                 to_email=["support@company.com"],
                 subject="Test Groq Draft Generation",
                 body="Hello, I need help with your product. Can you provide more information?",
-                received_at=datetime.now(timezone.utc),
-                email_account_id="test-account"
+                received_at=datetime.now(timezone.utc).isoformat()
             )
             
             # Force use of Groq provider
