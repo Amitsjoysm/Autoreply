@@ -238,7 +238,7 @@ class EnhancementTester:
             
             # Test draft generation with a simple request
             test_data = {
-                "email_content": "Hi, I need pricing information for your service.",
+                "body": "Hi, I need pricing information for your service.",
                 "from_email": "test@example.com",
                 "subject": "Pricing Inquiry"
             }
