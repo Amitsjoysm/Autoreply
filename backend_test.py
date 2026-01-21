@@ -598,7 +598,7 @@ class EnhancementTester:
             self.log("Creating lead for qualification...")
             
             lead_data = {
-                "email_content": "Hi, I'm interested in your enterprise solution. We're a 500-person company looking for a comprehensive platform.",
+                "body": "Hi, I'm interested in your enterprise solution. We're a 500-person company looking for a comprehensive platform.",
                 "from_email": "qualification@testcompany.com",
                 "subject": "Enterprise Solution Inquiry"
             }
