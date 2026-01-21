@@ -616,12 +616,14 @@ class ClaudeLLMIntegrationTest:
             # Test email with thread context
             test_email = Email(
                 id="claude-context-test",
+                user_id=test_user_id,
+                email_account_id="test-account",
+                message_id="test-message-context",
                 from_email="prospect@company.com",
                 to_email=["sales@techcorp.com"],
                 subject="Pricing Question",
                 body="Hi, I'm evaluating your platform for our team. Can you tell me about your pricing and what features are included?",
-                received_at=datetime.now(timezone.utc),
-                email_account_id="test-account"
+                received_at=datetime.now(timezone.utc).isoformat()
             )
             
             # Thread context
