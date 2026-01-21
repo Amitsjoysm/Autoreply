@@ -533,14 +533,14 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
                 prompt += "7. Use conversation history below to make it contextual and specific\n\n"
                 
                 prompt += "✅ GOOD FOLLOW-UP EXAMPLE:\n"
-                prompt += '"I wanted to circle back on [specific topic from conversation]. '\n"
-                prompt += 'I know things get busy, so no rush. I thought you might find [additional value] helpful. '\n"
-                prompt += 'Let me know if you have any questions about [specific point]!"\n\n'
+                prompt += "\"I wanted to circle back on [specific topic from conversation]. "
+                prompt += "I know things get busy, so no rush. I thought you might find [additional value] helpful. "
+                prompt += "Let me know if you have any questions about [specific point]!\"\n\n"
                 
                 prompt += "❌ AVOID GENERIC TEMPLATES:\n"
-                prompt += '- "Just following up..."\n'
-                prompt += '- "Did you get my previous email?"\n'
-                prompt += '- "Checking in..."\n'
+                prompt += "- \"Just following up...\"\n"
+                prompt += "- \"Did you get my previous email?\"\n"
+                prompt += "- \"Checking in...\"\n"
                 
             else:
                 # Time-based follow-up (user asked to follow up later)
