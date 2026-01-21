@@ -707,29 +707,6 @@ class LeadNurturingIntegrationService:
         except Exception as e:
             logger.error(f"Error updating lead status: {e}")
             return False
-                            "from_stage": "awaiting_info",
-                            "to_stage": stage,
-                            "changed_at": datetime.now(timezone.utc).isoformat(),
-                            "reason": f"Qualification score: {score}",
-                            "performed_by": "system"
-                        },
-                        "activities": {
-                            "timestamp": datetime.now(timezone.utc).isoformat(),
-                            "activity_type": "qualification_completed",
-                            "description": f"Lead {stage} with score {score}",
-                            "details": {"score": score, "reasons": reasons},
-                            "performed_by": "system"
-                        }
-                    }
-                }
-            )
-            
-            logger.info(f"Updated lead {lead_id} to {stage} (score: {score})")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error updating lead status: {e}")
-            return False
     
     async def _increment_attempt(
         self,
