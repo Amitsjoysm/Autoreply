@@ -195,12 +195,14 @@ class ClaudeLLMIntegrationTest:
             # Test meeting detection with Groq
             meeting_email = Email(
                 id="test-groq-meeting",
+                user_id="test-user",
+                email_account_id="test-account",
+                message_id="test-message-meeting",
                 from_email="client@company.com",
                 to_email=["support@company.com"],
                 subject="Schedule Meeting",
                 body="Can we schedule a call next Tuesday at 2 PM to discuss the project?",
-                received_at=datetime.now(timezone.utc),
-                email_account_id="test-account"
+                received_at=datetime.now(timezone.utc).isoformat()
             )
             
             is_meeting, confidence, details = await self.ai_service.detect_meeting(meeting_email)
