@@ -717,7 +717,7 @@ class ClaudeLLMIntegrationTest:
             # Test Groq validation
             logger.info("🧪 Testing Groq validation standards")
             
-            groq_draft, _ = await self.ai_service._call_llm_api(
+            groq_draft = await self.ai_service._call_llm_api(
                 system_message="Generate a professional email response with at least 50 characters and 20 words.",
                 user_message=f"Respond to: {test_email.body}",
                 provider='groq'
@@ -736,7 +736,7 @@ class ClaudeLLMIntegrationTest:
             # Test Claude validation
             logger.info("🧪 Testing Claude validation standards")
             
-            claude_draft, _ = await self.ai_service._call_llm_api(
+            claude_draft = await self.ai_service._call_llm_api(
                 system_message="Generate a professional email response with at least 50 characters and 20 words.",
                 user_message=f"Respond to: {test_email.body}",
                 provider='claude'
