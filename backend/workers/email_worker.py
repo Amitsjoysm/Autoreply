@@ -967,15 +967,17 @@ async def check_follow_ups():
                 # Get thread context
                 thread_context = await email_service.get_thread_context(email)
                 
-                # Prepare follow-up context for draft generation
+                # Prepare enhanced follow-up context for draft generation
                 follow_up_context = {
                     'is_automated_followup': True,
                     'base_date': follow_up.base_date,
                     'matched_text': follow_up.matched_text,
-                    'original_context': follow_up.follow_up_context
+                    'original_context': follow_up.follow_up_context,
+                    'follow_up_type': 'standard' if 'standard follow-up' in follow_up.matched_text else 'time-based',
+                    'conversation_history': thread_context  # Include full thread for context
                 }
                 
-                # Generate draft using AI
+                # Generate draft using AI with full conversation context
                 try:
                     draft, tokens = await ai_service.generate_draft(
                         email=email,
