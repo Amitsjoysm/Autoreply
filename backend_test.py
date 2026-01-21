@@ -471,12 +471,14 @@ class ClaudeLLMIntegrationTest:
             # Test both providers with same prompt
             test_email = Email(
                 id="test-dual-provider",
+                user_id="test-user",
+                email_account_id="test-account",
+                message_id="test-message-dual",
                 from_email="comparison@test.com",
                 to_email=["support@company.com"],
                 subject="Dual Provider Test",
                 body="I need information about your pricing plans and available features for a team of 25 people.",
-                received_at=datetime.now(timezone.utc),
-                email_account_id="test-account"
+                received_at=datetime.now(timezone.utc).isoformat()
             )
             
             # Test Groq
