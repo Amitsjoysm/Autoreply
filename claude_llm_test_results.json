@@ -1,0 +1,84 @@
+{
+  "total_tests": 9,
+  "passed_tests": 1,
+  "failed_tests": 8,
+  "success_rate": "1/9 (11.1%)",
+  "overall_status": "FAILED",
+  "test_results": {
+    "Provider Configuration": {
+      "test_name": "Provider Configuration",
+      "passed": true,
+      "details": {
+        "groq_api_key_configured": true,
+        "claude_api_key_configured": true,
+        "primary_provider": "groq",
+        "fallback_provider": "claude"
+      },
+      "issues": []
+    },
+    "Groq Primary Provider": {
+      "test_name": "Groq Primary Provider",
+      "passed": false,
+      "details": {},
+      "issues": [
+        "Groq API error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'test-groq-draft',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'test-groq-draft',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+      ]
+    },
+    "Claude Provider Functionality": {
+      "test_name": "Claude Provider Functionality",
+      "passed": false,
+      "details": {},
+      "issues": [
+        "Claude API error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'test-claude-draft...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'test-claude-draft...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+      ]
+    },
+    "Fallback Mechanism": {
+      "test_name": "Fallback Mechanism",
+      "passed": false,
+      "details": {},
+      "issues": [
+        "Fallback test error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'test-fallback-1',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'test-fallback-1',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+      ]
+    },
+    "Dual Provider Integration": {
+      "test_name": "Dual Provider Integration",
+      "passed": false,
+      "details": {},
+      "issues": [
+        "Dual provider test error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'test-dual-provide...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'test-dual-provide...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+      ]
+    },
+    "Context-Aware Generation with Claude": {
+      "test_name": "Context-Aware Generation with Claude",
+      "passed": false,
+      "details": {},
+      "issues": [
+        "Context-aware generation error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'claude-context-te...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'claude-context-te...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+      ]
+    },
+    "Validation Standards Consistent": {
+      "test_name": "Validation Standards Consistent",
+      "passed": false,
+      "details": {},
+      "issues": [
+        "Validation standards test error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'validation-test',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'validation-test',...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+      ]
+    },
+    "Error Handling": {
+      "test_name": "Error Handling",
+      "passed": false,
+      "details": {},
+      "issues": [
+        "Error handling test error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'error-test', 'fro...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'error-test', 'fro...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+      ]
+    },
+    "Production Readiness": {
+      "test_name": "Production Readiness",
+      "passed": false,
+      "details": {},
+      "issues": [
+        "Production readiness test error: 3 validation errors for Email\nuser_id\n  Field required [type=missing, input_value={'id': 'prod-test-1', 'fr...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nmessage_id\n  Field required [type=missing, input_value={'id': 'prod-test-1', 'fr...unt_id': 'test-account'}, input_type=dict]\n    For further information visit https://errors.pydantic.dev/2.12/v/missing\nreceived_at\n  Input should be a valid string [type=string_type, input_value=datetime.datetime(2026, 1...o=datetime.timezone.utc), input_type=datetime]\n    For further information visit https://errors.pydantic.dev/2.12/v/string_type"
+      ]
+    }
+  }
+}
