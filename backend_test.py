@@ -1022,12 +1022,14 @@ class ClaudeLLMIntegrationTest:
             await self.ai_service.generate_draft(
                 email=Email(
                     id="token-test",
+                    user_id="test-user",
+                    email_account_id="test-account",
+                    message_id="test-message-token",
                     from_email="token@test.com",
                     to_email=["support@company.com"],
                     subject="Token Test",
                     body="Test token tracking",
-                    received_at=datetime.now(timezone.utc),
-                    email_account_id="test-account"
+                    received_at=datetime.now(timezone.utc).isoformat()
                 ),
                 user_id="test-user"
             )
