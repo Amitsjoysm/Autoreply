@@ -419,15 +419,35 @@ class LeadNurturingIntegrationService:
     # ========================================================================
     
     async def _find_existing_lead(self, user_id: str, from_email: str) -> Optional[Dict]:
-        """Find existing lead by email"""
+        """
+        Find existing lead by email - with comprehensive search across all stages
+        to prevent duplicates
+        """
         try:
             leads_collection = self.db['inbound_leads']
-            lead = await leads_collection.find_one({
+            
+            # First, check for ANY lead with this email (all stages)
+            any_lead = await leads_collection.find_one({
                 "user_id": user_id,
-                "lead_email": from_email,
-                "stage": {"$in": ["awaiting_info", "new", "contacted"]}
+                "lead_email": from_email
             })
-            return lead
+            
+            if any_lead:
+                # If lead exists in final stages (qualified, unqualified, converted, lost),
+                # return it so we don't create duplicate
+                stage = any_lead.get('stage', 'new')
+                if stage in ['qualified', 'unqualified', 'converted', 'lost']:
+                    logger.info(f"Lead {from_email} already exists in final stage: {stage}")
+                    return any_lead
+                
+                # If in active stages, return it for continuation
+                if stage in ['awaiting_info', 'new', 'contacted']:
+                    logger.info(f"Lead {from_email} exists in active stage: {stage}")
+                    return any_lead
+            
+            # No lead found
+            return None
+            
         except Exception as e:
             logger.error(f"Error finding lead: {e}")
             return None
