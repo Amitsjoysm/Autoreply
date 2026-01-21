@@ -49,13 +49,23 @@ class Config:
     
     # AI APIs
     GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+    CLAUDE_API_KEY = os.environ.get('CLAUDE_API_KEY', '')
     COHERE_API_KEY = os.environ.get('COHERE_API_KEY', '')
     EMERGENT_LLM_KEY = os.environ.get('EMERGENT_LLM_KEY', '')
+    
+    # LLM Provider Selection
+    PRIMARY_LLM_PROVIDER = os.environ.get('PRIMARY_LLM_PROVIDER', 'groq')  # groq or claude
+    FALLBACK_LLM_PROVIDER = os.environ.get('FALLBACK_LLM_PROVIDER', 'claude')  # claude or groq
     
     # Groq Models (cost-effective)
     GROQ_DRAFT_MODEL = 'llama-3.3-70b-versatile'  # Good balance of quality and cost
     GROQ_VALIDATION_MODEL = 'llama-3.3-70b-versatile'
     GROQ_CALENDAR_MODEL = 'llama-3.3-70b-versatile'
+    
+    # Claude Models (high quality)
+    CLAUDE_DRAFT_MODEL = 'claude-4-sonnet-20250514'  # Recommended model
+    CLAUDE_VALIDATION_MODEL = 'claude-4-sonnet-20250514'
+    CLAUDE_CALENDAR_MODEL = 'claude-4-sonnet-20250514'
     
     # Cohere Model
     COHERE_CLASSIFICATION_MODEL = 'embed-english-v3.0'
