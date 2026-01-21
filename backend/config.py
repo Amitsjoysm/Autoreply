@@ -63,9 +63,9 @@ class Config:
     GROQ_CALENDAR_MODEL = 'llama-3.3-70b-versatile'
     
     # Claude Models (high quality)
-    CLAUDE_DRAFT_MODEL = 'claude-4-sonnet-20250514'  # Recommended model
-    CLAUDE_VALIDATION_MODEL = 'claude-4-sonnet-20250514'
-    CLAUDE_CALENDAR_MODEL = 'claude-4-sonnet-20250514'
+    CLAUDE_DRAFT_MODEL = 'claude-3-5-sonnet-20241022'  # Current available model
+    CLAUDE_VALIDATION_MODEL = 'claude-3-5-sonnet-20241022'
+    CLAUDE_CALENDAR_MODEL = 'claude-3-5-sonnet-20241022'
     
     # Cohere Model
     COHERE_CLASSIFICATION_MODEL = 'embed-english-v3.0'
