@@ -512,13 +512,50 @@ If no clear meeting detected, set is_meeting to false and confidence to 0.0."""
         
         # Add follow-up context if this is an automated follow-up
         if follow_up_context and follow_up_context.get('is_automated_followup'):
-            prompt += "🔔 THIS IS AN AUTOMATED FOLLOW-UP\n"
+            follow_up_type = follow_up_context.get('follow_up_type', 'time-based')
+            
+            prompt += "🔔 THIS IS AN AUTOMATED FOLLOW-UP EMAIL\n"
             prompt += "="*50 + "\n"
-            prompt += f"Original Request: {follow_up_context.get('matched_text', 'N/A')}\n"
-            prompt += f"Target Date User Mentioned: {follow_up_context.get('base_date', 'N/A')}\n"
-            prompt += f"Original Context: {follow_up_context.get('original_context', 'N/A')}\n"
-            prompt += "\nYou are now following up as requested by the sender.\n"
-            prompt += "Reference the original request naturally and provide a helpful update or check-in.\n"
+            
+            if follow_up_type == 'standard':
+                # Standard follow-up (no reply received)
+                prompt += "SITUATION: You previously sent an email but haven't received a response.\n"
+                prompt += f"Original Context: {follow_up_context.get('original_context', 'Follow-up')}\n"
+                prompt += f"Days Since Sent: {follow_up_context.get('matched_text', 'N/A')}\n\n"
+                
+                prompt += "INSTRUCTIONS FOR FOLLOW-UP:\n"
+                prompt += "1. Acknowledge that you're following up on your previous email\n"
+                prompt += "2. Reference specific points from the original conversation\n"
+                prompt += "3. Make it easy for them to respond (ask a specific question or offer help)\n"
+                prompt += "4. Keep tone friendly and understanding (they might be busy)\n"
+                prompt += "5. Add value - provide additional information or perspective\n"
+                prompt += "6. Don't be pushy - be helpful and available\n"
+                prompt += "7. Use conversation history below to make it contextual and specific\n\n"
+                
+                prompt += "✅ GOOD FOLLOW-UP EXAMPLE:\n"
+                prompt += '"I wanted to circle back on [specific topic from conversation]. '\n"
+                prompt += 'I know things get busy, so no rush. I thought you might find [additional value] helpful. '\n"
+                prompt += 'Let me know if you have any questions about [specific point]!"\n\n'
+                
+                prompt += "❌ AVOID GENERIC TEMPLATES:\n"
+                prompt += '- "Just following up..."\n'
+                prompt += '- "Did you get my previous email?"\n'
+                prompt += '- "Checking in..."\n'
+                
+            else:
+                # Time-based follow-up (user asked to follow up later)
+                prompt += "SITUATION: The recipient asked you to follow up at a specific time.\n"
+                prompt += f"Original Request: {follow_up_context.get('matched_text', 'N/A')}\n"
+                prompt += f"Target Date: {follow_up_context.get('base_date', 'N/A')}\n"
+                prompt += f"Context: {follow_up_context.get('original_context', 'N/A')}\n\n"
+                
+                prompt += "INSTRUCTIONS FOR TIME-BASED FOLLOW-UP:\n"
+                prompt += "1. Reference that they asked you to follow up at this time\n"
+                prompt += "2. Remind them of the context of your previous conversation\n"
+                prompt += "3. Provide any updates or new information since last contact\n"
+                prompt += "4. Ask how you can help or move forward\n"
+                prompt += "5. Be respectful of their time - get to the point\n"
+            
             prompt += "="*50 + "\n\n"
         
         # Add persona
