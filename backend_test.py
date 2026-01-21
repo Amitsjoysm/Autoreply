@@ -373,12 +373,14 @@ class ClaudeLLMIntegrationTest:
             
             test_email = Email(
                 id="test-fallback-1",
+                user_id="test-user",
+                email_account_id="test-account",
+                message_id="test-message-fallback",
                 from_email="test@fallback.com",
                 to_email=["support@company.com"],
                 subject="Fallback Test",
                 body="This is a test to verify the fallback mechanism works correctly.",
-                received_at=datetime.now(timezone.utc),
-                email_account_id="test-account"
+                received_at=datetime.now(timezone.utc).isoformat()
             )
             
             try:
