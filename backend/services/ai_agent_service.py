@@ -1013,8 +1013,8 @@ Respond with JSON:
 
 Score < 70 = REJECT (is_valid: false)"""
             
-            # Call Groq API
-            result = await self._call_groq_api(
+            # Call LLM API (with fallback support)
+            result = await self._call_llm_api(
                 system_message=system_message,
                 user_message=prompt,
                 temperature=0.2,  # Lower temperature for more consistent validation
