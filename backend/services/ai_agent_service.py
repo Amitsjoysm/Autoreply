@@ -1162,6 +1162,112 @@ Respond with JSON indicating validation result."""
             raise
     
     # ============================================================================
+    # CLAUDE API INTEGRATION
+    # ============================================================================
+    
+    async def _call_claude_api(
+        self,
+        system_message: str,
+        user_message: str,
+        temperature: float = 0.7,
+        max_tokens: int = 800
+    ) -> str:
+        """
+        Call Claude (Anthropic) API with error handling
+        
+        Returns:
+            Response text from the API
+        """
+        if not self.claude_client:
+            raise ValueError("Claude API not configured")
+        
+        try:
+            response = await self.claude_client.messages.create(
+                model=config.CLAUDE_DRAFT_MODEL,
+                max_tokens=max_tokens,
+                temperature=temperature,
+                system=system_message,
+                messages=[
+                    {"role": "user", "content": user_message}
+                ]
+            )
+            
+            # Extract content from response
+            content = response.content[0].text
+            
+            # Track token usage
+            if hasattr(response, 'usage'):
+                tokens = response.usage.input_tokens + response.usage.output_tokens
+                self.tokens_used += tokens
+            
+            return content
+            
+        except Exception as e:
+            logger.error(f"Claude API call failed: {e}", exc_info=True)
+            raise
+    
+    # ============================================================================
+    # UNIFIED LLM API CALL WITH FALLBACK
+    # ============================================================================
+    
+    async def _call_llm_api(
+        self,
+        system_message: str,
+        user_message: str,
+        temperature: float = 0.7,
+        max_tokens: int = 800,
+        provider: Optional[str] = None
+    ) -> str:
+        """
+        Unified LLM API call with automatic fallback
+        
+        Args:
+            system_message: System instructions
+            user_message: User prompt
+            temperature: Temperature setting
+            max_tokens: Maximum tokens to generate
+            provider: Specific provider to use ('groq' or 'claude'), or None for auto-selection
+            
+        Returns:
+            Response text from the API
+        """
+        # Determine which provider to try first
+        if provider:
+            primary = provider
+            fallback = self.fallback_provider if provider != self.fallback_provider else None
+        else:
+            primary = self.primary_provider
+            fallback = self.fallback_provider
+        
+        # Try primary provider
+        try:
+            if primary == 'groq' and self.groq_api_key:
+                logger.debug(f"Using Groq API (primary)")
+                return await self._call_groq_api(system_message, user_message, temperature, max_tokens)
+            elif primary == 'claude' and self.claude_client:
+                logger.debug(f"Using Claude API (primary)")
+                return await self._call_claude_api(system_message, user_message, temperature, max_tokens)
+            else:
+                raise ValueError(f"Primary provider '{primary}' not configured")
+        except Exception as e:
+            logger.warning(f"Primary provider '{primary}' failed: {e}")
+            
+            # Try fallback provider if available
+            if fallback and fallback != primary:
+                try:
+                    logger.info(f"Attempting fallback to '{fallback}' provider")
+                    if fallback == 'groq' and self.groq_api_key:
+                        return await self._call_groq_api(system_message, user_message, temperature, max_tokens)
+                    elif fallback == 'claude' and self.claude_client:
+                        return await self._call_claude_api(system_message, user_message, temperature, max_tokens)
+                except Exception as fallback_error:
+                    logger.error(f"Fallback provider '{fallback}' also failed: {fallback_error}")
+                    raise Exception(f"Both primary and fallback LLM providers failed")
+            
+            # No fallback available or already failed
+            raise
+    
+    # ============================================================================
     # UTILITY METHODS
     # ============================================================================
     
